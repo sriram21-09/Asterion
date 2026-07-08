@@ -1,0 +1,246 @@
+{
+  "$schema": "https://asterion.dev/schemas/dataset-v1.json",
+  "metadata": {
+    "dataset_id": "DS-SAMPLE-001",
+    "name": "Bangalore Urban Sample Dataset",
+    "description": "A consolidated sample dataset for development and testing of the Asterion localization pipeline. Contains two scenarios — a standard 3-tower urban case and a dense 4-tower configuration — with realistic RSSI measurements centered on Bangalore, India.",
+    "version": "1.0.0",
+    "created_at": "2026-07-08T09:00:00Z",
+    "author": "Asterion Scientific Team",
+    "environment": "urban",
+    "coordinate_system": "WGS84",
+    "units": {
+      "rssi": "dBm",
+      "distance": "meters",
+      "frequency": "MHz",
+      "height": "meters",
+      "power": "dBm"
+    }
+  },
+  "towers": [
+    {
+      "tower_id": "T001",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "antenna_height_m": 35.0,
+      "frequency_mhz": 1800.0,
+      "transmit_power_dbm": 43.0,
+      "sector": "A",
+      "coverage_radius_m": 1200.0
+    },
+    {
+      "tower_id": "T002",
+      "latitude": 12.9750,
+      "longitude": 77.5900,
+      "antenna_height_m": 40.0,
+      "frequency_mhz": 2100.0,
+      "transmit_power_dbm": 46.0,
+      "sector": "B",
+      "coverage_radius_m": 1000.0
+    },
+    {
+      "tower_id": "T003",
+      "latitude": 12.9700,
+      "longitude": 77.6000,
+      "antenna_height_m": 30.0,
+      "frequency_mhz": 900.0,
+      "transmit_power_dbm": 40.0,
+      "sector": "A",
+      "coverage_radius_m": 1500.0
+    },
+    {
+      "tower_id": "T004",
+      "latitude": 12.9680,
+      "longitude": 77.5920,
+      "antenna_height_m": 45.0,
+      "frequency_mhz": 2600.0,
+      "transmit_power_dbm": 44.0,
+      "sector": "C",
+      "coverage_radius_m": 800.0
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "SCN-SAMPLE-001",
+      "name": "Urban 3-Tower Multilateration",
+      "description": "Standard urban localization scenario with 3 towers. The device is positioned near MG Road, Bangalore, within coverage of T001, T002, and T003.",
+      "tower_ids": ["T001", "T002", "T003"],
+      "environment_type": "urban",
+      "noise_level_dbm": -95.0,
+      "expected_device_lat": 12.9722,
+      "expected_device_lon": 77.5949,
+      "measurements": [
+        {
+          "measurement_id": "M001",
+          "tower_id": "T001",
+          "timestamp": "2026-07-07T10:30:00Z",
+          "rssi_dbm": -67.5,
+          "latitude": 12.9722,
+          "longitude": 77.5949,
+          "timing_advance": 3.0,
+          "uncertainty_m": 120.0
+        },
+        {
+          "measurement_id": "M002",
+          "tower_id": "T002",
+          "timestamp": "2026-07-07T10:30:01Z",
+          "rssi_dbm": -74.2,
+          "latitude": 12.9722,
+          "longitude": 77.5949,
+          "timing_advance": 5.0,
+          "uncertainty_m": 180.0
+        },
+        {
+          "measurement_id": "M003",
+          "tower_id": "T003",
+          "timestamp": "2026-07-07T10:30:02Z",
+          "rssi_dbm": -81.0,
+          "latitude": 12.9722,
+          "longitude": 77.5949,
+          "timing_advance": 8.0,
+          "uncertainty_m": 250.0
+        },
+        {
+          "measurement_id": "M004",
+          "tower_id": "T001",
+          "timestamp": "2026-07-07T10:35:00Z",
+          "rssi_dbm": -69.1,
+          "latitude": 12.9723,
+          "longitude": 77.5950,
+          "timing_advance": 3.0,
+          "uncertainty_m": 130.0
+        },
+        {
+          "measurement_id": "M005",
+          "tower_id": "T002",
+          "timestamp": "2026-07-07T10:35:01Z",
+          "rssi_dbm": -73.8,
+          "latitude": 12.9723,
+          "longitude": 77.5950,
+          "timing_advance": 5.0,
+          "uncertainty_m": 175.0
+        },
+        {
+          "measurement_id": "M006",
+          "tower_id": "T003",
+          "timestamp": "2026-07-07T10:35:02Z",
+          "rssi_dbm": -82.4,
+          "latitude": 12.9723,
+          "longitude": 77.5950,
+          "timing_advance": 9.0,
+          "uncertainty_m": 260.0
+        }
+      ]
+    },
+    {
+      "scenario_id": "SCN-SAMPLE-002",
+      "name": "Dense Urban 4-Tower Coverage",
+      "description": "Enhanced urban scenario with 4 towers providing overlapping coverage. The device is positioned at Cubbon Park, Bangalore, closer to T004. More signals improve localization accuracy and enable GDOP-based confidence estimation.",
+      "tower_ids": ["T001", "T002", "T003", "T004"],
+      "environment_type": "urban",
+      "noise_level_dbm": -93.0,
+      "expected_device_lat": 12.9699,
+      "expected_device_lon": 77.5937,
+      "measurements": [
+        {
+          "measurement_id": "M007",
+          "tower_id": "T001",
+          "timestamp": "2026-07-07T11:00:00Z",
+          "rssi_dbm": -72.0,
+          "latitude": 12.9699,
+          "longitude": 77.5937,
+          "timing_advance": 4.0,
+          "uncertainty_m": 150.0
+        },
+        {
+          "measurement_id": "M008",
+          "tower_id": "T002",
+          "timestamp": "2026-07-07T11:00:01Z",
+          "rssi_dbm": -78.3,
+          "latitude": 12.9699,
+          "longitude": 77.5937,
+          "timing_advance": 6.0,
+          "uncertainty_m": 200.0
+        },
+        {
+          "measurement_id": "M009",
+          "tower_id": "T003",
+          "timestamp": "2026-07-07T11:00:02Z",
+          "rssi_dbm": -85.1,
+          "latitude": 12.9699,
+          "longitude": 77.5937,
+          "timing_advance": 10.0,
+          "uncertainty_m": 300.0
+        },
+        {
+          "measurement_id": "M010",
+          "tower_id": "T004",
+          "timestamp": "2026-07-07T11:00:03Z",
+          "rssi_dbm": -62.5,
+          "latitude": 12.9699,
+          "longitude": 77.5937,
+          "timing_advance": 2.0,
+          "uncertainty_m": 90.0
+        },
+        {
+          "measurement_id": "M011",
+          "tower_id": "T001",
+          "timestamp": "2026-07-07T11:05:00Z",
+          "rssi_dbm": -71.3,
+          "latitude": 12.9700,
+          "longitude": 77.5938,
+          "timing_advance": 4.0,
+          "uncertainty_m": 145.0
+        },
+        {
+          "measurement_id": "M012",
+          "tower_id": "T002",
+          "timestamp": "2026-07-07T11:05:01Z",
+          "rssi_dbm": -77.9,
+          "latitude": 12.9700,
+          "longitude": 77.5938,
+          "timing_advance": 6.0,
+          "uncertainty_m": 195.0
+        },
+        {
+          "measurement_id": "M013",
+          "tower_id": "T003",
+          "timestamp": "2026-07-07T11:05:02Z",
+          "rssi_dbm": -84.6,
+          "latitude": 12.9700,
+          "longitude": 77.5938,
+          "timing_advance": 10.0,
+          "uncertainty_m": 290.0
+        },
+        {
+          "measurement_id": "M014",
+          "tower_id": "T004",
+          "timestamp": "2026-07-07T11:05:03Z",
+          "rssi_dbm": -63.0,
+          "latitude": 12.9700,
+          "longitude": 77.5938,
+          "timing_advance": 2.0,
+          "uncertainty_m": 95.0
+        }
+      ]
+    }
+  ],
+  "expected_results": {
+    "SCN-SAMPLE-001": {
+      "algorithm": "multilateration",
+      "expected_latitude": 12.9722,
+      "expected_longitude": 77.5949,
+      "max_error_m": 150.0,
+      "min_confidence_score": 0.75,
+      "notes": "3-tower scenario should achieve sub-150m accuracy in urban conditions"
+    },
+    "SCN-SAMPLE-002": {
+      "algorithm": "multilateration",
+      "expected_latitude": 12.9699,
+      "expected_longitude": 77.5937,
+      "max_error_m": 100.0,
+      "min_confidence_score": 0.85,
+      "notes": "4-tower scenario with closer signal from T004 should yield higher accuracy"
+    }
+  }
+}
