@@ -1,13 +1,32 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional
+
+from app.api.v1.routers.scenarios import router as scenarios_router
+from app.shared.validation import ValidationError
 
 app = FastAPI(
     title="Asterion API",
     description="Explainable Telecom Localization & Investigation Support Platform Backend",
     version="1.0.0"
 )
+
+@app.exception_handler(ValidationError)
+async def validation_error_handler(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "success": False,
+            "error": {
+                "code": "VALIDATION_ERROR",
+                "message": f"{exc.field}: {exc.message}"
+            }
+        }
+    )
+
+app.include_router(scenarios_router, prefix="/api/v1")
 
 # Enable CORS for frontend integration
 app.add_middleware(
