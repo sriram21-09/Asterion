@@ -5,7 +5,7 @@ import { CaseTable } from '@/components/cases/CaseTable'
 import { CaseCard } from '@/components/cases/CaseCard'
 import { CaseForm } from '@/components/cases/CaseForm'
 import { EmptyState } from '@/components/cases/EmptyState'
-import { CreateCaseDTO } from '@/types/case'
+import type { CreateCaseDTO } from '@/types/case'
 
 export default function Cases() {
   const [isFormOpen, setIsFormOpen] = useState(false)

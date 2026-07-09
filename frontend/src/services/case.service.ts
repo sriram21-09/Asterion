@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import { Case, CreateCaseDTO } from '@/types/case';
+import type { Case, CreateCaseDTO } from '@/types/case';
 
 export const caseService = {
   getCases: async (): Promise<Case[]> => {

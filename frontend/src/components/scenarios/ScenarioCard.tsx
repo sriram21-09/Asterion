@@ -1,21 +1,21 @@
-import type { Case } from '@/types/case';
-import { Eye, Trash2, Calendar } from 'lucide-react';
+import type { Scenario } from '@/types/scenario';
+import { Eye, Trash2, Calendar, MapPin } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
-interface CaseCardProps {
-  caseData: Case;
+interface ScenarioCardProps {
+  scenarioData: Scenario;
   onDelete: (id: string) => void;
   isDeleting: boolean;
 }
 
-export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
+export function ScenarioCard({ scenarioData: s, onDelete, isDeleting }: ScenarioCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'open':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'in_progress':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'closed':
+      case 'active':
+        return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+      case 'draft':
+        return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+      case 'archived':
         return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
       default:
         return 'bg-surface-secondary text-content-secondary border-border-secondary';
@@ -27,30 +27,35 @@ export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
       <div className="flex justify-between items-start mb-4">
         <div>
           <span className="text-xs font-semibold text-content-tertiary uppercase tracking-wider mb-1 block">
-            {c.referenceNumber || c.id.substring(0, 8)}
+            {s.id.substring(0, 8)}
           </span>
           <h3 className="text-lg font-bold text-content-primary line-clamp-1 group-hover:text-brand-primary transition-colors">
-            {c.title}
+            {s.title}
           </h3>
         </div>
         <span
           className={cn(
             'px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-widest shrink-0',
-            getStatusColor(c.status)
+            getStatusColor(s.status)
           )}
         >
-          {c.status.replace('_', ' ')}
+          {s.status}
         </span>
       </div>
       
+      <div className="flex items-center text-xs text-brand-primary font-medium mb-3">
+        <MapPin className="w-3.5 h-3.5 mr-1" />
+        <span className="capitalize">{s.environmentType}</span>
+      </div>
+      
       <p className="text-sm text-content-secondary line-clamp-2 mb-6 flex-grow">
-        {c.description || 'No description provided.'}
+        {s.description || 'No description provided.'}
       </p>
 
       <div className="pt-4 border-t border-border-secondary flex items-center justify-between mt-auto">
         <div className="flex items-center text-content-tertiary text-xs">
           <Calendar className="w-3.5 h-3.5 mr-1.5" />
-          {new Date(c.createdAt).toLocaleDateString()}
+          {new Date(s.createdAt).toLocaleDateString()}
         </div>
         
         <div className="flex items-center space-x-1">
@@ -61,10 +66,10 @@ export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
             <Eye className="w-4 h-4" />
           </button>
           <button
-            onClick={() => onDelete(c.id)}
+            onClick={() => onDelete(s.id)}
             disabled={isDeleting}
             className="p-1.5 text-content-tertiary hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors disabled:opacity-50"
-            title="Delete Case"
+            title="Delete Scenario"
           >
             <Trash2 className="w-4 h-4" />
           </button>

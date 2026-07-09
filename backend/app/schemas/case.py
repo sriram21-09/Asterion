@@ -1,10 +1,12 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 class CaseBase(BaseModel):
     title: str
     description: str | None = None
-    status: str = "active"
+    status: str = "open"
+    scenario_id: Optional[int] = None
 
 class CaseCreate(CaseBase):
     pass
