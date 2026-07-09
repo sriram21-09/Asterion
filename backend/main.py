@@ -1,11 +1,12 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional
 
 from app.api.v1.routers.scenarios import router as scenarios_router
-from app.shared.validation import ValidationError
+from app.api.v1.routers.cases import router as cases_router
+from app.exceptions.handlers import register_exception_handlers
+from app.middleware.logging import LoggingMiddleware
 
 app = FastAPI(
     title="Asterion API",
@@ -13,20 +14,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
-@app.exception_handler(ValidationError)
-async def validation_error_handler(request: Request, exc: ValidationError):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "success": False,
-            "error": {
-                "code": "VALIDATION_ERROR",
-                "message": f"{exc.field}: {exc.message}"
-            }
-        }
-    )
-
-app.include_router(scenarios_router, prefix="/api/v1")
+# Register logging/timing middleware
+app.add_middleware(LoggingMiddleware)
 
 # Enable CORS for frontend integration
 app.add_middleware(
@@ -36,6 +25,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register global exception handlers
+register_exception_handlers(app)
+
+app.include_router(scenarios_router, prefix="/api/v1")
+app.include_router(cases_router, prefix="/api/v1")
 
 class TowerSignal(BaseModel):
     tower_id: str
