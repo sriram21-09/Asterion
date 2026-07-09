@@ -1,0 +1,356 @@
+{
+  "$schema": "https://asterion.dev/schemas/scenario-config-v1.json",
+  "metadata": {
+    "file_id": "SCN-EXAMPLES-001",
+    "name": "Asterion Scenario Configuration Examples",
+    "description": "Consolidated reference file containing three simulation-ready scenario configurations spanning urban, suburban, and rural environments. Each entry maps directly to a ScenarioConfig Pydantic model and can be loaded by the simulation pipeline.",
+    "version": "1.0.0",
+    "created_at": "2026-07-09T12:00:00Z",
+    "author": "Asterion Scientific Team",
+    "coordinate_system": "WGS84",
+    "units": {
+      "rssi": "dBm",
+      "distance": "meters",
+      "frequency": "MHz",
+      "height": "meters",
+      "power": "dBm",
+      "angle": "degrees"
+    }
+  },
+
+  "tower_registry": {
+    "_comment": "Shared tower definitions referenced by scenario configs below. Tower schema: tower_id (str, unique), latitude/longitude (WGS84 float), antenna_height_m (float, >0), frequency_mhz (float, >0), transmit_power_dbm (float, EIRP), sector (str|null), coverage_radius_m (float, >0).",
+    "towers": [
+      {
+        "tower_id": "T001",
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "antenna_height_m": 35.0,
+        "frequency_mhz": 1800.0,
+        "transmit_power_dbm": 43.0,
+        "sector": "A",
+        "coverage_radius_m": 1200.0
+      },
+      {
+        "tower_id": "T002",
+        "latitude": 12.9750,
+        "longitude": 77.5900,
+        "antenna_height_m": 40.0,
+        "frequency_mhz": 2100.0,
+        "transmit_power_dbm": 46.0,
+        "sector": "B",
+        "coverage_radius_m": 1000.0
+      },
+      {
+        "tower_id": "T003",
+        "latitude": 12.9700,
+        "longitude": 77.6000,
+        "antenna_height_m": 30.0,
+        "frequency_mhz": 900.0,
+        "transmit_power_dbm": 40.0,
+        "sector": "A",
+        "coverage_radius_m": 1500.0
+      },
+      {
+        "tower_id": "T004",
+        "latitude": 12.9680,
+        "longitude": 77.5920,
+        "antenna_height_m": 45.0,
+        "frequency_mhz": 2600.0,
+        "transmit_power_dbm": 44.0,
+        "sector": "C",
+        "coverage_radius_m": 800.0
+      },
+      {
+        "tower_id": "T005",
+        "latitude": 12.9820,
+        "longitude": 77.5850,
+        "antenna_height_m": 50.0,
+        "frequency_mhz": 700.0,
+        "transmit_power_dbm": 46.0,
+        "sector": "A",
+        "coverage_radius_m": 3000.0
+      },
+      {
+        "tower_id": "T006",
+        "latitude": 12.9900,
+        "longitude": 77.5780,
+        "antenna_height_m": 55.0,
+        "frequency_mhz": 700.0,
+        "transmit_power_dbm": 47.0,
+        "sector": "B",
+        "coverage_radius_m": 3500.0
+      }
+    ]
+  },
+
+  "tower_schema_documentation": {
+    "_comment": "Reference documentation for Tower schema — maps to scientific.models.tower.Tower Pydantic model.",
+    "fields": {
+      "tower_id": {
+        "type": "string",
+        "required": true,
+        "constraints": "min_length=1, unique per scenario",
+        "description": "Unique cell tower identifier. Convention: 'T' + zero-padded 3-digit number.",
+        "examples": ["T001", "T002", "T099"]
+      },
+      "latitude": {
+        "type": "float",
+        "required": true,
+        "constraints": "ge=-90.0, le=90.0",
+        "description": "Tower latitude in decimal degrees (WGS84 datum).",
+        "examples": [12.9716, 40.7128, -33.8688]
+      },
+      "longitude": {
+        "type": "float",
+        "required": true,
+        "constraints": "ge=-180.0, le=180.0",
+        "description": "Tower longitude in decimal degrees (WGS84 datum).",
+        "examples": [77.5946, -74.0060, 151.2093]
+      },
+      "antenna_height_m": {
+        "type": "float",
+        "required": false,
+        "default": 30.0,
+        "constraints": "gt=0",
+        "description": "Antenna height above ground level in meters. Typical range: 15–60 m for macro cells.",
+        "examples": [30.0, 35.0, 50.0]
+      },
+      "frequency_mhz": {
+        "type": "float",
+        "required": false,
+        "default": 1800.0,
+        "constraints": "gt=0",
+        "description": "Operating frequency in MHz. Standard cellular bands: 700, 900, 1800, 2100, 2600, 3500 MHz.",
+        "examples": [700.0, 900.0, 1800.0, 2100.0, 2600.0, 3500.0]
+      },
+      "transmit_power_dbm": {
+        "type": "float",
+        "required": false,
+        "default": 43.0,
+        "description": "Effective Isotropic Radiated Power (EIRP) in dBm. Typical macro cell: 40–49 dBm.",
+        "examples": [40.0, 43.0, 46.0]
+      },
+      "sector": {
+        "type": "string | null",
+        "required": false,
+        "default": null,
+        "description": "Optional sector identifier for directional antennas. Typically 'A', 'B', 'C' for 3-sector sites.",
+        "examples": ["A", "B", "C", null]
+      },
+      "coverage_radius_m": {
+        "type": "float",
+        "required": false,
+        "default": 1000.0,
+        "constraints": "gt=0",
+        "description": "Effective coverage radius in meters. Depends on frequency, power, and environment.",
+        "examples": [800.0, 1200.0, 3000.0]
+      }
+    },
+    "relationships": {
+      "scenario": "A Scenario contains a list of 3+ Towers for multilateration.",
+      "measurement": "Each Measurement references a tower_id from the scenario's tower list.",
+      "scenario_config": "TowerPlacement in ScenarioConfig mirrors Tower fields for simulation input."
+    },
+    "validation_rules": [
+      "tower_id must be unique within a scenario",
+      "Latitude must be in range [-90, 90]",
+      "Longitude must be in range [-180, 180]",
+      "Standard cellular bands: 700, 900, 1800, 2100, 2600, 3500 MHz (warning if non-standard)",
+      "Transmit power typical range: 20–60 dBm (warning if outside)"
+    ]
+  },
+
+  "scenario_configs": [
+    {
+      "scenario_id": "SCN-CFG-001",
+      "name": "Urban 3-Tower Multilateration",
+      "description": "Standard urban scenario with 3 towers around MG Road, Bangalore. Uses log-distance path-loss model with urban propagation defaults. Device is positioned within overlapping coverage of all three towers.",
+      "tower_placements": [
+        {
+          "tower_id": "T001",
+          "latitude": 12.9716,
+          "longitude": 77.5946,
+          "antenna_height_m": 35.0,
+          "frequency_mhz": 1800.0,
+          "transmit_power_dbm": 43.0,
+          "coverage_radius_m": 1200.0,
+          "sector": "A"
+        },
+        {
+          "tower_id": "T002",
+          "latitude": 12.9750,
+          "longitude": 77.5900,
+          "antenna_height_m": 40.0,
+          "frequency_mhz": 2100.0,
+          "transmit_power_dbm": 46.0,
+          "coverage_radius_m": 1000.0,
+          "sector": "B"
+        },
+        {
+          "tower_id": "T003",
+          "latitude": 12.9700,
+          "longitude": 77.6000,
+          "antenna_height_m": 30.0,
+          "frequency_mhz": 900.0,
+          "transmit_power_dbm": 40.0,
+          "coverage_radius_m": 1500.0,
+          "sector": "A"
+        }
+      ],
+      "environment_type": "urban",
+      "noise_level_dbm": -95.0,
+      "propagation": {
+        "path_loss_exponent": 3.5,
+        "shadow_fading_std_db": 8.0,
+        "reference_distance_m": 1.0,
+        "reference_loss_db": 38.0
+      },
+      "simulation": {
+        "algorithm": "multilateration",
+        "max_iterations": 100,
+        "convergence_threshold_m": 1.0,
+        "measurement_count": 1,
+        "enable_noise": true,
+        "random_seed": 42
+      },
+      "expected_device_lat": 12.9722,
+      "expected_device_lon": 77.5949,
+      "expected_results": {
+        "max_error_m": 150.0,
+        "min_confidence_score": 0.75,
+        "notes": "3-tower urban scenario; sub-150m accuracy expected with NLOS multipath"
+      }
+    },
+    {
+      "scenario_id": "SCN-CFG-002",
+      "name": "Suburban 4-Tower Extended Coverage",
+      "description": "Suburban scenario with 4 towers providing wide overlapping coverage. Lower path-loss exponent allows signals to travel further. Device positioned at the geometric center of the tower layout for optimal GDOP.",
+      "tower_placements": [
+        {
+          "tower_id": "T001",
+          "latitude": 12.9716,
+          "longitude": 77.5946,
+          "antenna_height_m": 35.0,
+          "frequency_mhz": 1800.0,
+          "transmit_power_dbm": 43.0,
+          "coverage_radius_m": 1200.0,
+          "sector": "A"
+        },
+        {
+          "tower_id": "T002",
+          "latitude": 12.9750,
+          "longitude": 77.5900,
+          "antenna_height_m": 40.0,
+          "frequency_mhz": 2100.0,
+          "transmit_power_dbm": 46.0,
+          "coverage_radius_m": 1000.0,
+          "sector": "B"
+        },
+        {
+          "tower_id": "T003",
+          "latitude": 12.9700,
+          "longitude": 77.6000,
+          "antenna_height_m": 30.0,
+          "frequency_mhz": 900.0,
+          "transmit_power_dbm": 40.0,
+          "coverage_radius_m": 1500.0,
+          "sector": "A"
+        },
+        {
+          "tower_id": "T004",
+          "latitude": 12.9680,
+          "longitude": 77.5920,
+          "antenna_height_m": 45.0,
+          "frequency_mhz": 2600.0,
+          "transmit_power_dbm": 44.0,
+          "coverage_radius_m": 800.0,
+          "sector": "C"
+        }
+      ],
+      "environment_type": "suburban",
+      "noise_level_dbm": -98.0,
+      "propagation": {
+        "path_loss_exponent": 3.0,
+        "shadow_fading_std_db": 6.0,
+        "reference_distance_m": 1.0,
+        "reference_loss_db": 36.0
+      },
+      "simulation": {
+        "algorithm": "multilateration",
+        "max_iterations": 150,
+        "convergence_threshold_m": 0.5,
+        "measurement_count": 3,
+        "enable_noise": true,
+        "random_seed": 123
+      },
+      "expected_device_lat": 12.9712,
+      "expected_device_lon": 77.5942,
+      "expected_results": {
+        "max_error_m": 100.0,
+        "min_confidence_score": 0.85,
+        "notes": "4-tower suburban scenario with cleaner propagation; sub-100m accuracy expected"
+      }
+    },
+    {
+      "scenario_id": "SCN-CFG-003",
+      "name": "Rural 3-Tower Wide-Area Coverage",
+      "description": "Rural scenario with widely-spaced 700 MHz macro towers providing extensive coverage. Low path-loss exponent models open terrain with minimal obstructions. Tests localization accuracy at extended range.",
+      "tower_placements": [
+        {
+          "tower_id": "T001",
+          "latitude": 12.9716,
+          "longitude": 77.5946,
+          "antenna_height_m": 35.0,
+          "frequency_mhz": 1800.0,
+          "transmit_power_dbm": 43.0,
+          "coverage_radius_m": 1200.0,
+          "sector": "A"
+        },
+        {
+          "tower_id": "T005",
+          "latitude": 12.9820,
+          "longitude": 77.5850,
+          "antenna_height_m": 50.0,
+          "frequency_mhz": 700.0,
+          "transmit_power_dbm": 46.0,
+          "coverage_radius_m": 3000.0,
+          "sector": "A"
+        },
+        {
+          "tower_id": "T006",
+          "latitude": 12.9900,
+          "longitude": 77.5780,
+          "antenna_height_m": 55.0,
+          "frequency_mhz": 700.0,
+          "transmit_power_dbm": 47.0,
+          "coverage_radius_m": 3500.0,
+          "sector": "B"
+        }
+      ],
+      "environment_type": "rural",
+      "noise_level_dbm": -100.0,
+      "propagation": {
+        "path_loss_exponent": 2.5,
+        "shadow_fading_std_db": 4.0,
+        "reference_distance_m": 1.0,
+        "reference_loss_db": 32.0
+      },
+      "simulation": {
+        "algorithm": "multilateration",
+        "max_iterations": 200,
+        "convergence_threshold_m": 2.0,
+        "measurement_count": 2,
+        "enable_noise": true,
+        "random_seed": 7
+      },
+      "expected_device_lat": 12.9812,
+      "expected_device_lon": 77.5859,
+      "expected_results": {
+        "max_error_m": 300.0,
+        "min_confidence_score": 0.60,
+        "notes": "Rural wide-area; lower accuracy expected due to larger tower spacing and fewer reference points"
+      }
+    }
+  ]
+}
