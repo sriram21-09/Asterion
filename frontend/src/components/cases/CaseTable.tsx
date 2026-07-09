@@ -1,4 +1,4 @@
-import { Case } from '@/types/case';
+import type { Case } from '@/types/case';
 import { Eye, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 

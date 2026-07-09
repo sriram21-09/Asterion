@@ -1,5 +1,5 @@
-import { Case } from '@/types/case';
-import { Eye, Trash2, Calendar, FileText } from 'lucide-react';
+import type { Case } from '@/types/case';
+import { Eye, Trash2, Calendar } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 interface CaseCardProps {

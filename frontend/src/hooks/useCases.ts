@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { caseService } from '@/services/case.service';
-import { CreateCaseDTO } from '@/types/case';
+import type { CreateCaseDTO } from '@/types/case';
 import { toast } from 'sonner';
 
 const CACHE_KEY = ['cases'];

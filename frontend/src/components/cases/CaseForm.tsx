@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CreateCaseDTO } from '@/types/case';
+import type { CreateCaseDTO } from '@/types/case';
 import { X, Loader2, Save } from 'lucide-react';
 
 interface CaseFormProps {
