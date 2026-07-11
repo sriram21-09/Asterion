@@ -14,6 +14,8 @@ Asterion/
 │   ├── data/           # Persistent SQLite database folder
 │   ├── .env.example    # Backend environment template
 │   └── requirements.txt# Backend Python dependencies
+├── datasets/           # Sample and test datasets
+│   └── sample/         # Consolidated sample datasets (JSON)
 ├── frontend/           # React + TypeScript + Vite frontend
 │   ├── src/            # Frontend application source
 │   │   ├── layouts/    # UI Shell (DashboardLayout)
@@ -27,10 +29,20 @@ Asterion/
 │   ├── vite.config.ts  # Vite configuration (Tailwind v4, path aliases)
 │   ├── .env.example    # Frontend environment template
 │   └── package.json    # Frontend dependencies and scripts
+├── scientific/         # Standalone scientific computation engine
+│   ├── config.py       # Simulation, validation, environment configuration
+│   ├── constants.py    # Physical, RF, geodesy constants & helpers
+│   ├── logger.py       # Console logging helper
+│   ├── models/         # Pydantic data models (Tower, Measurement, Scenario, etc.)
+│   ├── validation/     # Domain validators (Measurement, Tower, Scenario)
+│   ├── simulation/     # (Week 2) RSSI generation & noise models
+│   └── pipeline/       # (Week 2) End-to-end localization pipeline
+├── tests/              # pytest test suite (271 tests)
 ├── docker/             # Docker configuration files
 │   ├── Dockerfile.backend
 │   └── Dockerfile.frontend
 ├── docs/               # System documentation & architectural reviews
+├── Plans/              # Sprint plans & checklists
 └── docker-compose.yml  # Multi-container Docker Compose setup with Healthchecks
 ```
 
