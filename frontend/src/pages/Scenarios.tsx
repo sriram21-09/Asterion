@@ -11,7 +11,7 @@ import type { CreateScenarioDTO } from '@/types/scenario'
 export default function Scenarios() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
 
   const { data: scenarios, isLoading, isError, error, refetch } = useScenarios()
   const createScenario = useCreateScenario()
@@ -28,7 +28,7 @@ export default function Scenarios() {
   }
 
   const handleDeleteConfirm = () => {
-    if (!deleteTarget) return
+    if (deleteTarget === null) return
     deleteScenario.mutate(deleteTarget, {
       onSettled: () => setDeleteTarget(null),
     })
@@ -129,7 +129,7 @@ export default function Scenarios() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      {deleteTarget && (
+      {deleteTarget !== null && (
         <ConfirmDialog
           title="Delete Scenario"
           message="This action is permanent and cannot be undone. All transmitter and signal configurations in this scenario will be removed."

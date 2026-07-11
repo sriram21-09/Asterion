@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn';
 
 interface CaseTableProps {
   cases: Case[];
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   isDeleting: boolean;
 }
 
@@ -27,7 +27,7 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
       <table className="w-full text-left text-sm text-content-secondary">
         <thead className="bg-surface-secondary text-xs uppercase text-content-secondary border-b border-border-primary">
           <tr>
-            <th className="px-6 py-4 font-semibold">Reference</th>
+            <th className="px-6 py-4 font-semibold">#</th>
             <th className="px-6 py-4 font-semibold">Title</th>
             <th className="px-6 py-4 font-semibold">Status</th>
             <th className="px-6 py-4 font-semibold">Date Created</th>
@@ -41,7 +41,7 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
               className="border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors"
             >
               <td className="px-6 py-4 font-medium text-content-primary">
-                {c.referenceNumber || c.id.substring(0, 8)}
+                #{c.id}
               </td>
               <td className="px-6 py-4">{c.title}</td>
               <td className="px-6 py-4">
@@ -55,7 +55,7 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
                 </span>
               </td>
               <td className="px-6 py-4 text-content-tertiary">
-                {new Date(c.createdAt).toLocaleDateString()}
+                {new Date(c.created_at).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 text-right space-x-2">
                 <button

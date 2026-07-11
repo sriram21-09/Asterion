@@ -1,36 +1,21 @@
 import type { Scenario } from '@/types/scenario';
 import { Eye, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/cn';
 
 interface ScenarioTableProps {
   scenarios: Scenario[];
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   isDeleting: boolean;
 }
 
 export function ScenarioTable({ scenarios, onDelete, isDeleting }: ScenarioTableProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
-      case 'draft':
-        return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-      case 'archived':
-        return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
-      default:
-        return 'bg-surface-secondary text-content-secondary border-border-secondary';
-    }
-  };
-
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-border-primary bg-surface-primary shadow-sm">
       <table className="w-full text-left text-sm text-content-secondary">
         <thead className="bg-surface-secondary text-xs uppercase text-content-secondary border-b border-border-primary">
           <tr>
-            <th className="px-6 py-4 font-semibold">ID</th>
-            <th className="px-6 py-4 font-semibold">Title</th>
-            <th className="px-6 py-4 font-semibold">Environment</th>
-            <th className="px-6 py-4 font-semibold">Status</th>
+            <th className="px-6 py-4 font-semibold">#</th>
+            <th className="px-6 py-4 font-semibold">Name</th>
+            <th className="px-6 py-4 font-semibold">Description</th>
             <th className="px-6 py-4 font-semibold">Date Created</th>
             <th className="px-6 py-4 font-semibold text-right">Actions</th>
           </tr>
@@ -42,22 +27,14 @@ export function ScenarioTable({ scenarios, onDelete, isDeleting }: ScenarioTable
               className="border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors"
             >
               <td className="px-6 py-4 font-medium text-content-primary">
-                {s.id.substring(0, 8)}
+                #{s.id}
               </td>
-              <td className="px-6 py-4">{s.title}</td>
-              <td className="px-6 py-4 capitalize">{s.environmentType}</td>
-              <td className="px-6 py-4">
-                <span
-                  className={cn(
-                    'px-2.5 py-1 rounded-full text-xs font-medium border uppercase tracking-wider',
-                    getStatusColor(s.status)
-                  )}
-                >
-                  {s.status}
-                </span>
+              <td className="px-6 py-4 font-medium text-content-primary">{s.name}</td>
+              <td className="px-6 py-4 text-content-tertiary max-w-xs truncate">
+                {s.description || '—'}
               </td>
               <td className="px-6 py-4 text-content-tertiary">
-                {new Date(s.createdAt).toLocaleDateString()}
+                {new Date(s.created_at).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 text-right space-x-2">
                 <button
