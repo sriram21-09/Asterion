@@ -41,7 +41,7 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
               className="border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors"
             >
               <td className="px-6 py-4 font-medium text-content-primary">
-                #{c.id}
+                {(c as any).referenceNumber || `#${c.id}`}
               </td>
               <td className="px-6 py-4">{c.title}</td>
               <td className="px-6 py-4">

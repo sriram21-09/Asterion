@@ -1,10 +1,9 @@
-import logging
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from app.shared.validation import ValidationError
-
-logger = logging.getLogger("asterion")
+from app.core.logging import logger
+from app.schemas.response import APIResponse, ErrorDetail
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register global exception handlers for the FastAPI application."""
@@ -18,29 +17,27 @@ def register_exception_handlers(app: FastAPI) -> None:
             errors.append(f"{loc}: {msg}")
         
         message = "; ".join(errors)
+        response_body = APIResponse(
+            success=False,
+            error=ErrorDetail(code="VALIDATION_ERROR", message=message),
+            detail=message
+        )
         return JSONResponse(
             status_code=422,
-            content={
-                "success": False,
-                "error": {
-                    "code": "VALIDATION_ERROR",
-                    "message": message
-                },
-                "detail": message
-            }
+            content=response_body.model_dump()
         )
 
     @app.exception_handler(ValidationError)
     async def validation_error_handler(request: Request, exc: ValidationError):
+        message = f"{exc.field}: {exc.message}"
+        response_body = APIResponse(
+            success=False,
+            error=ErrorDetail(code="VALIDATION_ERROR", message=message),
+            detail=message
+        )
         return JSONResponse(
             status_code=exc.status_code,
-            content={
-                "success": False,
-                "error": {
-                    "code": "VALIDATION_ERROR",
-                    "message": f"{exc.field}: {exc.message}"
-                }
-            }
+            content=response_body.model_dump()
         )
 
     @app.exception_handler(HTTPException)
@@ -65,30 +62,25 @@ def register_exception_handlers(app: FastAPI) -> None:
             elif "detail" in exc.detail:
                 message = exc.detail["detail"]
                 
-        # Maintain "detail" key for compatibility with existing tests
+        response_body = APIResponse(
+            success=False,
+            error=ErrorDetail(code=code, message=str(message)),
+            detail=str(message)
+        )
         return JSONResponse(
             status_code=exc.status_code,
-            content={
-                "success": False,
-                "error": {
-                    "code": code,
-                    "message": str(message)
-                },
-                "detail": str(message)
-            }
+            content=response_body.model_dump()
         )
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
         logger.exception(f"Unhandled exception occurred: {str(exc)}")
+        response_body = APIResponse(
+            success=False,
+            error=ErrorDetail(code="INTERNAL_SERVER_ERROR", message="An unexpected error occurred."),
+            detail="An unexpected error occurred."
+        )
         return JSONResponse(
             status_code=500,
-            content={
-                "success": False,
-                "error": {
-                    "code": "INTERNAL_SERVER_ERROR",
-                    "message": "An unexpected error occurred."
-                },
-                "detail": "An unexpected error occurred."
-            }
+            content=response_body.model_dump()
         )

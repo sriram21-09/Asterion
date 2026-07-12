@@ -27,7 +27,7 @@ export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
       <div className="flex justify-between items-start mb-4">
         <div>
           <span className="text-xs font-semibold text-content-tertiary uppercase tracking-wider mb-1 block">
-            Case #{c.id}
+            {(c as any).referenceNumber || `Case #${c.id}`}
           </span>
           <h3 className="text-lg font-bold text-content-primary line-clamp-1 group-hover:text-brand-primary transition-colors">
             {c.title}

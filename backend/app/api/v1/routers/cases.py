@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.schemas.case import CaseCreate, CaseResponse
+from app.schemas.response import APIResponse
 from app.services.case_service import CaseService
 from typing import List, Optional
 
@@ -12,7 +13,7 @@ router = APIRouter(
 
 @router.post(
     "/",
-    response_model=CaseResponse,
+    response_model=APIResponse[CaseResponse],
     status_code=status.HTTP_201_CREATED,
     summary="Create a new case",
     description="Validate inputs and create a new localization investigation case."
@@ -21,11 +22,12 @@ def create_case(
     case_in: CaseCreate,
     db: Session = Depends(get_db)
 ):
-    return CaseService.create_case(db, case_in)
+    result = CaseService.create_case(db, case_in)
+    return APIResponse(success=True, data=result)
 
 @router.get(
     "/",
-    response_model=List[CaseResponse],
+    response_model=APIResponse[List[CaseResponse]],
     summary="Retrieve all cases",
     description="Retrieve a paginated list of cases."
 )
@@ -34,7 +36,8 @@ def list_cases(
     page_size: Optional[int] = Query(None, description="Number of items per page"),
     db: Session = Depends(get_db)
 ):
-    return CaseService.list_cases(db, page=page, page_size=page_size)
+    result = CaseService.list_cases(db, page=page, page_size=page_size)
+    return APIResponse(success=True, data=result)
 
 @router.get(
     "/health",
@@ -50,7 +53,7 @@ def health_check():
 
 @router.get(
     "/{id}",
-    response_model=CaseResponse,
+    response_model=APIResponse[CaseResponse],
     summary="Retrieve a case by ID",
     description="Get details of a single investigation case."
 )
@@ -58,11 +61,12 @@ def get_case(
     id: int,
     db: Session = Depends(get_db)
 ):
-    return CaseService.get_case(db, case_id=id)
+    result = CaseService.get_case(db, case_id=id)
+    return APIResponse(success=True, data=result)
 
 @router.delete(
     "/{id}",
-    response_model=CaseResponse,
+    response_model=APIResponse[CaseResponse],
     summary="Delete a case by ID",
     description="Remove a case and return the deleted object."
 )
@@ -70,4 +74,5 @@ def delete_case(
     id: int,
     db: Session = Depends(get_db)
 ):
-    return CaseService.delete_case(db, case_id=id)
+    result = CaseService.delete_case(db, case_id=id)
+    return APIResponse(success=True, data=result)

@@ -7,11 +7,14 @@ from app.api.v1.routers.scenarios import router as scenarios_router
 from app.api.v1.routers.cases import router as cases_router
 from app.exceptions.handlers import register_exception_handlers
 from app.middleware.logging import LoggingMiddleware
+from app.core.config import settings
+from app.schemas.response import APIResponse
 
 app = FastAPI(
-    title="Asterion API",
+    title=settings.app_name,
     description="Explainable Telecom Localization & Investigation Support Platform Backend",
-    version="1.0.0"
+    version=settings.app_version,
+    debug=settings.debug
 )
 
 # Register logging/timing middleware
@@ -20,7 +23,7 @@ app.add_middleware(LoggingMiddleware)
 # Enable CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,8 +32,8 @@ app.add_middleware(
 # Register global exception handlers
 register_exception_handlers(app)
 
-app.include_router(scenarios_router, prefix="/api/v1")
-app.include_router(cases_router, prefix="/api/v1")
+app.include_router(scenarios_router, prefix=settings.api_prefix)
+app.include_router(cases_router, prefix=settings.api_prefix)
 
 class TowerSignal(BaseModel):
     tower_id: str
@@ -43,23 +46,30 @@ class LocalizationRequest(BaseModel):
     signals: List[TowerSignal]
     algorithm: Optional[str] = "multilateration"
 
+class LocalizationResponse(BaseModel):
+    estimated_latitude: float
+    estimated_longitude: float
+    confidence_score: float
+    signals_used: int
+    algorithm_applied: str
+
 @app.get("/")
 async def root():
     return {
         "status": "online",
-        "service": "Asterion API",
-        "version": "1.0.0"
+        "service": settings.app_name,
+        "version": settings.app_version
     }
 
-@app.get("/api/v1/health")
+@app.get(f"{settings.api_prefix}/health")
 async def health():
     return {
         "status": "healthy",
         "service": "asterion-api",
-        "version": "1.0.0"
+        "version": settings.app_version
     }
 
-@app.post("/api/localize")
+@app.post("/api/localize", response_model=APIResponse[LocalizationResponse])
 async def localize_device(payload: LocalizationRequest):
     if len(payload.signals) < 3:
         raise HTTPException(
@@ -82,10 +92,13 @@ async def localize_device(payload: LocalizationRequest):
     est_lat = weighted_lat / total_weight
     est_lon = weighted_lon / total_weight
     
-    return {
-        "estimated_latitude": est_lat,
-        "estimated_longitude": est_lon,
-        "confidence_score": 0.85,
-        "signals_used": len(payload.signals),
-        "algorithm_applied": payload.algorithm
-    }
+    return APIResponse(
+        success=True,
+        data=LocalizationResponse(
+            estimated_latitude=est_lat,
+            estimated_longitude=est_lon,
+            confidence_score=0.85,
+            signals_used=len(payload.signals),
+            algorithm_applied=payload.algorithm
+        )
+    )
