@@ -61,7 +61,7 @@ class TestCaseAPI:
             json={"title": "Abducted Device Track", "description": "Tracking stolen phone location"}
         )
         assert response.status_code == 201
-        data = response.json()
+        data = response.json()["data"]
         assert data["title"] == "Abducted Device Track"
         assert data["description"] == "Tracking stolen phone location"
         assert data["status"] == "open"
@@ -107,7 +107,7 @@ class TestCaseAPI:
             "/api/v1/scenarios/",
             json={"name": "Reference Scenario"}
         )
-        scenario_id = scenario_res.json()["id"]
+        scenario_id = scenario_res.json()["data"]["id"]
 
         # Create case referencing that scenario
         response = client.post(
@@ -115,13 +115,13 @@ class TestCaseAPI:
             json={"title": "Linked Case", "scenario_id": scenario_id}
         )
         assert response.status_code == 201
-        data = response.json()
+        data = response.json()["data"]
         assert data["scenario_id"] == scenario_id
 
     def test_list_cases_empty(self, client):
         response = client.get("/api/v1/cases/")
         assert response.status_code == 200
-        assert response.json() == []
+        assert response.json()["data"] == []
 
     def test_list_cases_pagination(self, client):
         # Create 3 cases
@@ -131,7 +131,7 @@ class TestCaseAPI:
         # List first page with size 2
         response = client.get("/api/v1/cases/?page=1&page_size=2")
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert len(data) == 2
         assert data[0]["title"] == "Case 0"
         assert data[1]["title"] == "Case 1"
@@ -139,17 +139,17 @@ class TestCaseAPI:
         # List second page
         response = client.get("/api/v1/cases/?page=2&page_size=2")
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert len(data) == 1
         assert data[0]["title"] == "Case 2"
 
     def test_get_case_by_id(self, client):
         res = client.post("/api/v1/cases/", json={"title": "Target Case"})
-        case_id = res.json()["id"]
+        case_id = res.json()["data"]["id"]
 
         response = client.get(f"/api/v1/cases/{case_id}")
         assert response.status_code == 200
-        assert response.json()["title"] == "Target Case"
+        assert response.json()["data"]["title"] == "Target Case"
 
     def test_get_case_not_found(self, client):
         response = client.get("/api/v1/cases/9999")
@@ -162,11 +162,11 @@ class TestCaseAPI:
 
     def test_delete_case_success(self, client):
         res = client.post("/api/v1/cases/", json={"title": "Delete Target"})
-        case_id = res.json()["id"]
+        case_id = res.json()["data"]["id"]
 
         response = client.delete(f"/api/v1/cases/{case_id}")
         assert response.status_code == 200
-        assert response.json()["id"] == case_id
+        assert response.json()["data"]["id"] == case_id
 
         # Verify deletion
         get_res = client.get(f"/api/v1/cases/{case_id}")

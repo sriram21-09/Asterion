@@ -33,6 +33,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 from app.models.base import Base
 from app.models.case import Case
 from app.models.scenario import Scenario
+from app.models.tower import Tower
 
 
 # ---------------------------------------------------------------------------
@@ -222,4 +223,40 @@ class TestRelationshipCaseScenario:
         # scenario_id should be NULL now
         assert case.scenario_id is None
         assert case.scenario is None
+
+
+class TestTowerModel:
+    """Tests for the Towers ORM model."""
+
+    def test_create_tower_valid(self, db_session: Session):
+        """Create a Tower with name, lat, lon, and sector — verify persistence."""
+        tower = Tower(
+            tower_name="Tower Alpha",
+            latitude=12.9716,
+            longitude=77.5946,
+            sector="A",
+        )
+        db_session.add(tower)
+        db_session.commit()
+        db_session.refresh(tower)
+
+        assert tower.id is not None
+        assert tower.id > 0
+        assert tower.tower_name == "Tower Alpha"
+        assert tower.latitude == 12.9716
+        assert tower.longitude == 77.5946
+        assert tower.sector == "A"
+        assert tower.created_at is not None
+        assert tower.updated_at is not None
+
+    def test_create_tower_missing_name_fails(self, db_session: Session):
+        """Attempt to create a Tower without a name — expect failure."""
+        tower = Tower(tower_name=None, latitude=12.9716, longitude=77.5946)
+        db_session.add(tower)
+
+        with pytest.raises(IntegrityError):
+            db_session.commit()
+
+        db_session.rollback()
+
 

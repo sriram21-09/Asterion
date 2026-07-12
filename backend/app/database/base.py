@@ -3,3 +3,4 @@
 from app.models.base import Base
 from app.models.case import Case
 from app.models.scenario import Scenario
+from app.models.tower import Tower
