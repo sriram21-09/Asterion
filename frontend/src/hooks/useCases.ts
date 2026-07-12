@@ -12,7 +12,7 @@ export const useCases = () => {
   });
 };
 
-export const useCase = (id: string) => {
+export const useCase = (id: number) => {
   return useQuery({
     queryKey: [...CACHE_KEY, id],
     queryFn: () => caseService.getCase(id),
@@ -30,7 +30,7 @@ export const useCreateCase = () => {
       toast.success('Case created successfully');
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.detail || error.message || 'Failed to create case');
+      toast.error(error?.message || error?.response?.data?.detail || 'Failed to create case');
     },
   });
 };
@@ -39,13 +39,13 @@ export const useDeleteCase = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => caseService.deleteCase(id),
+    mutationFn: (id: number) => caseService.deleteCase(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Case deleted successfully');
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.detail || error.message || 'Failed to delete case');
+      toast.error(error?.message || error?.response?.data?.detail || 'Failed to delete case');
     },
   });
 };

@@ -1,23 +1,22 @@
 import { useState } from 'react';
-import type { CreateCaseDTO } from '@/types/case';
+import type { CreateScenarioDTO } from '@/types/scenario';
 import { X, Loader2, Save } from 'lucide-react';
 
-interface CaseFormProps {
-  onSubmit: (data: CreateCaseDTO) => void;
+interface ScenarioFormProps {
+  onSubmit: (data: CreateScenarioDTO) => void;
   onCancel: () => void;
   isSubmitting: boolean;
 }
 
-export function CaseForm({ onSubmit, onCancel, isSubmitting }: CaseFormProps) {
-  const [formData, setFormData] = useState<CreateCaseDTO>({
-    title: '',
+export function ScenarioForm({ onSubmit, onCancel, isSubmitting }: ScenarioFormProps) {
+  const [formData, setFormData] = useState<CreateScenarioDTO>({
+    name: '',
     description: '',
-    status: 'open',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
+    if (!formData.name.trim()) return;
     onSubmit(formData);
   };
 
@@ -25,7 +24,7 @@ export function CaseForm({ onSubmit, onCancel, isSubmitting }: CaseFormProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-surface-primary border border-border-primary w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
         <div className="px-6 py-4 border-b border-border-primary flex items-center justify-between bg-surface-secondary/50">
-          <h2 className="text-xl font-bold text-content-primary">Create New Case</h2>
+          <h2 className="text-xl font-bold text-content-primary">Create New Scenario</h2>
           <button
             onClick={onCancel}
             className="p-2 text-content-tertiary hover:text-content-primary hover:bg-surface-secondary rounded-xl transition-colors"
@@ -36,45 +35,29 @@ export function CaseForm({ onSubmit, onCancel, isSubmitting }: CaseFormProps) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="space-y-1.5">
-            <label htmlFor="case-title" className="text-sm font-semibold text-content-secondary">
-              Case Title <span className="text-red-500">*</span>
+            <label htmlFor="scenario-name" className="text-sm font-semibold text-content-secondary">
+              Scenario Name <span className="text-red-500">*</span>
             </label>
             <input
-              id="case-title"
+              id="scenario-name"
               type="text"
               required
               className="w-full bg-surface-secondary border border-border-secondary rounded-xl px-4 py-2.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all"
-              placeholder="e.g. Unauthorized SIM Swap Investigation"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="e.g. Downtown Metro RF Test"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="case-status" className="text-sm font-semibold text-content-secondary">
-              Initial Status
-            </label>
-            <select
-              id="case-status"
-              className="w-full bg-surface-secondary border border-border-secondary rounded-xl px-4 py-2.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all appearance-none"
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as 'open' | 'in_progress' | 'closed' | 'archived' })}
-            >
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="closed">Closed</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="case-description" className="text-sm font-semibold text-content-secondary">
+            <label htmlFor="scenario-description" className="text-sm font-semibold text-content-secondary">
               Description (Optional)
             </label>
             <textarea
-              id="case-description"
+              id="scenario-description"
               rows={3}
               className="w-full bg-surface-secondary border border-border-secondary rounded-xl px-4 py-2.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all resize-none"
-              placeholder="Provide a brief summary of the incident or objective..."
+              placeholder="Describe the objective or terrain conditions..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
@@ -90,7 +73,7 @@ export function CaseForm({ onSubmit, onCancel, isSubmitting }: CaseFormProps) {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !formData.title.trim()}
+              disabled={isSubmitting || !formData.name.trim()}
               className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary/90 border border-brand-primary/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-primary/15"
             >
               {isSubmitting ? (
@@ -101,7 +84,7 @@ export function CaseForm({ onSubmit, onCancel, isSubmitting }: CaseFormProps) {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Create Case</span>
+                  <span>Create Scenario</span>
                 </>
               )}
             </button>

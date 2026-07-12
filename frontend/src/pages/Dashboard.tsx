@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { Briefcase, Layers, Radio, Eye, TrendingUp, Activity, MapPin } from 'lucide-react'
+import { useCases } from '@/hooks/useCases'
+import { useScenarios } from '@/hooks/useScenarios'
 
 const incomingFeatures = [
   {
@@ -32,17 +34,30 @@ const incomingFeatures = [
   },
 ]
 
-const quickStats = [
-  { label: 'Active Cases', value: '0', icon: Briefcase, color: 'text-brand-secondary' },
-  { label: 'Scenarios', value: '0', icon: Layers, color: 'text-emerald-400' },
-  { label: 'Localizations', value: '—', icon: MapPin, color: 'text-amber-400' },
-  { label: 'System', value: 'Online', icon: Activity, color: 'text-emerald-400' },
-]
-
 export default function Dashboard() {
+  const { data: cases } = useCases()
+  const { data: scenarios } = useScenarios()
+
   useEffect(() => {
     document.title = 'Dashboard — Asterion'
   }, [])
+
+  const quickStats = [
+    { 
+      label: 'Active Cases', 
+      value: cases ? cases.filter(c => c.status !== 'closed' && c.status !== 'archived').length.toString() : '0', 
+      icon: Briefcase, 
+      color: 'text-brand-secondary' 
+    },
+    { 
+      label: 'Scenarios', 
+      value: scenarios ? scenarios.length.toString() : '0', 
+      icon: Layers, 
+      color: 'text-emerald-400' 
+    },
+    { label: 'Localizations', value: '—', icon: MapPin, color: 'text-amber-400' },
+    { label: 'System', value: 'Online', icon: Activity, color: 'text-emerald-400' },
+  ]
 
   return (
     <div className="space-y-8 animate-fade-in">

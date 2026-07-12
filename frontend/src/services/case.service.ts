@@ -19,7 +19,7 @@ export const caseService = {
     return data.map(mapCaseResponse);
   },
 
-  getCase: async (id: string): Promise<Case> => {
+  getCase: async (id: number | string): Promise<Case> => {
     const { data } = await api.get<any>(`/cases/${id}`);
     return mapCaseResponse(data);
   },
@@ -34,7 +34,7 @@ export const caseService = {
     return mapCaseResponse(data);
   },
 
-  deleteCase: async (id: string): Promise<void> => {
+  deleteCase: async (id: number): Promise<void> => {
     await api.delete(`/cases/${id}`);
   },
 };
