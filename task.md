@@ -1,36 +1,112 @@
-# Task: Review, Stabilization & Finalization (Day 7)
+# 📘 Week 2 Task Tracker — Scientific Engine Sprint
 
-## Objective
-Resolve bugs, clean up code styling, update README/CHANGELOG, tag release v0.1.0, and run final release checks.
+This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / Backend), Chaitanya (Scientific Engineer), and Dinesh (Frontend Lead) to implement and integrate the core scientific core.
 
-## Tasks
-- [x] Run formatting and checks on scientific modules
-  - [x] Install `ruff` and `black` in the backend virtual environment
-  - [x] Run `ruff check scientific --fix` to resolve unused imports
-  - [x] Run `black scientific` to format all python modules in the scientific package
-  - [x] Verify that all 323 tests continue to pass successfully
-- [x] Perform documentation updates and clear deprecated files
-  - [x] Delete deprecated sample files under `automation/sprint/` (`sample_WORKFLOW.md`, `sample_config_template.json`, `sample_sprint_engine.py`)
-  - [x] Update root `README.md` to show the correct count of 323 tests and verify sections
-  - [x] Update `docs/README.md` to show the correct count of 323 tests and verify structure
-  - [x] Create `scientific/README.md` for standalone scientific module documentation
-- [x] Document scientific checklist for Week 2
-  - [x] Link and summarize `Plans/week2_scientific_checklist.md` in scientific documentation
-  - [x] Ensure all placeholders in `scientific/simulation/` and `scientific/pipeline/` are cleanly documented
-- [x] Assist in the sprint review and database validation demo
-  - [x] Prepare a database validation demo script/guide
-  - [x] Verify that database schemas (including Cases, Scenarios, and the new Towers model) are fully consistent
-  - [x] Run the backend and frontend to verify the system launches and displays correctly
-- [x] Final Release & Version Tagging (v0.1.0)
-  - [x] Identify and resolve P0/P1 backend bugs/warnings (resolved Ruff unused imports, E741, F821 in ORM models, E841 in test log)
-  - [x] Run Black formatting on the entire `backend` codebase (31 files reformatted)
-  - [x] Update project version references to `0.1.0` in `backend/app/core/config.py`, `frontend/package.json`, healthcheck response, and config/healthcheck test assertions
-  - [x] Update root `CHANGELOG.md` with Week 1 release summary (`[0.1.0] - 2026-07-12`)
-  - [x] Merge local stabilization branch into `develop`
-  - [x] Merge `develop` branch into `main` and resolve workspace conflicts
-  - [x] Tag the repository release `v0.1.0` locally
-  - [x] Run the final release checklist verification (all 323 tests passing)
+---
 
-## Deliverables
-- [x] Tagged release v0.1.0 on GitHub
-- [x] Finalized project documentation
+## 📅 Day 1: Measurement Simulator
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement RSSI Signal Generator (`scientific/simulation/rssi_generator.py`)
+  - [ ] Implement Noise Model with Gaussian and shadow fading (`scientific/simulation/noise_model.py`)
+  - [ ] Implement Measurement Synthesizer (`scientific/simulation/measurement_generator.py`)
+  - [ ] Write pytest unit tests for simulation modules
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `backend/app/models/measurement.py` database schema
+  - [ ] Run Alembic migrations to create `measurements` table
+  - [ ] Implement `MeasurementRepository` and `MeasurementService`
+  - [ ] Create `POST /simulation/generate` API router skeleton
+  - [ ] Write database and API endpoint unit tests
+- [ ] **Dinesh (Frontend):**
+  - [ ] Define TypeScript types for Simulation outputs and parameters
+  - [ ] Create API service client layer for `/simulation/generate`
+  - [ ] Implement Zustand state stores for simulated measurements
+  - [ ] Create static placeholder UI tables for measurements list
+
+---
+
+## 📅 Day 2: Measurement Validation Engine
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Expand coordinate, RSSI, and timing advance validators in `validators.py`
+  - [ ] Add WGS84 bounding checking rules
+  - [ ] Write unit tests checking out-of-bounds inputs and duplicates
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create API endpoint `POST /measurements/validate`
+  - [ ] Integrate validators into backend service layer
+  - [ ] Write validation router unit tests
+- [ ] **Dinesh (Frontend):**
+  - [ ] Implement Axios client queries for validate API
+  - [ ] Create validation status panel displaying audit metrics
+
+---
+
+## 📅 Day 3: Localization Engine (Core NLLS)
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement initial position estimation logic (e.g., using signal-strength weighted calculations) to provide starting guesses for NLLS optimization
+  - [ ] Implement NLLS Multilateration solver using `scipy.optimize.least_squares` (`scientific/pipeline/multilateration.py`)
+  - [ ] Write mathematical unit tests verifying geometry convergence on prepared validation scenarios
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `localization_results` ORM model (with `case_id` relation) and migrations
+  - [ ] Implement `LocalizationRepository` and `LocalizationService`
+  - [ ] Create endpoint `POST /localization/run` returning coordinates and computation timing
+- [ ] **Dinesh (Frontend):**
+  - [ ] Add API services client to call `/localization/run`
+  - [ ] Implement a static placeholder Localization Result Card detailing metrics
+
+---
+
+## 📅 Day 4: Tracking Engine (Kalman Filter)
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement Constant-Velocity 2D Kalman Filter tracker (`scientific/pipeline/kalman_tracker.py`)
+  - [ ] Write unit tests verifying tracking path convergence and noise smoothing
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `tracking_results` ORM model (linking to `cases` and `localization_results.id`) and migrations
+  - [ ] Implement `TrackingRepository` and `TrackingService`
+  - [ ] Create API route `POST /tracking/run` returning path tracking arrays
+- [ ] **Dinesh (Frontend):**
+  - [ ] Implement API client layers for tracking execution
+  - [ ] Create a static path coordinate list table showing smoothed track steps
+
+---
+
+## 📅 Day 5: Confidence & Evidence Engines
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement GDOP-based geometric analysis and covariance-derived uncertainty calculations in `scientific/pipeline/confidence.py`
+  - [ ] Implement audit evidence builder inside `scientific/pipeline/evidence.py`
+  - [ ] Test confidence bounds on collinear vs. equilateral geometries
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `confidence_results` database schema (linking to `cases` and `localization_results.id`) and migrations
+  - [ ] Implement repository layers and services for confidence and case evidence retrieval
+  - [ ] Create routes `POST /confidence/run` and `GET /evidence/{case_id}`
+- [ ] **Dinesh (Frontend):**
+  - [ ] Implement API client layers for confidence and evidence
+  - [ ] Create a static Confidence Badge Card showing level, score, and error ellipses
+  - [ ] Create a static Evidence Summary Card showing accepted vs. rejected lists
+
+---
+
+## 📅 Day 6: Pipeline Integration & E2E Testing
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Create the central runner script `scientific/pipeline/runner.py` connecting the modules
+  - [ ] Benchmark execution time (ensuring performance runs within HLD performance targets: <2s for localization on the demo dataset)
+  - [ ] Add pipeline runner integration tests
+- [ ] **Sriram (Project Lead):**
+  - [ ] Run complete database persistence test suites
+  - [ ] Perform Docker stack smoke testing (`docker compose up --build`)
+  - [ ] Verify integrated endpoint orchestration in GitHub CI
+- [ ] **Dinesh (Frontend):**
+  - [ ] Interconnect stores and wire components to sequencially trigger actual API pipelines
+  - [ ] Verify loading, warning, and error components render properly
+
+---
+
+## 📅 Day 7: Stabilization, Review & Release
+- [ ] **Sriram (Project Lead):**
+  - [ ] Resolve P0/P1 bugs and perform test validations
+  - [ ] Update Swagger descriptions, example payloads, and CHANGELOG.md
+  - [ ] Merge branches and tag version release `v0.2.0` on main
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Update standalone scientific package documentation
+  - [ ] Ensure all automated unit and integration tests pass cleanly
+- [ ] **Dinesh (Frontend):**
+  - [ ] Run production builds and verify types compile
+  - [ ] Update frontend structure documentation
