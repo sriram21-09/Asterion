@@ -1,13 +1,21 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
+
+from app.api.v1.routers.scenarios import router as scenarios_router
+from app.api.v1.routers.cases import router as cases_router
+from app.exceptions.handlers import register_exception_handlers
+from app.middleware.logging import LoggingMiddleware
 
 app = FastAPI(
     title="Asterion API",
     description="Explainable Telecom Localization & Investigation Support Platform Backend",
     version="1.0.0"
 )
+
+# Register logging/timing middleware
+app.add_middleware(LoggingMiddleware)
 
 # Enable CORS for frontend integration
 app.add_middleware(
@@ -17,6 +25,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register global exception handlers
+register_exception_handlers(app)
+
+app.include_router(scenarios_router, prefix="/api/v1")
+app.include_router(cases_router, prefix="/api/v1")
 
 class TowerSignal(BaseModel):
     tower_id: str
