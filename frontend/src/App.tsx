@@ -6,12 +6,13 @@ import Scenarios from './pages/Scenarios'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
+import ErrorPage from './pages/ErrorPage'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<DashboardLayout />}>
+        <Route path="/" element={<DashboardLayout />} errorElement={<ErrorPage />}>
           <Route index element={<Dashboard />} />
           <Route path="cases" element={<Cases />} />
           <Route path="scenarios" element={<Scenarios />} />

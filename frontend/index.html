@@ -1,10 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta name="description" content="Asterion — Explainable Telecom Localization & Investigation Support Platform. Scientific multilateration, Kalman tracking, and evidence-based analysis." />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Asterion — Telecom Localization Platform</title>
+
+    <!--
+      FOXT (Flash of Wrong Theme) prevention.
+      Reads the persisted theme from localStorage BEFORE React hydrates,
+      so the correct class is on <html> from the very first paint.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('asterion-theme');
+          var parsed = stored ? JSON.parse(stored) : null;
+          var theme = parsed && parsed.state && parsed.state.theme === 'light' ? 'light' : 'dark';
+          document.documentElement.classList.remove('dark', 'light');
+          document.documentElement.classList.add(theme);
+        } catch (_) {
+          // Fallback — keep default 'dark' class already on <html>
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

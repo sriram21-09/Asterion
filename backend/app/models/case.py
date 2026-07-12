@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Text
+from typing import Optional
+from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import BaseModel
 
 class Case(BaseModel):
@@ -7,4 +8,7 @@ class Case(BaseModel):
     
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    status: Mapped[str] = mapped_column(String(50), default="active", nullable=False)
+    status: Mapped[str] = mapped_column(String(50), default="open", nullable=False)
+    
+    scenario_id: Mapped[Optional[int]] = mapped_column(ForeignKey("scenarios.id", ondelete="SET NULL"), nullable=True)
+    scenario: Mapped[Optional["Scenario"]] = relationship("Scenario", back_populates="cases")
