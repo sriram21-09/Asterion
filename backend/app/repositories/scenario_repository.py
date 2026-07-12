@@ -2,9 +2,10 @@ from sqlalchemy.orm import Session
 from app.models.scenario import Scenario
 from typing import List, Optional
 
+
 class ScenarioRepository:
     """Repository for Scenario database operations.
-    
+
     # ponytail: static methods to avoid instantiation/dependency boilerplates
     """
 
@@ -21,7 +22,9 @@ class ScenarioRepository:
         return db.query(Scenario).offset(skip).limit(limit).all()
 
     @staticmethod
-    def create(db: Session, *, name: str, description: Optional[str] = None) -> Scenario:
+    def create(
+        db: Session, *, name: str, description: Optional[str] = None
+    ) -> Scenario:
         db_obj = Scenario(name=name, description=description)
         db.add(db_obj)
         db.commit()
