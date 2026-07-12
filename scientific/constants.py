@@ -36,7 +36,6 @@ from __future__ import annotations
 import math
 from typing import Dict, List, Tuple
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 # 1. Physical & Mathematical Constants
 # ═══════════════════════════════════════════════════════════════════════════
@@ -64,6 +63,7 @@ RAD_TO_DEG: float = 180.0 / math.pi
 # ═══════════════════════════════════════════════════════════════════════════
 # 2. Unit Conversion Helpers
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 def db_to_linear(db: float) -> float:
     """Convert a value from decibels to linear scale.
@@ -145,8 +145,10 @@ LONGITUDE_RANGE: Tuple[float, float] = (-180.0, 180.0)
 
 
 def haversine_distance_m(
-    lat1: float, lon1: float,
-    lat2: float, lon2: float,
+    lat1: float,
+    lon1: float,
+    lat2: float,
+    lon2: float,
 ) -> float:
     """Compute great-circle distance between two WGS84 points (meters).
 
@@ -186,9 +188,7 @@ FREE_SPACE_LOSS_1M_1GHZ_DB: float = 20.0 * math.log10(
 
 #: Thermal noise power at 290 K over 1 Hz bandwidth (dBm).
 #: N = k·T·B  →  10·log10(1.38e-23 · 290 · 1) + 30 ≈ -174 dBm/Hz
-THERMAL_NOISE_DBM_HZ: float = (
-    10.0 * math.log10(BOLTZMANN_CONSTANT_J_K * 290.0) + 30.0
-)
+THERMAL_NOISE_DBM_HZ: float = 10.0 * math.log10(BOLTZMANN_CONSTANT_J_K * 290.0) + 30.0
 
 #: Typical cellular channel bandwidth (Hz) — used to estimate noise floor.
 TYPICAL_CHANNEL_BW_HZ: float = 10e6  # 10 MHz (LTE)
@@ -201,15 +201,26 @@ TYPICAL_CHANNEL_BW_HZ: float = 10e6  # 10 MHz (LTE)
 #: Canonical centre frequencies of common cellular bands (MHz).
 CELLULAR_BANDS_MHZ: List[int] = [
     # Low-band
-    700, 800, 850, 900,
+    700,
+    800,
+    850,
+    900,
     # Mid-band
-    1700, 1800, 1900, 2100,
+    1700,
+    1800,
+    1900,
+    2100,
     # Upper mid-band
-    2300, 2500, 2600,
+    2300,
+    2500,
+    2600,
     # C-band (5G NR)
-    3500, 3700,
+    3500,
+    3700,
     # mmWave (5G NR)
-    26000, 28000, 39000,
+    26000,
+    28000,
+    39000,
 ]
 
 #: Tolerance (± MHz) used when checking whether a frequency is near a
@@ -218,11 +229,11 @@ BAND_TOLERANCE_MHZ: float = 50.0
 
 #: Human-readable band grouping for reporting.
 BAND_GROUPS: Dict[str, Tuple[int, ...]] = {
-    "low":       (700, 800, 850, 900),
-    "mid":       (1700, 1800, 1900, 2100),
+    "low": (700, 800, 850, 900),
+    "mid": (1700, 1800, 1900, 2100),
     "upper_mid": (2300, 2500, 2600),
-    "c_band":    (3500, 3700),
-    "mmwave":    (26000, 28000, 39000),
+    "c_band": (3500, 3700),
+    "mmwave": (26000, 28000, 39000),
 }
 
 
@@ -240,10 +251,10 @@ RSSI_PLAUSIBLE_MAX_DBM: float = -30.0
 
 #: Signal-quality tiers (upper-bound RSSI in dBm for each tier).
 RSSI_QUALITY_TIERS: Dict[str, Tuple[float, float]] = {
-    "excellent":  (-50.0,   0.0),
-    "good":       (-70.0, -50.0),
-    "fair":       (-90.0, -70.0),
-    "weak":      (-110.0, -90.0),
+    "excellent": (-50.0, 0.0),
+    "good": (-70.0, -50.0),
+    "fair": (-90.0, -70.0),
+    "weak": (-110.0, -90.0),
     "very_weak": (-150.0, -110.0),
 }
 

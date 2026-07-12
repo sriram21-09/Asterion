@@ -1,42 +1,30 @@
-# Task: Scientific Config, Constants & Logger (Day 5)
+# Task: Review, Stabilization & Finalization (Day 7)
 
 ## Objective
-Configure scientific bounds, constants, and logging placeholder, and pair on testing.
+Stabilize the scientific codebase, clean up comments/formatting, finalize documentation, and prepare for the Week 1 sprint review and database validation demo.
 
 ## Tasks
-- [x] Create `scientific/config.py` — SimulationConfig, ValidationThresholds, EnvironmentConfig, get_environment_config
-- [x] Define measurement constants in `scientific/constants.py` — Physical, RF, geodesy, cellular bands, RSSI tiers, TA
-- [x] Create console logger helper in `scientific/logger.py` — get_logger, set_level, silence
-- [x] Update `scientific/__init__.py` with new submodule documentation
-- [x] Write 86 comprehensive tests in `tests/test_day5_deliverables.py`
-- [x] Verify all 236 tests pass (86 Day 5 + 150 existing)
+- [x] Run formatting and checks on scientific modules
+  - [x] Install `ruff` and `black` in the backend virtual environment
+  - [x] Run `ruff check scientific --fix` to resolve unused imports
+  - [x] Run `black scientific` to format all python modules in the scientific package
+  - [x] Verify that all 323 tests continue to pass successfully
+- [x] Perform documentation updates and clear deprecated files
+  - [x] Delete deprecated sample files under `automation/sprint/` (`sample_WORKFLOW.md`, `sample_config_template.json`, `sample_sprint_engine.py`)
+  - [x] Update root `README.md` to show the correct count of 323 tests and verify sections
+  - [x] Update `docs/README.md` to show the correct count of 323 tests and verify structure
+  - [x] Create `scientific/README.md` for standalone scientific module documentation
+- [x] Document scientific checklist for Week 2
+  - [x] Link and summarize `Plans/week2_scientific_checklist.md` in scientific documentation
+  - [x] Ensure all placeholders in `scientific/simulation/` and `scientific/pipeline/` are cleanly documented
+- [x] Assist in the sprint review and database validation demo
+  - [x] Prepare a database validation demo script/guide
+  - [x] Verify that database schemas (including Cases, Scenarios, and the new Towers model) are fully consistent
+  - [x] Run the backend and frontend to verify the system launches and displays correctly
 
 ## Deliverables
-- [x] `scientific/config.py`
-- [x] `scientific/constants.py`
-- [x] `scientific/logger.py`
-- [x] `tests/test_day5_deliverables.py`
-
-## Previous Day Tasks (Day 4)
-- [x] Finalize `ScenarioConfig` Pydantic models (scenario_config.py)
-- [x] Document Tower schema
-- [x] Create consolidated sample scenario dataset
-- [x] Write verification tests (test_day4_deliverables.py)
-
-## Previous Day Tasks (Day 3)
-- [x] Create `scientific/validation/validators.py` — Validator Protocol + concrete validators
-- [x] Document expected interfaces for Measurement, Tower, and Scenario objects
-- [x] Review scientific API contracts for consistency with backend conventions
-- [x] Create consolidated `datasets/sample/sample_dataset.json`
-- [x] Write shared validation helpers in `backend/app/shared/validation.py`
-- [x] Write 85 comprehensive tests in `tests/test_day3_deliverables.py`
-- [x] Push to `feat/week1-day3-scientific` branch on GitHub
-
-## Previous Day Tasks (Day 2)
-- [x] Create Database Package (`backend/app/database/base.py`, `session.py`, `engine.py`)
-- [x] Configure database settings, SQLite connection string, and session factory
-- [x] Initialize Alembic (`alembic/`, `env.py`, `versions/`) and verify autogenerate migrations
-- [x] Create Base ORM Model with common fields (`id`, `created_at`, `updated_at`)
-- [x] Create Cases and Scenarios ORM Models
-- [x] Create `CaseCreate`, `CaseResponse`, `ScenarioCreate` Pydantic Schemas
-- [x] Create database connection and model tests in `tests/database/`
+- [x] Finalized scientific package structure and documentation (`scientific/README.md`)
+- [x] Cleaned-up and formatted codebase (Ruff/Black passing, 323 tests passing)
+- [x] Updated project documentation (`README.md`, `docs/README.md`)
+- [x] Week 2 Scientific Checklist confirmed
+- [x] Demo script for database validation and sprint review

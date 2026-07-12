@@ -31,7 +31,6 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-
 # Supported localization algorithms
 AlgorithmType = Literal["multilateration", "kalman", "weighted_centroid", "hybrid"]
 

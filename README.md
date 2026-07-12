@@ -37,7 +37,7 @@ Asterion/
 │   ├── validation/     # Domain validators (Measurement, Tower, Scenario)
 │   ├── simulation/     # (Week 2) RSSI generation & noise models
 │   └── pipeline/       # (Week 2) End-to-end localization pipeline
-├── tests/              # pytest test suite (271 tests)
+├── tests/              # pytest test suite (323 tests)
 ├── docker/             # Docker configuration files
 │   ├── Dockerfile.backend
 │   └── Dockerfile.frontend
