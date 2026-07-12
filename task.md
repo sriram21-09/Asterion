@@ -1,7 +1,7 @@
 # Task: Review, Stabilization & Finalization (Day 7)
 
 ## Objective
-Stabilize the scientific codebase, clean up comments/formatting, finalize documentation, and prepare for the Week 1 sprint review and database validation demo.
+Resolve bugs, clean up code styling, update README/CHANGELOG, tag release v0.1.0, and run final release checks.
 
 ## Tasks
 - [x] Run formatting and checks on scientific modules
@@ -21,10 +21,16 @@ Stabilize the scientific codebase, clean up comments/formatting, finalize docume
   - [x] Prepare a database validation demo script/guide
   - [x] Verify that database schemas (including Cases, Scenarios, and the new Towers model) are fully consistent
   - [x] Run the backend and frontend to verify the system launches and displays correctly
+- [x] Final Release & Version Tagging (v0.1.0)
+  - [x] Identify and resolve P0/P1 backend bugs/warnings (resolved Ruff unused imports, E741, F821 in ORM models, E841 in test log)
+  - [x] Run Black formatting on the entire `backend` codebase (31 files reformatted)
+  - [x] Update project version references to `0.1.0` in `backend/app/core/config.py`, `frontend/package.json`, healthcheck response, and config/healthcheck test assertions
+  - [x] Update root `CHANGELOG.md` with Week 1 release summary (`[0.1.0] - 2026-07-12`)
+  - [x] Merge local stabilization branch into `develop`
+  - [x] Merge `develop` branch into `main` and resolve workspace conflicts
+  - [x] Tag the repository release `v0.1.0` locally
+  - [x] Run the final release checklist verification (all 323 tests passing)
 
 ## Deliverables
-- [x] Finalized scientific package structure and documentation (`scientific/README.md`)
-- [x] Cleaned-up and formatted codebase (Ruff/Black passing, 323 tests passing)
-- [x] Updated project documentation (`README.md`, `docs/README.md`)
-- [x] Week 2 Scientific Checklist confirmed
-- [x] Demo script for database validation and sprint review
+- [x] Tagged release v0.1.0 on GitHub
+- [x] Finalized project documentation
