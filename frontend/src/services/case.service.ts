@@ -3,11 +3,13 @@ import type { Case, CreateCaseDTO } from '@/types/case';
 
 const mapCaseResponse = (raw: any): Case => {
   return {
-    id: String(raw.id),
+    id: Number(raw.id),
     referenceNumber: raw.reference_number || raw.referenceNumber || `CAS-${String(raw.id).padStart(3, '0')}`,
     title: raw.title,
     description: raw.description || undefined,
     status: raw.status,
+    created_at: raw.created_at || raw.createdAt,
+    updated_at: raw.updated_at || raw.updatedAt,
     createdAt: raw.created_at || raw.createdAt,
     updatedAt: raw.updated_at || raw.updatedAt,
   };

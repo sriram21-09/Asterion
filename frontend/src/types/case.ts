@@ -13,6 +13,9 @@ export interface Case {
   scenario_id?: number | null;
   created_at: string;
   updated_at: string;
+  referenceNumber?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateCaseDTO {
