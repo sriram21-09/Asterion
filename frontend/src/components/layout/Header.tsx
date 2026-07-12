@@ -15,7 +15,7 @@ const routeLabels: Record<string, string> = {
 
 export default function Header() {
   const location = useLocation()
-  const { toggleSidebar } = useNavigationStore()
+  const { toggleSidebar, sidebarOpen } = useNavigationStore()
   const { theme, toggleTheme } = useThemeStore()
 
   const currentLabel = routeLabels[location.pathname] ?? 'Page'
@@ -34,7 +34,7 @@ export default function Header() {
           onClick={toggleSidebar}
           className="md:hidden p-2 -ml-1 text-content-tertiary hover:text-content-primary hover:bg-surface-secondary rounded-lg transition-colors"
           aria-label="Toggle sidebar"
-          aria-expanded={false}
+          aria-expanded={sidebarOpen}
         >
           <Menu className="h-5 w-5" />
         </button>

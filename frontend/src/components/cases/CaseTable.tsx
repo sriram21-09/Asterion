@@ -17,6 +17,8 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
         return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
       case 'closed':
         return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+      case 'archived':
+        return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
       default:
         return 'bg-surface-secondary text-content-secondary border-border-secondary';
     }
@@ -41,7 +43,7 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
               className="border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors"
             >
               <td className="px-6 py-4 font-medium text-content-primary">
-                {(c as any).referenceNumber || `#${c.id}`}
+                {c.referenceNumber || `#${c.id}`}
               </td>
               <td className="px-6 py-4">{c.title}</td>
               <td className="px-6 py-4">
