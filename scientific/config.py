@@ -44,7 +44,6 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Dict, Literal, Tuple
 
-
 # ---------------------------------------------------------------------------
 # Type aliases
 # ---------------------------------------------------------------------------
@@ -56,6 +55,7 @@ AlgorithmType = Literal["multilateration", "kalman", "weighted_centroid", "hybri
 # ---------------------------------------------------------------------------
 # Simulation configuration
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class SimulationConfig:
@@ -123,6 +123,7 @@ class SimulationConfig:
 # ---------------------------------------------------------------------------
 # Validation thresholds
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class ValidationThresholds:
@@ -195,6 +196,7 @@ class ValidationThresholds:
 # ---------------------------------------------------------------------------
 # Environment-specific configuration
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class EnvironmentConfig:

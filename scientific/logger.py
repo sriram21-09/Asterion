@@ -46,7 +46,6 @@ import os
 import sys
 from typing import Optional
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -55,9 +54,7 @@ from typing import Optional
 ROOT_LOGGER_NAME: str = "scientific"
 
 #: Default log format — ISO timestamp | severity (padded) | logger name | message.
-DEFAULT_FORMAT: str = (
-    "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
-)
+DEFAULT_FORMAT: str = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
 
 #: Default date format (ISO 8601 without microseconds).
 DEFAULT_DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S"
@@ -72,6 +69,7 @@ FALLBACK_LEVEL: int = logging.INFO
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _resolve_level(level: Optional[str | int] = None) -> int:
     """Resolve the effective log level.
@@ -127,6 +125,7 @@ def _make_console_handler(
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def get_logger(
     name: Optional[str] = None,

@@ -5,27 +5,27 @@ from app.shared.validation import ValidationError
 from app.core.logging import logger
 from app.schemas.response import APIResponse, ErrorDetail
 
+
 def register_exception_handlers(app: FastAPI) -> None:
     """Register global exception handlers for the FastAPI application."""
 
     @app.exception_handler(RequestValidationError)
-    async def request_validation_error_handler(request: Request, exc: RequestValidationError):
+    async def request_validation_error_handler(
+        request: Request, exc: RequestValidationError
+    ):
         errors = []
         for err in exc.errors():
-            loc = " -> ".join(str(l) for l in err.get("loc", []))
+            loc = " -> ".join(str(loc_part) for loc_part in err.get("loc", []))
             msg = err.get("msg", "Unknown error")
             errors.append(f"{loc}: {msg}")
-        
+
         message = "; ".join(errors)
         response_body = APIResponse(
             success=False,
             error=ErrorDetail(code="VALIDATION_ERROR", message=message),
-            detail=message
+            detail=message,
         )
-        return JSONResponse(
-            status_code=422,
-            content=response_body.model_dump()
-        )
+        return JSONResponse(status_code=422, content=response_body.model_dump())
 
     @app.exception_handler(ValidationError)
     async def validation_error_handler(request: Request, exc: ValidationError):
@@ -33,11 +33,10 @@ def register_exception_handlers(app: FastAPI) -> None:
         response_body = APIResponse(
             success=False,
             error=ErrorDetail(code="VALIDATION_ERROR", message=message),
-            detail=message
+            detail=message,
         )
         return JSONResponse(
-            status_code=exc.status_code,
-            content=response_body.model_dump()
+            status_code=exc.status_code, content=response_body.model_dump()
         )
 
     @app.exception_handler(HTTPException)
@@ -53,7 +52,7 @@ def register_exception_handlers(app: FastAPI) -> None:
             code = "BAD_REQUEST"
         else:
             code = "HTTP_ERROR"
-            
+
         # Parse detail message
         message = exc.detail
         if isinstance(exc.detail, dict):
@@ -61,15 +60,14 @@ def register_exception_handlers(app: FastAPI) -> None:
                 message = exc.detail["message"]
             elif "detail" in exc.detail:
                 message = exc.detail["detail"]
-                
+
         response_body = APIResponse(
             success=False,
             error=ErrorDetail(code=code, message=str(message)),
-            detail=str(message)
+            detail=str(message),
         )
         return JSONResponse(
-            status_code=exc.status_code,
-            content=response_body.model_dump()
+            status_code=exc.status_code, content=response_body.model_dump()
         )
 
     @app.exception_handler(Exception)
@@ -77,10 +75,9 @@ def register_exception_handlers(app: FastAPI) -> None:
         logger.exception(f"Unhandled exception occurred: {str(exc)}")
         response_body = APIResponse(
             success=False,
-            error=ErrorDetail(code="INTERNAL_SERVER_ERROR", message="An unexpected error occurred."),
-            detail="An unexpected error occurred."
+            error=ErrorDetail(
+                code="INTERNAL_SERVER_ERROR", message="An unexpected error occurred."
+            ),
+            detail="An unexpected error occurred.",
         )
-        return JSONResponse(
-            status_code=500,
-            content=response_body.model_dump()
-        )
+        return JSONResponse(status_code=500, content=response_body.model_dump())

@@ -2,9 +2,10 @@ from sqlalchemy.orm import Session
 from app.models.case import Case
 from typing import List, Optional
 
+
 class CaseRepository:
     """Repository for Case database operations.
-    
+
     # ponytail: static methods to avoid instantiation/dependency boilerplates
     """
 
@@ -24,11 +25,7 @@ class CaseRepository:
         description: Optional[str] = None,
         scenario_id: Optional[int] = None
     ) -> Case:
-        db_obj = Case(
-            title=title,
-            description=description,
-            scenario_id=scenario_id
-        )
+        db_obj = Case(title=title, description=description, scenario_id=scenario_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)

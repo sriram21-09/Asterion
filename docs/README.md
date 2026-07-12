@@ -75,13 +75,16 @@ datasets/
 
 ### Test Coverage
 
-| Test File | Tests | Scope |
+| Test File / Directory | Tests | Scope |
 |---|---|---|
-| `tests/test_day3_deliverables.py` | 88 | Models, Scenario, Measurement, Validators |
-| `tests/test_day4_deliverables.py` | 68 | ScenarioConfig, TowerPlacement, PropagationDefaults |
-| `tests/test_day5_deliverables.py` | 72 | Config, Constants, Logger |
+| `tests/test_day3_deliverables.py` | 85 | Models, Scenario, Measurement, Validators |
+| `tests/test_day4_deliverables.py` | 57 | ScenarioConfig, TowerPlacement, PropagationDefaults |
+| `tests/test_day5_deliverables.py` | 86 | Config, Constants, Logger |
 | `tests/test_tower_model.py` | 43 | Tower model (construction, boundaries, serialization, validation) |
-| **Total** | **271** | |
+| `tests/api/` | 22 | Case CRUD and Scenario CRUD endpoint tests |
+| `tests/database/` | 12 | Database models (Cases, Scenarios, Towers) validation tests |
+| `backend/tests/` & `backend/test_main.py` | 18 | Core configuration, logging, exception handling, middleware, main app tests |
+| **Total** | **323** | |
 
 ---
 
