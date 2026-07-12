@@ -10,21 +10,19 @@ interface ScenarioFormProps {
 
 export function ScenarioForm({ onSubmit, onCancel, isSubmitting }: ScenarioFormProps) {
   const [formData, setFormData] = useState<CreateScenarioDTO>({
-    title: '',
+    name: '',
     description: '',
-    environmentType: 'urban',
-    status: 'draft',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
+    if (!formData.name.trim()) return;
     onSubmit(formData);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-surface-primary border border-border-primary w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div className="bg-surface-primary border border-border-primary w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
         <div className="px-6 py-4 border-b border-border-primary flex items-center justify-between bg-surface-secondary/50">
           <h2 className="text-xl font-bold text-content-primary">Create New Scenario</h2>
           <button
@@ -37,61 +35,26 @@ export function ScenarioForm({ onSubmit, onCancel, isSubmitting }: ScenarioFormP
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="space-y-1.5">
-            <label htmlFor="title" className="text-sm font-semibold text-content-secondary">
-              Scenario Title <span className="text-red-500">*</span>
+            <label htmlFor="scenario-name" className="text-sm font-semibold text-content-secondary">
+              Scenario Name <span className="text-red-500">*</span>
             </label>
             <input
-              id="title"
+              id="scenario-name"
               type="text"
               required
               className="w-full bg-surface-secondary border border-border-secondary rounded-xl px-4 py-2.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all"
               placeholder="e.g. Downtown Metro RF Test"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label htmlFor="environmentType" className="text-sm font-semibold text-content-secondary">
-                Environment Type
-              </label>
-              <select
-                id="environmentType"
-                className="w-full bg-surface-secondary border border-border-secondary rounded-xl px-4 py-2.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all appearance-none"
-                value={formData.environmentType}
-                onChange={(e) => setFormData({ ...formData, environmentType: e.target.value })}
-              >
-                <option value="urban">Urban</option>
-                <option value="suburban">Suburban</option>
-                <option value="rural">Rural</option>
-                <option value="indoor">Indoor</option>
-              </select>
-            </div>
-            
-            <div className="space-y-1.5">
-              <label htmlFor="status" className="text-sm font-semibold text-content-secondary">
-                Status
-              </label>
-              <select
-                id="status"
-                className="w-full bg-surface-secondary border border-border-secondary rounded-xl px-4 py-2.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all appearance-none"
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-              >
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-          </div>
-
           <div className="space-y-1.5">
-            <label htmlFor="description" className="text-sm font-semibold text-content-secondary">
+            <label htmlFor="scenario-description" className="text-sm font-semibold text-content-secondary">
               Description (Optional)
             </label>
             <textarea
-              id="description"
+              id="scenario-description"
               rows={3}
               className="w-full bg-surface-secondary border border-border-secondary rounded-xl px-4 py-2.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary transition-all resize-none"
               placeholder="Describe the objective or terrain conditions..."
@@ -110,8 +73,8 @@ export function ScenarioForm({ onSubmit, onCancel, isSubmitting }: ScenarioFormP
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !formData.title.trim()}
-              className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-brand-secondary bg-brand-primary hover:bg-brand-primary/90 border border-brand-primary/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+              disabled={isSubmitting || !formData.name.trim()}
+              className="inline-flex items-center space-x-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary/90 border border-brand-primary/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-primary/15"
             >
               {isSubmitting ? (
                 <>

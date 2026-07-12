@@ -1,0 +1,8 @@
+// Barrel export — import UI primitives from '@/components/ui'
+export { LoadingSpinner } from './LoadingSpinner'
+export { LoadingPage } from './LoadingPage'
+export { SkeletonCard, SkeletonGrid } from './SkeletonCard'
+export { ErrorCard } from './ErrorCard'
+export { ConfirmDialog } from './ConfirmDialog'
+export { Badge } from './Badge'
+export { Button } from './Button'

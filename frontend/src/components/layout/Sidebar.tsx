@@ -37,21 +37,31 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden transition-opacity duration-300"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* Mobile Overlay — fades in/out */}
+      <div
+        className={cn(
+          'fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden',
+          'transition-opacity duration-300',
+          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+        )}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* Sidebar Panel */}
       <aside
         id="sidebar-nav"
+        aria-label="Primary navigation"
         className={cn(
-          'fixed inset-y-0 left-0 w-64 bg-surface-primary border-r border-border-primary flex flex-col z-40',
-          'transform transition-transform duration-300 ease-in-out',
-          'md:relative md:translate-x-0 md:z-auto',
+          // Layout
+          'fixed inset-y-0 left-0 w-64 flex flex-col z-40',
+          // Appearance
+          'bg-surface-primary border-r border-border-primary',
+          // GPU-accelerated slide — uses will-change for smooth animation
+          'will-change-transform transform transition-transform duration-300 ease-in-out',
+          // Desktop: always visible, no translate
+          'md:relative md:translate-x-0 md:z-auto md:will-change-auto',
+          // Mobile: slide in/out
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -64,7 +74,7 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const active = isActive(item.path)
             const Icon = item.icon
@@ -75,17 +85,23 @@ export default function Sidebar() {
                 id={`nav-${item.name.toLowerCase()}`}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  'flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group',
+                  'relative flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium',
+                  'transition-all duration-200 group overflow-hidden',
                   active
-                    ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20'
+                    ? 'bg-brand-primary/15 text-brand-primary'
                     : 'text-content-tertiary hover:bg-surface-secondary hover:text-content-primary',
                 )}
               >
+                {/* Active left accent bar */}
+                {active && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-brand-primary" />
+                )}
+
                 <Icon
                   className={cn(
-                    'h-5 w-5 transition-transform duration-200 group-hover:scale-110',
+                    'h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110',
                     active
-                      ? 'text-white'
+                      ? 'text-brand-primary'
                       : 'text-content-tertiary group-hover:text-brand-secondary',
                   )}
                 />
@@ -98,19 +114,20 @@ export default function Sidebar() {
         {/* Mobile Close Button */}
         <button
           onClick={() => setSidebarOpen(false)}
-          className="absolute top-4 right-4 md:hidden text-content-tertiary hover:text-content-primary transition-colors"
+          className="absolute top-4 right-4 md:hidden p-1.5 text-content-tertiary hover:text-content-primary hover:bg-surface-secondary rounded-lg transition-colors"
+          aria-label="Close sidebar"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </button>
 
         {/* User Profile Footer */}
-        <div className="p-4 border-t border-border-primary bg-surface-tertiary shrink-0">
-          <div className="flex items-center space-x-3 px-4 py-3">
-            <div className="h-9 w-9 rounded-full bg-surface-secondary flex items-center justify-center border border-border-secondary">
-              <User className="h-5 w-5 text-content-tertiary" />
+        <div className="p-3 border-t border-border-primary shrink-0">
+          <div className="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-surface-secondary transition-colors cursor-pointer group">
+            <div className="h-9 w-9 rounded-full bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center shrink-0">
+              <User className="h-4 w-4 text-brand-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-content-secondary truncate">
+              <p className="text-sm font-semibold text-content-secondary truncate group-hover:text-content-primary transition-colors">
                 Researcher Mode
               </p>
               <p className="text-xs text-content-tertiary truncate">

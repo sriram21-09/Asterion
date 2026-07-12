@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn';
 
 interface CaseCardProps {
   caseData: Case;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   isDeleting: boolean;
 }
 
@@ -27,7 +27,7 @@ export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
       <div className="flex justify-between items-start mb-4">
         <div>
           <span className="text-xs font-semibold text-content-tertiary uppercase tracking-wider mb-1 block">
-            {c.referenceNumber || c.id.substring(0, 8)}
+            Case #{c.id}
           </span>
           <h3 className="text-lg font-bold text-content-primary line-clamp-1 group-hover:text-brand-primary transition-colors">
             {c.title}
@@ -50,7 +50,7 @@ export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
       <div className="pt-4 border-t border-border-secondary flex items-center justify-between mt-auto">
         <div className="flex items-center text-content-tertiary text-xs">
           <Calendar className="w-3.5 h-3.5 mr-1.5" />
-          {new Date(c.createdAt).toLocaleDateString()}
+          {new Date(c.created_at).toLocaleDateString()}
         </div>
         
         <div className="flex items-center space-x-1">
