@@ -7,7 +7,7 @@ export const caseService = {
     return data;
   },
 
-  getCase: async (id: string): Promise<Case> => {
+  getCase: async (id: number): Promise<Case> => {
     const { data } = await api.get<Case>(`/cases/${id}`);
     return data;
   },
@@ -17,7 +17,7 @@ export const caseService = {
     return data;
   },
 
-  deleteCase: async (id: string): Promise<void> => {
+  deleteCase: async (id: number): Promise<void> => {
     await api.delete(`/cases/${id}`);
   },
 };

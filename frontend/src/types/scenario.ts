@@ -1,20 +1,21 @@
-export type ScenarioStatus = 'draft' | 'active' | 'archived';
-
+/**
+ * Matches the backend ScenarioResponse Pydantic schema exactly.
+ * Backend fields: id (int), name, description,
+ * created_at, updated_at (snake_case datetimes).
+ *
+ * Note: Backend uses 'name' — frontend components should use scenario.name.
+ */
 export interface Scenario {
-  id: string;
-  title: string;
-  description?: string;
-  environmentType: string;
-  status: ScenarioStatus;
-  createdAt: string;
-  updatedAt: string;
+  id: number;
+  name: string;
+  description?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreateScenarioDTO {
-  title: string;
+  name: string;
   description?: string;
-  environmentType?: string;
-  status?: ScenarioStatus;
 }
 
 export interface UpdateScenarioDTO extends Partial<CreateScenarioDTO> {}

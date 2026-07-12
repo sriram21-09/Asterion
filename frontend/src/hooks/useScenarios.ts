@@ -12,7 +12,7 @@ export const useScenarios = () => {
   });
 };
 
-export const useScenario = (id: string) => {
+export const useScenario = (id: number) => {
   return useQuery({
     queryKey: [...CACHE_KEY, id],
     queryFn: () => scenarioService.getScenario(id),
@@ -30,7 +30,7 @@ export const useCreateScenario = () => {
       toast.success('Scenario created successfully');
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.detail || error.message || 'Failed to create scenario');
+      toast.error(error?.message || error?.response?.data?.detail || 'Failed to create scenario');
     },
   });
 };
@@ -39,13 +39,14 @@ export const useUpdateScenario = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateScenarioDTO }) => scenarioService.updateScenario(id, payload),
+    mutationFn: ({ id, payload }: { id: number; payload: UpdateScenarioDTO }) =>
+      scenarioService.updateScenario(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Scenario updated successfully');
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.detail || error.message || 'Failed to update scenario');
+      toast.error(error?.message || error?.response?.data?.detail || 'Failed to update scenario');
     },
   });
 };
@@ -54,13 +55,13 @@ export const useDeleteScenario = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => scenarioService.deleteScenario(id),
+    mutationFn: (id: number) => scenarioService.deleteScenario(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Scenario deleted successfully');
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.detail || error.message || 'Failed to delete scenario');
+      toast.error(error?.message || error?.response?.data?.detail || 'Failed to delete scenario');
     },
   });
 };

@@ -11,7 +11,7 @@ import type { CreateCaseDTO } from '@/types/case'
 export default function Cases() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
 
   const { data: cases, isLoading, isError, error, refetch } = useCases()
   const createCase = useCreateCase()
@@ -28,7 +28,7 @@ export default function Cases() {
   }
 
   const handleDeleteConfirm = () => {
-    if (!deleteTarget) return
+    if (deleteTarget === null) return
     deleteCase.mutate(deleteTarget, {
       onSettled: () => setDeleteTarget(null),
     })
@@ -129,7 +129,7 @@ export default function Cases() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      {deleteTarget && (
+      {deleteTarget !== null && (
         <ConfirmDialog
           title="Delete Case"
           message="This action is permanent and cannot be undone. All data associated with this case will be removed."
