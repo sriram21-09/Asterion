@@ -54,7 +54,7 @@ class TestScenarioAPI:
             json={"name": "Urban Grid S1", "description": "Dense urban multi-path environment"}
         )
         assert response.status_code == 201
-        data = response.json()
+        data = response.json()["data"]
         assert data["name"] == "Urban Grid S1"
         assert data["description"] == "Dense urban multi-path environment"
         assert "id" in data
@@ -81,7 +81,7 @@ class TestScenarioAPI:
     def test_list_scenarios_empty(self, client):
         response = client.get("/api/v1/scenarios/")
         assert response.status_code == 200
-        assert response.json() == []
+        assert response.json()["data"] == []
 
     def test_list_scenarios_pagination(self, client):
         # Create 3 scenarios
@@ -91,7 +91,7 @@ class TestScenarioAPI:
         # List first page with size 2
         response = client.get("/api/v1/scenarios/?page=1&page_size=2")
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert len(data) == 2
         assert data[0]["name"] == "Scenario 0"
         assert data[1]["name"] == "Scenario 1"
@@ -99,17 +99,17 @@ class TestScenarioAPI:
         # List second page
         response = client.get("/api/v1/scenarios/?page=2&page_size=2")
         assert response.status_code == 200
-        data = response.json()
+        data = response.json()["data"]
         assert len(data) == 1
         assert data[0]["name"] == "Scenario 2"
 
     def test_get_scenario_by_id(self, client):
         res = client.post("/api/v1/scenarios/", json={"name": "Scenario X"})
-        scenario_id = res.json()["id"]
+        scenario_id = res.json()["data"]["id"]
 
         response = client.get(f"/api/v1/scenarios/{scenario_id}")
         assert response.status_code == 200
-        assert response.json()["name"] == "Scenario X"
+        assert response.json()["data"]["name"] == "Scenario X"
 
     def test_get_scenario_not_found(self, client):
         response = client.get("/api/v1/scenarios/9999")
@@ -118,11 +118,11 @@ class TestScenarioAPI:
 
     def test_delete_scenario_success(self, client):
         res = client.post("/api/v1/scenarios/", json={"name": "Scenario to delete"})
-        scenario_id = res.json()["id"]
+        scenario_id = res.json()["data"]["id"]
 
         response = client.delete(f"/api/v1/scenarios/{scenario_id}")
         assert response.status_code == 200
-        assert response.json()["id"] == scenario_id
+        assert response.json()["data"]["id"] == scenario_id
 
         # Verify deletion
         get_res = client.get(f"/api/v1/scenarios/{scenario_id}")
