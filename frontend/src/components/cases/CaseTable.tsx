@@ -41,7 +41,7 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
               className="border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors"
             >
               <td className="px-6 py-4 font-medium text-content-primary">
-                {c.referenceNumber || c.id.substring(0, 8)}
+                {c.referenceNumber || String(c.id).substring(0, 8)}
               </td>
               <td className="px-6 py-4">{c.title}</td>
               <td className="px-6 py-4">

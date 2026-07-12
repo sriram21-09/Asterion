@@ -27,7 +27,13 @@ api.interceptors.request.use(
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // If the response is wrapped in our APIResponse format, unwrap it
+    if (response.data && typeof response.data === 'object' && response.data.success === true && 'data' in response.data) {
+      response.data = response.data.data;
+    }
+    return response;
+  },
   (error) => {
     // Handle global errors here (e.g., 401 Unauthorized -> redirect to login)
     return Promise.reject(error);
