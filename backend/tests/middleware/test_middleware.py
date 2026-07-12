@@ -16,15 +16,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/ok")
 def get_ok():
     return {"status": "ok"}
+
 
 @app.get("/error")
 def get_error():
     raise ValueError("Error in route")
 
+
 client = TestClient(app)
+
 
 def test_logging_middleware_success():
     with mock.patch("app.middleware.logging.logger") as mock_logger:
@@ -34,6 +38,7 @@ def test_logging_middleware_success():
         mock_logger.info.assert_called_once()
         log_msg = mock_logger.info.call_args[0][0]
         assert "GET /ok - Status: 200" in log_msg
+
 
 def test_logging_middleware_failure():
     with mock.patch("app.middleware.logging.logger") as mock_logger:
@@ -45,7 +50,10 @@ def test_logging_middleware_failure():
         log_msg = mock_logger.error.call_args[0][0]
         assert "GET /error - Failed" in log_msg
 
+
 def test_cors_middleware_headers():
     response = client.get("/ok", headers={"Origin": "http://localhost:3000"})
     # Since allow_origins is "*", CORSMiddleware will reflect the request origin
-    assert response.headers.get("access-control-allow-origin") == "http://localhost:3000"
+    assert (
+        response.headers.get("access-control-allow-origin") == "http://localhost:3000"
+    )
