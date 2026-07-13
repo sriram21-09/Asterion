@@ -478,3 +478,77 @@ def validate_minimum_signals(
             status_code=400,
         )
     return signals
+
+
+# ---------------------------------------------------------------------------
+# Business Identifier Code Translation helpers
+# ---------------------------------------------------------------------------
+
+
+def decode_case_code(code: str) -> int:
+    """Translate Case Code to database integer ID.
+
+    e.g. "CASE-001" -> 1
+    """
+    code = validate_id_format(code, "case_code", prefix="CASE")
+    try:
+        parts = code.split("-")
+        return int(parts[1])
+    except (IndexError, ValueError) as e:
+        raise ValidationError(
+            "case_code", f"Invalid Case Code format. Expected CASE-XXX, got {code}."
+        ) from e
+
+
+def encode_case_code(case_id: int) -> str:
+    """Translate database integer ID to Case Code.
+
+    e.g. 1 -> "CASE-001"
+    """
+    return f"CASE-{case_id:03d}"
+
+
+def decode_scenario_code(code: str) -> int:
+    """Translate Scenario Code to database integer ID.
+
+    e.g. "SCN-001" -> 1
+    """
+    code = validate_id_format(code, "scenario_code", prefix="SCN")
+    try:
+        parts = code.split("-")
+        return int(parts[1])
+    except (IndexError, ValueError) as e:
+        raise ValidationError(
+            "scenario_code", f"Invalid Scenario Code format. Expected SCN-XXX, got {code}."
+        ) from e
+
+
+def encode_scenario_code(scenario_id: int) -> str:
+    """Translate database integer ID to Scenario Code.
+
+    e.g. 1 -> "SCN-001"
+    """
+    return f"SCN-{scenario_id:03d}"
+
+
+def decode_measurement_code(code: str) -> int:
+    """Translate Measurement Code to database integer ID.
+
+    e.g. "MEAS-0001" -> 1
+    """
+    code = validate_id_format(code, "measurement_code", prefix="MEAS")
+    try:
+        parts = code.split("-")
+        return int(parts[1])
+    except (IndexError, ValueError) as e:
+        raise ValidationError(
+            "measurement_code", f"Invalid Measurement Code format. Expected MEAS-XXX, got {code}."
+        ) from e
+
+
+def encode_measurement_code(measurement_id: int) -> str:
+    """Translate database integer ID to Measurement Code.
+
+    e.g. 1 -> "MEAS-0001"
+    """
+    return f"MEAS-{measurement_id:04d}"
