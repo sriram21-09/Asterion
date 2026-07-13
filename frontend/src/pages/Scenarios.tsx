@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Plus, LayoutGrid, List } from 'lucide-react'
+import { Plus, LayoutGrid, List, Radio, Signal, Clock, MapPin, Hash } from 'lucide-react'
 import { useScenarios, useCreateScenario, useDeleteScenario } from '@/hooks/useScenarios'
 import { ScenarioTable } from '@/components/scenarios/ScenarioTable'
 import { ScenarioCard } from '@/components/scenarios/ScenarioCard'
 import { ScenarioForm } from '@/components/scenarios/ScenarioForm'
 import { EmptyState } from '@/components/scenarios/EmptyState'
 import { SkeletonGrid, ErrorCard, ConfirmDialog } from '@/components/ui'
+import { useSimulationStore } from '@/stores/simulationStore'
 import type { CreateScenarioDTO } from '@/types/scenario'
+import type { Measurement } from '@/types/scientific'
 
 export default function Scenarios() {
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -16,6 +18,8 @@ export default function Scenarios() {
   const { data: scenarios, isLoading, isError, error, refetch } = useScenarios()
   const createScenario = useCreateScenario()
   const deleteScenario = useDeleteScenario()
+
+  const { measurements, isGenerating } = useSimulationStore()
 
   useEffect(() => {
     document.title = 'Scenarios — Asterion'
@@ -119,6 +123,9 @@ export default function Scenarios() {
         </>
       )}
 
+      {/* ── Generated Measurements Table ──────────────────────────────── */}
+      <MeasurementsCard measurements={measurements} isGenerating={isGenerating} />
+
       {/* Create Scenario Modal */}
       {isFormOpen && (
         <ScenarioForm
@@ -141,5 +148,174 @@ export default function Scenarios() {
         />
       )}
     </div>
+  )
+}
+
+// ── Measurements Card ──────────────────────────────────────────────────
+
+interface MeasurementsCardProps {
+  measurements: Measurement[]
+  isGenerating: boolean
+}
+
+/**
+ * Static table card displaying generated simulation measurements.
+ * Visible once measurements have been generated via the simulation store.
+ */
+function MeasurementsCard({ measurements, isGenerating }: MeasurementsCardProps) {
+  if (measurements.length === 0 && !isGenerating) return null
+
+  return (
+    <div className="rounded-2xl border border-border-primary bg-surface-primary shadow-sm overflow-hidden">
+      {/* Card Header */}
+      <div className="px-6 py-4 border-b border-border-primary bg-surface-secondary/50 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-xl bg-brand-primary/10">
+            <Radio className="w-5 h-5 text-brand-primary" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-content-primary">
+              Generated Measurements
+            </h2>
+            <p className="text-xs text-content-tertiary mt-0.5">
+              {measurements.length} measurement{measurements.length !== 1 ? 's' : ''} generated
+            </p>
+          </div>
+        </div>
+        {isGenerating && (
+          <span className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>Generating…</span>
+          </span>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table id="measurements-table" className="w-full text-left text-sm text-content-secondary">
+          <thead className="bg-surface-secondary text-xs uppercase text-content-tertiary border-b border-border-primary">
+            <tr>
+              <th className="px-5 py-3.5 font-semibold">
+                <span className="inline-flex items-center space-x-1.5">
+                  <Hash className="w-3.5 h-3.5" />
+                  <span>ID</span>
+                </span>
+              </th>
+              <th className="px-5 py-3.5 font-semibold">
+                <span className="inline-flex items-center space-x-1.5">
+                  <Radio className="w-3.5 h-3.5" />
+                  <span>Tower</span>
+                </span>
+              </th>
+              <th className="px-5 py-3.5 font-semibold">
+                <span className="inline-flex items-center space-x-1.5">
+                  <Signal className="w-3.5 h-3.5" />
+                  <span>RSSI (dBm)</span>
+                </span>
+              </th>
+              <th className="px-5 py-3.5 font-semibold">
+                <span className="inline-flex items-center space-x-1.5">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>Latitude</span>
+                </span>
+              </th>
+              <th className="px-5 py-3.5 font-semibold">
+                <span className="inline-flex items-center space-x-1.5">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>Longitude</span>
+                </span>
+              </th>
+              <th className="px-5 py-3.5 font-semibold">
+                <span className="inline-flex items-center space-x-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Timestamp</span>
+                </span>
+              </th>
+              <th className="px-5 py-3.5 font-semibold">TA</th>
+              <th className="px-5 py-3.5 font-semibold">Uncertainty (m)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {measurements.map((m, idx) => (
+              <tr
+                key={m.measurement_id}
+                className={`border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors ${
+                  idx % 2 === 0 ? '' : 'bg-surface-secondary/20'
+                }`}
+              >
+                <td className="px-5 py-3 font-mono text-xs text-content-primary font-medium">
+                  {m.measurement_id}
+                </td>
+                <td className="px-5 py-3">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-brand-primary/10 text-brand-primary text-xs font-semibold">
+                    {m.tower_id}
+                  </span>
+                </td>
+                <td className="px-5 py-3 font-mono text-xs">
+                  <RssiIndicator rssi={m.rssi_dbm} />
+                </td>
+                <td className="px-5 py-3 font-mono text-xs text-content-secondary">
+                  {m.latitude != null ? m.latitude.toFixed(6) : '—'}
+                </td>
+                <td className="px-5 py-3 font-mono text-xs text-content-secondary">
+                  {m.longitude != null ? m.longitude.toFixed(6) : '—'}
+                </td>
+                <td className="px-5 py-3 text-xs text-content-tertiary">
+                  {new Date(m.timestamp).toLocaleString()}
+                </td>
+                <td className="px-5 py-3 font-mono text-xs text-content-secondary">
+                  {m.timing_advance != null ? m.timing_advance : '—'}
+                </td>
+                <td className="px-5 py-3 font-mono text-xs text-content-secondary">
+                  {m.uncertainty_m != null ? m.uncertainty_m.toFixed(1) : '—'}
+                </td>
+              </tr>
+            ))}
+            {measurements.length === 0 && isGenerating && (
+              <tr>
+                <td colSpan={8} className="px-5 py-12 text-center text-content-tertiary">
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="w-6 h-6 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin" />
+                    <span className="text-sm">Generating measurements…</span>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ── RSSI Strength Indicator ─────────────────────────────────────────────
+
+function RssiIndicator({ rssi }: { rssi: number }) {
+  let color: string
+  let label: string
+
+  if (rssi >= -50) {
+    color = 'text-emerald-400'
+    label = 'Strong'
+  } else if (rssi >= -70) {
+    color = 'text-green-400'
+    label = 'Good'
+  } else if (rssi >= -90) {
+    color = 'text-amber-400'
+    label = 'Fair'
+  } else if (rssi >= -110) {
+    color = 'text-orange-400'
+    label = 'Weak'
+  } else {
+    color = 'text-red-400'
+    label = 'Very Weak'
+  }
+
+  return (
+    <span className={`inline-flex items-center space-x-1.5 ${color}`}>
+      <Signal className="w-3.5 h-3.5" />
+      <span className="font-semibold">{rssi.toFixed(1)}</span>
+      <span className="text-[10px] opacity-70 uppercase font-medium">{label}</span>
+    </span>
   )
 }
