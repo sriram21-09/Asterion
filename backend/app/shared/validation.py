@@ -41,7 +41,6 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from fastapi import HTTPException
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -68,6 +67,7 @@ RSSI_MIN, RSSI_MAX = -150.0, 0.0
 # ---------------------------------------------------------------------------
 # Exceptions
 # ---------------------------------------------------------------------------
+
 
 class ValidationError(Exception):
     """Raised when input validation fails.
@@ -101,6 +101,7 @@ class ValidationError(Exception):
 # ---------------------------------------------------------------------------
 # ID & string validators
 # ---------------------------------------------------------------------------
+
 
 def validate_id_format(
     value: str,
@@ -179,6 +180,7 @@ def validate_non_empty_string(
 # ---------------------------------------------------------------------------
 # Coordinate validators
 # ---------------------------------------------------------------------------
+
 
 def validate_latitude(value: float, field_name: str = "latitude") -> float:
     """Validate that *value* is a valid WGS84 latitude.
@@ -261,6 +263,7 @@ def validate_coordinate_pair_optional(
 # Numeric validators
 # ---------------------------------------------------------------------------
 
+
 def validate_rssi(
     value: float,
     field_name: str = "rssi_dbm",
@@ -305,6 +308,7 @@ def validate_positive_float(
 # Pagination validators
 # ---------------------------------------------------------------------------
 
+
 def validate_pagination(
     page: Optional[int] = None,
     page_size: Optional[int] = None,
@@ -340,6 +344,7 @@ def pagination_offset(page: int, page_size: int) -> int:
 # ---------------------------------------------------------------------------
 # Bulk / collection validators
 # ---------------------------------------------------------------------------
+
 
 def validate_list_not_empty(
     items: Sequence[Any],
@@ -406,6 +411,7 @@ def validate_unique_ids(
 # Timestamp validators
 # ---------------------------------------------------------------------------
 
+
 def validate_timestamp_not_future(
     ts: datetime,
     field_name: str = "timestamp",
@@ -450,6 +456,7 @@ def validate_timestamp_range(
 # ---------------------------------------------------------------------------
 # Signal-count validators (for localization API)
 # ---------------------------------------------------------------------------
+
 
 def validate_minimum_signals(
     signals: Sequence[Any],

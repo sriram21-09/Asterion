@@ -32,7 +32,6 @@ from pydantic import BaseModel, Field
 from scientific.models.measurement import Measurement
 from scientific.models.tower import Tower
 
-
 # Supported environment types for signal propagation modeling
 EnvironmentType = Literal["urban", "suburban", "rural", "highway"]
 

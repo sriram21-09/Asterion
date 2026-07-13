@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -14,7 +14,7 @@ app = FastAPI(
     title=settings.app_name,
     description="Explainable Telecom Localization & Investigation Support Platform Backend",
     version=settings.app_version,
-    debug=settings.debug
+    debug=settings.debug,
 )
 
 # Register logging/timing middleware
@@ -35,6 +35,7 @@ register_exception_handlers(app)
 app.include_router(scenarios_router, prefix=settings.api_prefix)
 app.include_router(cases_router, prefix=settings.api_prefix)
 
+
 class TowerSignal(BaseModel):
     tower_id: str
     latitude: float
@@ -42,9 +43,11 @@ class TowerSignal(BaseModel):
     signal_strength_dbm: float
     timestamp: float
 
+
 class LocalizationRequest(BaseModel):
     signals: List[TowerSignal]
     algorithm: Optional[str] = "multilateration"
+
 
 class LocalizationResponse(BaseModel):
     estimated_latitude: float
@@ -53,34 +56,37 @@ class LocalizationResponse(BaseModel):
     signals_used: int
     algorithm_applied: str
 
+
 @app.get("/")
 async def root():
     return {
         "status": "online",
         "service": settings.app_name,
-        "version": settings.app_version
+        "version": settings.app_version,
     }
+
 
 @app.get(f"{settings.api_prefix}/health")
 async def health():
     return {
         "status": "healthy",
         "service": "asterion-api",
-        "version": settings.app_version
+        "version": settings.app_version,
     }
+
 
 @app.post("/api/localize", response_model=APIResponse[LocalizationResponse])
 async def localize_device(payload: LocalizationRequest):
     if len(payload.signals) < 3:
         raise HTTPException(
             status_code=400,
-            detail="At least 3 tower signals are required for multilateration."
+            detail="At least 3 tower signals are required for multilateration.",
         )
     # Simple centroid localization fallback for skeleton API
     total_weight = 0.0
     weighted_lat = 0.0
     weighted_lon = 0.0
-    
+
     for signal in payload.signals:
         # Convert dbm to weight (stronger signal = higher weight)
         # Typical range: -110 (weak) to -50 (strong)
@@ -91,7 +97,7 @@ async def localize_device(payload: LocalizationRequest):
 
     est_lat = weighted_lat / total_weight
     est_lon = weighted_lon / total_weight
-    
+
     return APIResponse(
         success=True,
         data=LocalizationResponse(
@@ -99,6 +105,6 @@ async def localize_device(payload: LocalizationRequest):
             estimated_longitude=est_lon,
             confidence_score=0.85,
             signals_used=len(payload.signals),
-            algorithm_applied=payload.algorithm
-        )
+            algorithm_applied=payload.algorithm,
+        ),
     )

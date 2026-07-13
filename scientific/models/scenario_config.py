@@ -43,8 +43,8 @@ from pydantic import BaseModel, Field, model_validator
 
 from scientific.models.scenario import EnvironmentType
 
-
 # ── Tower Placement ─────────────────────────────────────────────────────
+
 
 class TowerPlacement(BaseModel):
     """Lightweight tower position for simulation input.
@@ -66,24 +66,31 @@ class TowerPlacement(BaseModel):
     """
 
     tower_id: str = Field(
-        ..., min_length=1,
+        ...,
+        min_length=1,
         description="Unique tower identifier",
         examples=["T001"],
     )
     latitude: float = Field(
-        ..., ge=-90.0, le=90.0,
+        ...,
+        ge=-90.0,
+        le=90.0,
         description="Tower latitude (WGS84)",
     )
     longitude: float = Field(
-        ..., ge=-180.0, le=180.0,
+        ...,
+        ge=-180.0,
+        le=180.0,
         description="Tower longitude (WGS84)",
     )
     antenna_height_m: float = Field(
-        default=30.0, gt=0,
+        default=30.0,
+        gt=0,
         description="Antenna height above ground level in meters",
     )
     frequency_mhz: float = Field(
-        default=1800.0, gt=0,
+        default=1800.0,
+        gt=0,
         description="Operating frequency in MHz",
     )
     transmit_power_dbm: float = Field(
@@ -91,7 +98,8 @@ class TowerPlacement(BaseModel):
         description="EIRP in dBm",
     )
     coverage_radius_m: float = Field(
-        default=1000.0, gt=0,
+        default=1000.0,
+        gt=0,
         description="Effective coverage radius in meters",
     )
     sector: Optional[str] = Field(
@@ -147,15 +155,18 @@ class PropagationDefaults(BaseModel):
     """
 
     path_loss_exponent: float = Field(
-        default=3.5, gt=0,
+        default=3.5,
+        gt=0,
         description="Path-loss exponent (n) — higher = faster decay",
     )
     shadow_fading_std_db: float = Field(
-        default=8.0, ge=0,
+        default=8.0,
+        ge=0,
         description="Shadow-fading standard deviation in dB",
     )
     reference_distance_m: float = Field(
-        default=1.0, gt=0,
+        default=1.0,
+        gt=0,
         description="Reference distance d₀ in meters",
     )
     reference_loss_db: float = Field(
@@ -179,6 +190,7 @@ class PropagationDefaults(BaseModel):
 
 # ── Simulation Parameters ───────────────────────────────────────────────
 
+
 class SimulationParameters(BaseModel):
     """Controls for the simulation / solver engine.
 
@@ -199,22 +211,27 @@ class SimulationParameters(BaseModel):
         random_seed: Optional seed for reproducible simulation runs.
     """
 
-    algorithm: Literal[
-        "multilateration", "kalman", "weighted_centroid", "hybrid"
-    ] = Field(
-        default="multilateration",
-        description="Localization algorithm to use",
+    algorithm: Literal["multilateration", "kalman", "weighted_centroid", "hybrid"] = (
+        Field(
+            default="multilateration",
+            description="Localization algorithm to use",
+        )
     )
     max_iterations: int = Field(
-        default=100, ge=1, le=10000,
+        default=100,
+        ge=1,
+        le=10000,
         description="Maximum solver iterations",
     )
     convergence_threshold_m: float = Field(
-        default=1.0, gt=0,
+        default=1.0,
+        gt=0,
         description="Position convergence threshold in meters",
     )
     measurement_count: int = Field(
-        default=1, ge=1, le=1000,
+        default=1,
+        ge=1,
+        le=1000,
         description="RSSI snapshots to generate per tower",
     )
     enable_noise: bool = Field(
@@ -228,6 +245,7 @@ class SimulationParameters(BaseModel):
 
 
 # ── Top-Level Scenario Configuration ────────────────────────────────────
+
 
 class ScenarioConfig(BaseModel):
     """Simulation-ready configuration derived from a Scenario.
@@ -264,12 +282,14 @@ class ScenarioConfig(BaseModel):
     """
 
     scenario_id: str = Field(
-        ..., min_length=1,
+        ...,
+        min_length=1,
         description="Unique identifier for the scenario",
         examples=["SCN-001"],
     )
     name: str = Field(
-        ..., min_length=1,
+        ...,
+        min_length=1,
         description="Human-readable scenario name",
         examples=["Urban 3-Tower Test"],
     )
@@ -280,7 +300,8 @@ class ScenarioConfig(BaseModel):
 
     # ── Tower layout ────────────────────────────────────────────────
     tower_placements: List[TowerPlacement] = Field(
-        ..., min_length=3,
+        ...,
+        min_length=3,
         description="Tower positions (minimum 3 for multilateration)",
     )
 
@@ -306,11 +327,15 @@ class ScenarioConfig(BaseModel):
 
     # ── Ground truth (optional, for validation) ─────────────────────
     expected_device_lat: Optional[float] = Field(
-        default=None, ge=-90.0, le=90.0,
+        default=None,
+        ge=-90.0,
+        le=90.0,
         description="Ground-truth device latitude (WGS84)",
     )
     expected_device_lon: Optional[float] = Field(
-        default=None, ge=-180.0, le=180.0,
+        default=None,
+        ge=-180.0,
+        le=180.0,
         description="Ground-truth device longitude (WGS84)",
     )
 
@@ -374,9 +399,7 @@ class ScenarioConfig(BaseModel):
             tower_placements=placements,
             environment_type=scenario.environment_type,
             noise_level_dbm=scenario.noise_level_dbm,
-            propagation=PropagationDefaults.for_environment(
-                scenario.environment_type
-            ),
+            propagation=PropagationDefaults.for_environment(scenario.environment_type),
             expected_device_lat=scenario.expected_device_lat,
             expected_device_lon=scenario.expected_device_lon,
         )

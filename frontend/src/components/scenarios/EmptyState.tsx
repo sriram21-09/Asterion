@@ -21,7 +21,7 @@ export function EmptyState({ onCreateClick }: EmptyStateProps) {
       <div className="pt-4">
         <button
           onClick={onCreateClick}
-          className="inline-flex items-center space-x-2 px-5 py-2.5 bg-brand-primary text-brand-secondary border border-brand-primary/20 rounded-xl text-sm font-semibold hover:bg-brand-primary/90 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+          className="inline-flex items-center space-x-2 px-5 py-2.5 bg-brand-primary text-white border border-brand-primary/20 rounded-xl text-sm font-semibold hover:bg-brand-primary/90 transition-all shadow-lg shadow-brand-primary/15"
         >
           <Plus className="h-4 w-4" />
           <span>Create First Scenario</span>

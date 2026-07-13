@@ -1,42 +1,112 @@
-# Task: Scientific Config, Constants & Logger (Day 5)
+# 📘 Week 2 Task Tracker — Scientific Engine Sprint
 
-## Objective
-Configure scientific bounds, constants, and logging placeholder, and pair on testing.
+This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / Backend), Chaitanya (Scientific Engineer), and Dinesh (Frontend Lead) to implement and integrate the core scientific core.
 
-## Tasks
-- [x] Create `scientific/config.py` — SimulationConfig, ValidationThresholds, EnvironmentConfig, get_environment_config
-- [x] Define measurement constants in `scientific/constants.py` — Physical, RF, geodesy, cellular bands, RSSI tiers, TA
-- [x] Create console logger helper in `scientific/logger.py` — get_logger, set_level, silence
-- [x] Update `scientific/__init__.py` with new submodule documentation
-- [x] Write 86 comprehensive tests in `tests/test_day5_deliverables.py`
-- [x] Verify all 236 tests pass (86 Day 5 + 150 existing)
+---
 
-## Deliverables
-- [x] `scientific/config.py`
-- [x] `scientific/constants.py`
-- [x] `scientific/logger.py`
-- [x] `tests/test_day5_deliverables.py`
+## 📅 Day 1: Measurement Simulator
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement RSSI Signal Generator (`scientific/simulation/rssi_generator.py`)
+  - [ ] Implement Noise Model with Gaussian and shadow fading (`scientific/simulation/noise_model.py`)
+  - [ ] Implement Measurement Synthesizer (`scientific/simulation/measurement_generator.py`)
+  - [ ] Write pytest unit tests for simulation modules
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `backend/app/models/measurement.py` database schema
+  - [ ] Run Alembic migrations to create `measurements` table
+  - [ ] Implement `MeasurementRepository` and `MeasurementService`
+  - [ ] Create `POST /simulation/generate` API router skeleton
+  - [ ] Write database and API endpoint unit tests
+- [ ] **Dinesh (Frontend):**
+  - [ ] Define TypeScript types for Simulation outputs and parameters
+  - [ ] Create API service client layer for `/simulation/generate`
+  - [ ] Implement Zustand state stores for simulated measurements
+  - [ ] Create static placeholder UI tables for measurements list
 
-## Previous Day Tasks (Day 4)
-- [x] Finalize `ScenarioConfig` Pydantic models (scenario_config.py)
-- [x] Document Tower schema
-- [x] Create consolidated sample scenario dataset
-- [x] Write verification tests (test_day4_deliverables.py)
+---
 
-## Previous Day Tasks (Day 3)
-- [x] Create `scientific/validation/validators.py` — Validator Protocol + concrete validators
-- [x] Document expected interfaces for Measurement, Tower, and Scenario objects
-- [x] Review scientific API contracts for consistency with backend conventions
-- [x] Create consolidated `datasets/sample/sample_dataset.json`
-- [x] Write shared validation helpers in `backend/app/shared/validation.py`
-- [x] Write 85 comprehensive tests in `tests/test_day3_deliverables.py`
-- [x] Push to `feat/week1-day3-scientific` branch on GitHub
+## 📅 Day 2: Measurement Validation Engine
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Expand coordinate, RSSI, and timing advance validators in `validators.py`
+  - [ ] Add WGS84 bounding checking rules
+  - [ ] Write unit tests checking out-of-bounds inputs and duplicates
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create API endpoint `POST /measurements/validate`
+  - [ ] Integrate validators into backend service layer
+  - [ ] Write validation router unit tests
+- [ ] **Dinesh (Frontend):**
+  - [ ] Implement Axios client queries for validate API
+  - [ ] Create validation status panel displaying audit metrics
 
-## Previous Day Tasks (Day 2)
-- [x] Create Database Package (`backend/app/database/base.py`, `session.py`, `engine.py`)
-- [x] Configure database settings, SQLite connection string, and session factory
-- [x] Initialize Alembic (`alembic/`, `env.py`, `versions/`) and verify autogenerate migrations
-- [x] Create Base ORM Model with common fields (`id`, `created_at`, `updated_at`)
-- [x] Create Cases and Scenarios ORM Models
-- [x] Create `CaseCreate`, `CaseResponse`, `ScenarioCreate` Pydantic Schemas
-- [x] Create database connection and model tests in `tests/database/`
+---
+
+## 📅 Day 3: Localization Engine (Core NLLS)
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement initial position estimation logic (e.g., using signal-strength weighted calculations) to provide starting guesses for NLLS optimization
+  - [ ] Implement NLLS Multilateration solver using `scipy.optimize.least_squares` (`scientific/pipeline/multilateration.py`)
+  - [ ] Write mathematical unit tests verifying geometry convergence on prepared validation scenarios
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `localization_results` ORM model (with `case_id` relation) and migrations
+  - [ ] Implement `LocalizationRepository` and `LocalizationService`
+  - [ ] Create endpoint `POST /localization/run` returning coordinates and computation timing
+- [ ] **Dinesh (Frontend):**
+  - [ ] Add API services client to call `/localization/run`
+  - [ ] Implement a static placeholder Localization Result Card detailing metrics
+
+---
+
+## 📅 Day 4: Tracking Engine (Kalman Filter)
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement Constant-Velocity 2D Kalman Filter tracker (`scientific/pipeline/kalman_tracker.py`)
+  - [ ] Write unit tests verifying tracking path convergence and noise smoothing
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `tracking_results` ORM model (linking to `cases` and `localization_results.id`) and migrations
+  - [ ] Implement `TrackingRepository` and `TrackingService`
+  - [ ] Create API route `POST /tracking/run` returning path tracking arrays
+- [ ] **Dinesh (Frontend):**
+  - [ ] Implement API client layers for tracking execution
+  - [ ] Create a static path coordinate list table showing smoothed track steps
+
+---
+
+## 📅 Day 5: Confidence & Evidence Engines
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Implement GDOP-based geometric analysis and covariance-derived uncertainty calculations in `scientific/pipeline/confidence.py`
+  - [ ] Implement audit evidence builder inside `scientific/pipeline/evidence.py`
+  - [ ] Test confidence bounds on collinear vs. equilateral geometries
+- [ ] **Sriram (Project Lead):**
+  - [ ] Create `confidence_results` database schema (linking to `cases` and `localization_results.id`) and migrations
+  - [ ] Implement repository layers and services for confidence and case evidence retrieval
+  - [ ] Create routes `POST /confidence/run` and `GET /evidence/{case_id}`
+- [ ] **Dinesh (Frontend):**
+  - [ ] Implement API client layers for confidence and evidence
+  - [ ] Create a static Confidence Badge Card showing level, score, and error ellipses
+  - [ ] Create a static Evidence Summary Card showing accepted vs. rejected lists
+
+---
+
+## 📅 Day 6: Pipeline Integration & E2E Testing
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Create the central runner script `scientific/pipeline/runner.py` connecting the modules
+  - [ ] Benchmark execution time (ensuring performance runs within HLD performance targets: <2s for localization on the demo dataset)
+  - [ ] Add pipeline runner integration tests
+- [ ] **Sriram (Project Lead):**
+  - [ ] Run complete database persistence test suites
+  - [ ] Perform Docker stack smoke testing (`docker compose up --build`)
+  - [ ] Verify integrated endpoint orchestration in GitHub CI
+- [ ] **Dinesh (Frontend):**
+  - [ ] Interconnect stores and wire components to sequencially trigger actual API pipelines
+  - [ ] Verify loading, warning, and error components render properly
+
+---
+
+## 📅 Day 7: Stabilization, Review & Release
+- [ ] **Sriram (Project Lead):**
+  - [ ] Resolve P0/P1 bugs and perform test validations
+  - [ ] Update Swagger descriptions, example payloads, and CHANGELOG.md
+  - [ ] Merge branches and tag version release `v0.2.0` on main
+- [ ] **Chaitanya (Scientific):**
+  - [ ] Update standalone scientific package documentation
+  - [ ] Ensure all automated unit and integration tests pass cleanly
+- [ ] **Dinesh (Frontend):**
+  - [ ] Run production builds and verify types compile
+  - [ ] Update frontend structure documentation
