@@ -29,8 +29,8 @@ export const useCreateScenario = () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Scenario created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || error?.response?.data?.detail || 'Failed to create scenario');
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create scenario');
     },
   });
 };
@@ -45,8 +45,8 @@ export const useUpdateScenario = () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Scenario updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || error?.response?.data?.detail || 'Failed to update scenario');
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update scenario');
     },
   });
 };
@@ -60,8 +60,8 @@ export const useDeleteScenario = () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Scenario deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || error?.response?.data?.detail || 'Failed to delete scenario');
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete scenario');
     },
   });
 };

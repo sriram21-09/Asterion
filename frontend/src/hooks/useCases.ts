@@ -29,8 +29,8 @@ export const useCreateCase = () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Case created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || error?.response?.data?.detail || 'Failed to create case');
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create case');
     },
   });
 };
@@ -44,8 +44,8 @@ export const useDeleteCase = () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY });
       toast.success('Case deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error?.message || error?.response?.data?.detail || 'Failed to delete case');
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete case');
     },
   });
 };

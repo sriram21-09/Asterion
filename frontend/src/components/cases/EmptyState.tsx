@@ -21,7 +21,7 @@ export function EmptyState({ onCreateClick }: EmptyStateProps) {
       <div className="pt-2">
         <button
           onClick={onCreateClick}
-          className="inline-flex items-center space-x-2 px-6 py-3 bg-brand-primary text-brand-secondary border border-brand-primary/20 rounded-xl text-sm font-semibold hover:bg-brand-primary/90 transition-all shadow-lg hover:shadow-brand-primary/20 hover:-translate-y-0.5"
+          className="inline-flex items-center space-x-2 px-6 py-3 bg-brand-primary text-white border border-brand-primary/20 rounded-xl text-sm font-semibold hover:bg-brand-primary/90 transition-all shadow-lg hover:shadow-brand-primary/20 hover:-translate-y-0.5"
         >
           <Plus className="h-4 w-4" />
           <span>Create First Case</span>
