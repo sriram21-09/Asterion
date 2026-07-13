@@ -20,6 +20,7 @@ class MeasurementRepository:
         if not measurements:
             return []
         db.add_all(measurements)
+        # ponytail: shift transaction commits (db.commit()) to the service layer to support multiple repositories in one ACID transaction boundary
         db.commit()
         for m in measurements:
             db.refresh(m)

@@ -69,6 +69,7 @@ class MeasurementService:
         for cfg_dict in configs_list:
             sc_id_str = cfg_dict.get("scenario_id", "")
             try:
+                # ponytail: parse ID dynamically based on scenario-code metadata mapping index
                 # e.g., SCN-CFG-001 -> 1
                 cfg_id_int = int(sc_id_str.split("-")[-1])
             except (ValueError, IndexError):

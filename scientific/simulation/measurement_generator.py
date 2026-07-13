@@ -125,6 +125,7 @@ def generate_scenario_measurements(
             # Calculate timing advance
             ta_raw = distance / TA_RESOLUTION_M
             m.timing_advance = float(min(max(0, round(ta_raw)), TA_MAX_VALUE))
+            # ponytail: make uncertainty calculation parameters (0.15 multiplier and 20.0m floor) configurable via PropagationDefaults or ScenarioConfig
             # Calculate uncertainty
             m.uncertainty_m = max(20.0, distance * 0.15)
         else:
