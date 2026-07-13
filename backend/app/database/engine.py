@@ -1,7 +1,7 @@
-import os
 from sqlalchemy import create_engine
+from app.core.config import settings
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./asterion.db")
+DATABASE_URL = settings.database_url
 
 # Configure connection args specifically for SQLite to support multithreading
 connect_args = {}

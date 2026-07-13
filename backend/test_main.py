@@ -26,9 +26,11 @@ def test_localize_valid_signals():
         ]
     })
     assert response.status_code == 200
-    assert "estimated_latitude" in response.json()
-    assert "estimated_longitude" in response.json()
-    assert response.json()["signals_used"] == 3
+    res_data = response.json()
+    assert res_data["success"] is True
+    assert "estimated_latitude" in res_data["data"]
+    assert "estimated_longitude" in res_data["data"]
+    assert res_data["data"]["signals_used"] == 3
 
 def test_health():
     response = client.get("/api/v1/health")

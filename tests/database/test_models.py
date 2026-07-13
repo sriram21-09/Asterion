@@ -18,68 +18,22 @@ Note:
 """
 
 from datetime import datetime, timezone
+import sys
+from pathlib import Path
 
 import pytest
-from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine
+from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
+# Setup path for backend imports
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "backend"))
 
-# ---------------------------------------------------------------------------
-# Inline ORM definitions (mirrors Sriram's expected Day 2 models)
-# TODO: Replace with imports from backend.app.models once merged
-# ---------------------------------------------------------------------------
-
-
-class Base(DeclarativeBase):
-    """Shared base class for all ORM models."""
-
-    pass
-
-
-class Case(Base):
-    """ORM model for investigation cases.
-
-    Fields mirror the expected schema from the master plan:
-    id, title, description, status, created_at, updated_at.
-    """
-
-    __tablename__ = "cases"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    status = Column(String(50), nullable=False, default="open")
-    created_at = Column(
-        DateTime,
-        nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-    )
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
-
-
-class Scenario(Base):
-    """ORM model for localization scenarios.
-
-    Fields mirror the expected schema from the master plan:
-    id, name, description, created_at.
-    """
-
-    __tablename__ = "scenarios"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    created_at = Column(
-        DateTime,
-        nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-    )
+from app.models.base import Base
+from app.models.case import Case
+from app.models.scenario import Scenario
+from app.models.tower import Tower
 
 
 # ---------------------------------------------------------------------------
@@ -225,3 +179,84 @@ class TestScenarioModel:
 
         assert scenario.created_at is not None
         assert isinstance(scenario.created_at, datetime)
+
+
+class TestRelationshipCaseScenario:
+    """Tests for the relationship and foreign keys between Case and Scenario."""
+
+    def test_case_scenario_relationship(self, db_session: Session):
+        """Verify that a Case can be associated with a Scenario."""
+        scenario = Scenario(name="Scenario A", description="Test Scenario A")
+        db_session.add(scenario)
+        db_session.commit()
+        db_session.refresh(scenario)
+
+        case = Case(title="Case A", scenario_id=scenario.id)
+        db_session.add(case)
+        db_session.commit()
+        db_session.refresh(case)
+
+        # Verify foreign key constraint & relations
+        assert case.scenario_id == scenario.id
+        assert case.scenario is not None
+        assert case.scenario.name == "Scenario A"
+        assert len(scenario.cases) == 1
+        assert scenario.cases[0].title == "Case A"
+
+    def test_delete_scenario_nullifies_case_foreign_key(self, db_session: Session):
+        """Verify that deleting a Scenario sets the scenario_id on Case to NULL (SET NULL behavior)."""
+        scenario = Scenario(name="Scenario B")
+        db_session.add(scenario)
+        db_session.commit()
+        db_session.refresh(scenario)
+
+        case = Case(title="Case B", scenario_id=scenario.id)
+        db_session.add(case)
+        db_session.commit()
+        db_session.refresh(case)
+
+        # Delete scenario
+        db_session.delete(scenario)
+        db_session.commit()
+        db_session.refresh(case)
+
+        # scenario_id should be NULL now
+        assert case.scenario_id is None
+        assert case.scenario is None
+
+
+class TestTowerModel:
+    """Tests for the Towers ORM model."""
+
+    def test_create_tower_valid(self, db_session: Session):
+        """Create a Tower with name, lat, lon, and sector — verify persistence."""
+        tower = Tower(
+            tower_name="Tower Alpha",
+            latitude=12.9716,
+            longitude=77.5946,
+            sector="A",
+        )
+        db_session.add(tower)
+        db_session.commit()
+        db_session.refresh(tower)
+
+        assert tower.id is not None
+        assert tower.id > 0
+        assert tower.tower_name == "Tower Alpha"
+        assert tower.latitude == 12.9716
+        assert tower.longitude == 77.5946
+        assert tower.sector == "A"
+        assert tower.created_at is not None
+        assert tower.updated_at is not None
+
+    def test_create_tower_missing_name_fails(self, db_session: Session):
+        """Attempt to create a Tower without a name — expect failure."""
+        tower = Tower(tower_name=None, latitude=12.9716, longitude=77.5946)
+        db_session.add(tower)
+
+        with pytest.raises(IntegrityError):
+            db_session.commit()
+
+        db_session.rollback()
+
+
