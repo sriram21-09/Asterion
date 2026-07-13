@@ -22,6 +22,8 @@ jobs:
         pip install -r requirements.txt
         pip install pytest httpx
     - name: Run backend tests
+      env:
+        PYTHONPATH: ..
       run: |
         cd backend
         pytest

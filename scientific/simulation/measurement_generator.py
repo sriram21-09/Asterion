@@ -98,3 +98,37 @@ class MeasurementGenerator:
                 measurement_idx += 1
 
         return measurements
+
+
+def generate_scenario_measurements(
+    config: ScenarioConfig,
+) -> List[Measurement]:
+    """Helper function to generate synthetic measurements with timing advance and uncertainty."""
+    generator = MeasurementGenerator(config)
+    measurements = generator.generate()
+
+    # Post-process measurements to calculate timing advance and uncertainty
+    # which is expected by Sriram's database models and API.
+    from scientific.constants import TA_RESOLUTION_M, TA_MAX_VALUE
+
+    for m in measurements:
+        # Find the tower placement that corresponds to this measurement's tower_id
+        tower = next((t for t in config.tower_placements if t.tower_id == m.tower_id), None)
+        if tower:
+            # Calculate distance
+            distance = RSSIGenerator.calculate_distance(
+                tower_lat=tower.latitude,
+                tower_lon=tower.longitude,
+                device_lat=config.expected_device_lat,
+                device_lon=config.expected_device_lon,
+            )
+            # Calculate timing advance
+            ta_raw = distance / TA_RESOLUTION_M
+            m.timing_advance = float(min(max(0, round(ta_raw)), TA_MAX_VALUE))
+            # Calculate uncertainty
+            m.uncertainty_m = max(20.0, distance * 0.15)
+        else:
+            m.timing_advance = None
+            m.uncertainty_m = None
+
+    return measurements

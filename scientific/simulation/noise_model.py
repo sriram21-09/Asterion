@@ -1,6 +1,6 @@
 """
-Noise Model
-===========
+AWGN Model and Shadow Fading
+============================
 
 Injects realistic radio frequency noise and shadow fading into ideal signal
 strength values.
@@ -57,7 +57,7 @@ class AWGNModel:
         """
         if std_dev_db <= 0:
             return ideal_rssi
-        
+
         fading = self.rng.gauss(0.0, std_dev_db)
         return ideal_rssi + fading
 
