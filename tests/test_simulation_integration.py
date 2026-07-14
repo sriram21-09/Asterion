@@ -132,6 +132,35 @@ class TestMeasurementDatabase:
         assert meas.timing_advance == 1.0
         assert meas.uncertainty_m == 10.0
 
+    def test_get_by_case_code(self, db_session):
+        scenario = Scenario(name="Urban 3-Tower Test")
+        db_session.add(scenario)
+        db_session.commit()
+
+        case = Case(title="Tracking Device", scenario_id=scenario.id)
+        db_session.add(case)
+        db_session.commit()
+
+        meas = Measurement(
+            case_id=case.id,
+            scenario_id=scenario.id,
+            measurement_code="MEAS-0001",
+            timestamp=datetime.datetime.now(datetime.timezone.utc),
+            rssi_dbm=-75.5,
+        )
+        db_session.add(meas)
+        db_session.commit()
+
+        from app.repositories.measurement_repository import MeasurementRepository
+        results = MeasurementRepository.get_by_case_code(db_session, "CASE-001")
+        assert len(results) == 1
+        assert results[0].id == meas.id
+
+        # Non-existent or invalid codes
+        assert len(MeasurementRepository.get_by_case_code(db_session, "CASE-999")) == 0
+        with pytest.raises(ValidationError):
+            MeasurementRepository.get_by_case_code(db_session, "INVALID-001")
+
     def test_cascade_delete_case(self, db_session):
         scenario = Scenario(name="Urban Test")
         db_session.add(scenario)
