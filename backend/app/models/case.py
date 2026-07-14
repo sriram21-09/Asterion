@@ -5,6 +5,7 @@ from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.scenario import Scenario
+    from app.models.measurement import Measurement
 
 
 class Case(BaseModel):
@@ -19,4 +20,7 @@ class Case(BaseModel):
     )
     scenario: Mapped[Optional["Scenario"]] = relationship(
         "Scenario", back_populates="cases"
+    )
+    measurements: Mapped[list["Measurement"]] = relationship(
+        "Measurement", back_populates="case", cascade="all, delete-orphan"
     )

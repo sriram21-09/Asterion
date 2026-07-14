@@ -1,6 +1,6 @@
 """
-Noise Model
-===========
+AWGN Model and Shadow Fading
+============================
 
 Injects realistic radio frequency noise and shadow fading into ideal signal
 strength values.
