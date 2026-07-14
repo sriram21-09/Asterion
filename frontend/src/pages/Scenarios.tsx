@@ -7,6 +7,8 @@ import { ScenarioForm } from '@/components/scenarios/ScenarioForm'
 import { EmptyState } from '@/components/scenarios/EmptyState'
 import { SkeletonGrid, ErrorCard, ConfirmDialog } from '@/components/ui'
 import { useSimulationStore } from '@/stores/simulationStore'
+import { useValidationStore } from '@/stores/validationStore'
+import { ValidationSummary } from '@/components/validation/ValidationSummary'
 import type { CreateScenarioDTO } from '@/types/scenario'
 import type { Measurement } from '@/types/scientific'
 
@@ -20,6 +22,7 @@ export default function Scenarios() {
   const deleteScenario = useDeleteScenario()
 
   const { measurements, isGenerating } = useSimulationStore()
+  const { validateMeasurements, isValidating } = useValidationStore()
 
   useEffect(() => {
     document.title = 'Scenarios — Asterion'
@@ -124,7 +127,14 @@ export default function Scenarios() {
       )}
 
       {/* ── Generated Measurements Table ──────────────────────────────── */}
-      <MeasurementsCard measurements={measurements} isGenerating={isGenerating} />
+      <MeasurementsCard 
+        measurements={measurements} 
+        isGenerating={isGenerating} 
+        onValidate={() => validateMeasurements(measurements)}
+        isValidating={isValidating}
+      />
+
+      <ValidationSummary />
 
       {/* Create Scenario Modal */}
       {isFormOpen && (
@@ -156,13 +166,15 @@ export default function Scenarios() {
 interface MeasurementsCardProps {
   measurements: Measurement[]
   isGenerating: boolean
+  onValidate: () => void
+  isValidating: boolean
 }
 
 /**
  * Static table card displaying generated simulation measurements.
  * Visible once measurements have been generated via the simulation store.
  */
-function MeasurementsCard({ measurements, isGenerating }: MeasurementsCardProps) {
+function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating }: MeasurementsCardProps) {
   if (measurements.length === 0 && !isGenerating) return null
 
   return (
@@ -182,12 +194,23 @@ function MeasurementsCard({ measurements, isGenerating }: MeasurementsCardProps)
             </p>
           </div>
         </div>
-        {isGenerating && (
-          <span className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            <span>Generating…</span>
-          </span>
-        )}
+        <div className="flex items-center space-x-3">
+          {!isGenerating && measurements.length > 0 && (
+            <button
+              onClick={onValidate}
+              disabled={isValidating}
+              className="inline-flex items-center px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isValidating ? 'Validating...' : 'Validate'}
+            </button>
+          )}
+          {isGenerating && (
+            <span className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span>Generating…</span>
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Table */}

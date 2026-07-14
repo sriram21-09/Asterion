@@ -5,6 +5,8 @@ from typing import List, Optional
 
 from app.api.v1.routers.scenarios import router as scenarios_router
 from app.api.v1.routers.cases import router as cases_router
+from app.api.v1.routers.simulation import router as simulation_router
+from app.api.v1.routers.measurements import router as measurements_router
 from app.exceptions.handlers import register_exception_handlers
 from app.middleware.logging import LoggingMiddleware
 from app.core.config import settings
@@ -34,6 +36,8 @@ register_exception_handlers(app)
 
 app.include_router(scenarios_router, prefix=settings.api_prefix)
 app.include_router(cases_router, prefix=settings.api_prefix)
+app.include_router(simulation_router, prefix=settings.api_prefix)
+app.include_router(measurements_router, prefix=settings.api_prefix)
 
 
 class TowerSignal(BaseModel):

@@ -4,3 +4,4 @@ from app.models.base import Base  # noqa: F401
 from app.models.case import Case  # noqa: F401
 from app.models.scenario import Scenario  # noqa: F401
 from app.models.tower import Tower  # noqa: F401
+from app.models.measurement import Measurement  # noqa: F401
