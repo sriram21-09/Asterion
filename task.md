@@ -26,9 +26,9 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
 
 ## 📅 Day 2: Measurement Validation Engine
 - [ ] **Chaitanya (Scientific):**
-  - [ ] Expand coordinate, RSSI, and timing advance validators in `validators.py`
-  - [ ] Add WGS84 bounding checking rules
-  - [ ] Write unit tests checking out-of-bounds inputs and duplicates
+  - [x] Expand coordinate, RSSI, and timing advance validators in `validators.py`
+  - [x] Add WGS84 bounding checking rules
+  - [x] Write unit tests checking out-of-bounds inputs and duplicates
 - [ ] **Sriram (Project Lead):**
   - [ ] Create API endpoint `POST /measurements/validate`
   - [ ] Integrate validators into backend service layer
