@@ -29,10 +29,10 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
   - [ ] Expand coordinate, RSSI, and timing advance validators in `validators.py`
   - [ ] Add WGS84 bounding checking rules
   - [ ] Write unit tests checking out-of-bounds inputs and duplicates
-- [ ] **Sriram (Project Lead):**
-  - [ ] Create API endpoint `POST /measurements/validate`
-  - [ ] Integrate validators into backend service layer
-  - [ ] Write validation router unit tests
+- [x] **Sriram (Project Lead):**
+  - [x] Create API endpoint `POST /measurements/validate`
+  - [x] Integrate validators into backend service layer
+  - [x] Write validation router unit tests
 - [ ] **Dinesh (Frontend):**
   - [ ] Implement Axios client queries for validate API
   - [ ] Create validation status panel displaying audit metrics
