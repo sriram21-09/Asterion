@@ -126,7 +126,6 @@ export default function Scenarios() {
         </>
       )}
 
-      {/* ── Generated Measurements Table ──────────────────────────────── */}
       <MeasurementsCard 
         measurements={measurements} 
         isGenerating={isGenerating} 
@@ -163,9 +162,6 @@ export default function Scenarios() {
 
 // ── Measurements Card ──────────────────────────────────────────────────
 
-interface MeasurementsCardProps {
-  measurements: Measurement[]
-  isGenerating: boolean
   onValidate: () => void
   isValidating: boolean
 }
