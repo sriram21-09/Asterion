@@ -109,3 +109,50 @@ export interface GenerateSimulationResponse {
   tower_count: number;
   measurement_count: number;
 }
+
+// ── Localization ────────────────────────────────────────────────────────
+
+/**
+ * A single tower signal sent to the localization engine.
+ * Maps to `TowerSignal` in `backend/main.py`.
+ */
+export interface TowerSignal {
+  tower_id: string;
+  latitude: number;
+  longitude: number;
+  signal_strength_dbm: number;
+  timestamp: number;               // epoch seconds
+}
+
+/**
+ * Payload sent to `POST /api/localize`.
+ * Maps to `LocalizationRequest` in `backend/main.py`.
+ */
+export interface LocalizationRequest {
+  signals: TowerSignal[];
+  algorithm?: Algorithm;            // default "multilateration"
+}
+
+/**
+ * Raw response from `POST /api/localize`.
+ * Maps to `LocalizationResponse` in `backend/main.py`.
+ */
+export interface LocalizationResponse {
+  estimated_latitude: number;
+  estimated_longitude: number;
+  confidence_score: number;         // 0–1
+  signals_used: number;
+  algorithm_applied: string;
+}
+
+/**
+ * Client-enriched localization result.
+ *
+ * Extends the raw backend response with computed fields:
+ *   - `error_distance_m`  — Haversine distance to expected coords (if known)
+ *   - `time_elapsed_ms`   — wall-clock execution time
+ */
+export interface LocalizationResult extends LocalizationResponse {
+  error_distance_m: number | null;
+  time_elapsed_ms: number;
+}
