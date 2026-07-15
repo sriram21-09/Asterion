@@ -2,12 +2,17 @@
 Scientific Pipeline Module
 ============================
 
-Future home of end-to-end localization pipeline orchestration:
+Orchestrator and solvers for the localization estimation pipeline.
 
-- Pipeline configuration and execution
-- Stage management: Validation → Simulation → Localization → Confidence
-- Result aggregation and reporting
-- Batch processing and parallel execution support
-
-This module will be implemented in Week 2 (Scientific Engine Sprint).
+Exports:
+    solve_weighted_centroid: Signal-strength-weighted centroid fallback.
+    solve_multilateration: NLLS multilateration using scipy.
 """
+
+from scientific.pipeline.multilateration import solve_multilateration
+from scientific.pipeline.weighted_centroid import solve_weighted_centroid
+
+__all__ = [
+    "solve_weighted_centroid",
+    "solve_multilateration",
+]
