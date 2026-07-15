@@ -6,6 +6,7 @@ from app.models.base import BaseModel
 if TYPE_CHECKING:
     from app.models.scenario import Scenario
     from app.models.measurement import Measurement
+    from app.models.localization_result import LocalizationResult
 
 
 class Case(BaseModel):
@@ -23,4 +24,7 @@ class Case(BaseModel):
     )
     measurements: Mapped[list["Measurement"]] = relationship(
         "Measurement", back_populates="case", cascade="all, delete-orphan"
+    )
+    localization_results: Mapped[list["LocalizationResult"]] = relationship(
+        "LocalizationResult", back_populates="case", cascade="all, delete-orphan"
     )
