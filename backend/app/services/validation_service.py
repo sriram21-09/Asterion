@@ -27,6 +27,9 @@ from app.schemas.validation import (
     Severity,
 )
 
+from scientific.models.measurement import Measurement as SciMeasurement
+from scientific.validation.validators import MeasurementValidator
+from scientific.validation.validators import Severity as SciSeverity
 
 # ── Constants (same as app.shared.validation) ─────────────────────────────
 
@@ -45,7 +48,30 @@ def _validate_single(
     """
     issues: List[ValidationErrorItem] = []
 
-    # ── RSSI range ────────────────────────────────────────────────────
+    # ── Basic constraints & format validation ─────────────────────────
+    # 1. measurement_id non-empty
+    if not m.measurement_id or not m.measurement_id.strip():
+        issues.append(
+            ValidationErrorItem(
+                field="measurement_id",
+                message="Measurement ID must not be empty.",
+                severity=Severity.ERROR,
+                measurement_index=index,
+            )
+        )
+
+    # 2. tower_id non-empty
+    if not m.tower_id or not m.tower_id.strip():
+        issues.append(
+            ValidationErrorItem(
+                field="tower_id",
+                message="Tower ID must not be empty.",
+                severity=Severity.ERROR,
+                measurement_index=index,
+            )
+        )
+
+    # 3. RSSI range [-150, 0] dBm
     if not (RSSI_MIN <= m.rssi_dbm <= RSSI_MAX):
         issues.append(
             ValidationErrorItem(
@@ -56,7 +82,7 @@ def _validate_single(
             )
         )
 
-    # ── Latitude ──────────────────────────────────────────────────────
+    # 4. Latitude WGS84 range
     if m.latitude is not None and not (LAT_MIN <= m.latitude <= LAT_MAX):
         issues.append(
             ValidationErrorItem(
@@ -67,7 +93,7 @@ def _validate_single(
             )
         )
 
-    # ── Longitude ─────────────────────────────────────────────────────
+    # 5. Longitude WGS84 range
     if m.longitude is not None and not (LON_MIN <= m.longitude <= LON_MAX):
         issues.append(
             ValidationErrorItem(
@@ -78,7 +104,7 @@ def _validate_single(
             )
         )
 
-    # ── Lat/lon parity (both or neither) ──────────────────────────────
+    # 6. Lat/lon parity (both or neither)
     has_lat = m.latitude is not None
     has_lon = m.longitude is not None
     if has_lat != has_lon:
@@ -91,32 +117,7 @@ def _validate_single(
             )
         )
 
-    # ── Timestamp parseable and not in the future ─────────────────────
-    try:
-        ts = datetime.fromisoformat(m.timestamp.replace("Z", "+00:00"))
-        if ts.tzinfo is None:
-            ts = ts.replace(tzinfo=timezone.utc)
-        now = datetime.now(timezone.utc)
-        if ts > now:
-            issues.append(
-                ValidationErrorItem(
-                    field="timestamp",
-                    message=f"Timestamp {m.timestamp} is in the future.",
-                    severity=Severity.WARNING,
-                    measurement_index=index,
-                )
-            )
-    except (ValueError, TypeError):
-        issues.append(
-            ValidationErrorItem(
-                field="timestamp",
-                message=f"Could not parse timestamp '{m.timestamp}' as ISO 8601.",
-                severity=Severity.ERROR,
-                measurement_index=index,
-            )
-        )
-
-    # ── Timing advance (non-negative if provided) ────────────────────
+    # 7. Timing advance (non-negative if provided)
     if m.timing_advance is not None and m.timing_advance < 0:
         issues.append(
             ValidationErrorItem(
@@ -127,7 +128,7 @@ def _validate_single(
             )
         )
 
-    # ── Uncertainty (positive if provided) ────────────────────────────
+    # 8. Uncertainty (positive if provided)
     if m.uncertainty_m is not None and m.uncertainty_m < 0:
         issues.append(
             ValidationErrorItem(
@@ -138,27 +139,58 @@ def _validate_single(
             )
         )
 
-    # ── measurement_id non-empty ──────────────────────────────────────
-    if not m.measurement_id or not m.measurement_id.strip():
+    # 9. Timestamp parseable
+    dt = None
+    try:
+        dt = datetime.fromisoformat(m.timestamp.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
         issues.append(
             ValidationErrorItem(
-                field="measurement_id",
-                message="Measurement ID must not be empty.",
+                field="timestamp",
+                message=f"Could not parse timestamp '{m.timestamp}' as ISO 8601.",
                 severity=Severity.ERROR,
                 measurement_index=index,
             )
         )
 
-    # ── tower_id non-empty ────────────────────────────────────────────
-    if not m.tower_id or not m.tower_id.strip():
-        issues.append(
-            ValidationErrorItem(
-                field="tower_id",
-                message="Tower ID must not be empty.",
-                severity=Severity.ERROR,
-                measurement_index=index,
+    # ── Scientific Domain Rules (only if basic layout/format is valid) ──
+    has_errors = any(issue.severity == Severity.ERROR for issue in issues)
+
+    if not has_errors and dt is not None:
+        try:
+            sci_m = SciMeasurement(
+                measurement_id=m.measurement_id,
+                tower_id=m.tower_id,
+                timestamp=dt,
+                rssi_dbm=m.rssi_dbm,
+                latitude=m.latitude,
+                longitude=m.longitude,
+                timing_advance=m.timing_advance,
+                uncertainty_m=m.uncertainty_m,
             )
-        )
+            validator = MeasurementValidator()
+            result = validator.validate(sci_m)
+            for err in result.errors:
+                sev = Severity.ERROR if err.severity == SciSeverity.ERROR else Severity.WARNING
+                issues.append(
+                    ValidationErrorItem(
+                        field=err.field,
+                        message=err.message,
+                        severity=sev,
+                        measurement_index=index,
+                    )
+                )
+        except Exception as e:
+            issues.append(
+                ValidationErrorItem(
+                    field="measurement",
+                    message=f"Scientific validator error: {str(e)}",
+                    severity=Severity.ERROR,
+                    measurement_index=index,
+                )
+            )
 
     return issues
 

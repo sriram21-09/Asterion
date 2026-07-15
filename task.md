@@ -5,17 +5,17 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
 ---
 
 ## 📅 Day 1: Measurement Simulator
-- [ ] **Chaitanya (Scientific):**
-  - [ ] Implement RSSI Signal Generator (`scientific/simulation/rssi_generator.py`)
-  - [ ] Implement Noise Model with Gaussian and shadow fading (`scientific/simulation/noise_model.py`)
-  - [ ] Implement Measurement Synthesizer (`scientific/simulation/measurement_generator.py`)
-  - [ ] Write pytest unit tests for simulation modules
-- [ ] **Sriram (Project Lead):**
-  - [ ] Create `backend/app/models/measurement.py` database schema
-  - [ ] Run Alembic migrations to create `measurements` table
-  - [ ] Implement `MeasurementRepository` and `MeasurementService`
-  - [ ] Create `POST /simulation/generate` API router skeleton
-  - [ ] Write database and API endpoint unit tests
+- [x] **Chaitanya (Scientific):**
+  - [x] Implement RSSI Signal Generator (`scientific/simulation/rssi_generator.py`)
+  - [x] Implement Noise Model with Gaussian and shadow fading (`scientific/simulation/noise_model.py`)
+  - [x] Implement Measurement Synthesizer (`scientific/simulation/measurement_generator.py`)
+  - [x] Write pytest unit tests for simulation modules
+- [x] **Sriram (Project Lead):**
+  - [x] Create `backend/app/models/measurement.py` database schema
+  - [x] Run Alembic migrations to create `measurements` table
+  - [x] Implement `MeasurementRepository` and `MeasurementService`
+  - [x] Create `POST /simulation/generate` API router skeleton
+  - [x] Write database and API endpoint unit tests
 - [ ] **Dinesh (Frontend):**
   - [ ] Define TypeScript types for Simulation outputs and parameters
   - [ ] Create API service client layer for `/simulation/generate`
@@ -29,10 +29,10 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
   - [ ] Expand coordinate, RSSI, and timing advance validators in `validators.py`
   - [ ] Add WGS84 bounding checking rules
   - [ ] Write unit tests checking out-of-bounds inputs and duplicates
-- [ ] **Sriram (Project Lead):**
-  - [ ] Create API endpoint `POST /measurements/validate`
-  - [ ] Integrate validators into backend service layer
-  - [ ] Write validation router unit tests
+- [x] **Sriram (Project Lead):**
+  - [x] Create API endpoint `POST /measurements/validate`
+  - [x] Integrate validators into backend service layer
+  - [x] Write validation router unit tests
 - [ ] **Dinesh (Frontend):**
   - [ ] Implement Axios client queries for validate API
   - [ ] Create validation status panel displaying audit metrics

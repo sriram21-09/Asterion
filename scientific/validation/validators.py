@@ -38,6 +38,7 @@ Usage::
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -46,6 +47,12 @@ from typing import List, Optional, Protocol, TypeVar
 from scientific.models.measurement import Measurement
 from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
+from scientific.config import (
+    ValidationThresholds,
+    DEFAULT_VALIDATION_THRESHOLDS,
+    get_environment_config,
+)
+from scientific.constants import TA_RESOLUTION_M
 
 # ---------------------------------------------------------------------------
 # Validation result types
@@ -146,7 +153,7 @@ class Validator(Protocol[T]):
         - ``description: str | None``           — optional description
         - ``towers: list[Tower]``               — ≥ 3 towers
         - ``measurements: list[Measurement]``   — associated measurements
-        - ``noise_level_dbm: float``            — background noise floor
+        - --noise_level_dbm: float``            -- background noise floor
         - ``environment_type: str``             — one of: urban, suburban, rural, highway
         - ``expected_device_lat: float | None`` — optional ground-truth latitude
         - ``expected_device_lon: float | None`` — optional ground-truth longitude
@@ -181,23 +188,6 @@ CELLULAR_BANDS_MHZ = [
     39000,  # mmWave (5G)
 ]
 
-# Tolerance for matching a known band (±50 MHz)
-BAND_TOLERANCE_MHZ = 50.0
-
-# Realistic transmit power range (dBm)
-MIN_TX_POWER_DBM = 10.0
-MAX_TX_POWER_DBM = 60.0
-
-# Realistic antenna height range (meters)
-MIN_ANTENNA_HEIGHT_M = 1.0
-MAX_ANTENNA_HEIGHT_M = 300.0
-
-# Maximum plausible coverage radius (meters)
-MAX_COVERAGE_RADIUS_M = 50_000.0
-
-# Maximum age for a "reasonable" measurement timestamp
-MAX_MEASUREMENT_AGE_DAYS = 365 * 5  # 5 years
-
 
 # ---------------------------------------------------------------------------
 # Concrete validators
@@ -208,20 +198,61 @@ class MeasurementValidator:
     """Validates a single :class:`Measurement` instance.
 
     Checks performed:
-        1. Latitude/longitude must be provided together or not at all.
-        2. RSSI should be in a realistic range for cellular signals
-           (warning if outside [-120, -30] dBm).
-        3. Timing advance and RSSI consistency (warning if TA > 0
-           but RSSI is very strong, which is physically unlikely).
-        4. Timestamp must not be in the future.
-        5. Timestamp should not be excessively old (> 5 years).
+        1. Required fields presence (measurement_id, tower_id, timestamp, rssi_dbm).
+        2. Latitude/longitude must be provided together or not at all.
+        3. Coordinates must fall within the expected operational area.
+        4. RSSI must be in absolute limits [-150, 0] dBm, and warning if outside
+           plausible range [-120, -30] dBm.
+        5. Timing advance and RSSI consistency (warning if TA > thresholds.ta_rssi_ta_threshold
+           but RSSI is stronger than thresholds.ta_rssi_rssi_threshold_dbm).
+        6. Timestamp must not be in the future.
+        7. Timestamp should not be excessively old.
     """
+
+    def __init__(
+        self, thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS
+    ) -> None:
+        self.thresholds = thresholds
 
     def validate(self, measurement: Measurement) -> ValidationResult:
         """Run all measurement validation checks."""
         result = ValidationResult()
 
-        # --- 1. Lat/Lon pairing ---
+        # --- 1. Missing values check ---
+        if not measurement.measurement_id or measurement.measurement_id.strip() == "":
+            result.errors.append(
+                ValidationError(
+                    field="measurement_id",
+                    message="Measurement ID must be provided and cannot be empty.",
+                    code="MEAS_MISSING_ID",
+                )
+            )
+        if not measurement.tower_id or measurement.tower_id.strip() == "":
+            result.errors.append(
+                ValidationError(
+                    field="tower_id",
+                    message="Tower ID must be provided and cannot be empty.",
+                    code="MEAS_MISSING_TOWER_ID",
+                )
+            )
+        if measurement.timestamp is None:
+            result.errors.append(
+                ValidationError(
+                    field="timestamp",
+                    message="Measurement timestamp must be provided.",
+                    code="MEAS_MISSING_TIMESTAMP",
+                )
+            )
+        if measurement.rssi_dbm is None:
+            result.errors.append(
+                ValidationError(
+                    field="rssi_dbm",
+                    message="RSSI value must be provided.",
+                    code="MEAS_MISSING_RSSI",
+                )
+            )
+
+        # --- 2. Lat/Lon pairing and spatial bounds verification ---
         has_lat = measurement.latitude is not None
         has_lon = measurement.longitude is not None
         if has_lat != has_lon:
@@ -237,39 +268,73 @@ class MeasurementValidator:
                     code="MEAS_PARTIAL_COORDS",
                 )
             )
-
-        # --- 2. RSSI plausibility ---
-        if measurement.rssi_dbm > -30.0:
-            result.errors.append(
-                ValidationError(
-                    field="rssi_dbm",
-                    message=(
-                        f"RSSI value {measurement.rssi_dbm} dBm is unusually "
-                        "strong for cellular signals. Typical range is "
-                        "[-120, -30] dBm."
-                    ),
-                    severity=Severity.WARNING,
-                    code="MEAS_RSSI_HIGH",
+        elif has_lat and has_lon:
+            lat_min, lat_max = self.thresholds.latitude_range
+            lon_min, lon_max = self.thresholds.longitude_range
+            # Note: We do ge/le check
+            if not (lat_min <= measurement.latitude <= lat_max) or not (
+                lon_min <= measurement.longitude <= lon_max
+            ):
+                result.errors.append(
+                    ValidationError(
+                        field="latitude/longitude",
+                        message=(
+                            f"Coordinates ({measurement.latitude}, {measurement.longitude}) "
+                            f"are outside the expected operational area. "
+                            f"Allowed range: Latitude {self.thresholds.latitude_range}, Longitude {self.thresholds.longitude_range}."
+                        ),
+                        code="MEAS_COORDS_OUT_OF_BOUNDS",
+                    )
                 )
-            )
-        elif measurement.rssi_dbm < -120.0:
-            result.errors.append(
-                ValidationError(
-                    field="rssi_dbm",
-                    message=(
-                        f"RSSI value {measurement.rssi_dbm} dBm is extremely "
-                        "weak. Signal may be below the noise floor."
-                    ),
-                    severity=Severity.WARNING,
-                    code="MEAS_RSSI_LOW",
-                )
-            )
 
-        # --- 3. TA vs RSSI consistency ---
+        # --- 3. RSSI plausibility and boundaries ---
+        if measurement.rssi_dbm is not None:
+            if (
+                measurement.rssi_dbm > self.thresholds.rssi_max_dbm
+                or measurement.rssi_dbm < self.thresholds.rssi_min_dbm
+            ):
+                result.errors.append(
+                    ValidationError(
+                        field="rssi_dbm",
+                        message=(
+                            f"RSSI value {measurement.rssi_dbm} dBm is out of the absolute "
+                            f"allowed range [{self.thresholds.rssi_min_dbm}, {self.thresholds.rssi_max_dbm}] dBm."
+                        ),
+                        code="MEAS_RSSI_OUT_OF_BOUNDS",
+                    )
+                )
+            elif measurement.rssi_dbm > self.thresholds.rssi_plausible_max_dbm:
+                result.errors.append(
+                    ValidationError(
+                        field="rssi_dbm",
+                        message=(
+                            f"RSSI value {measurement.rssi_dbm} dBm is unusually "
+                            "strong for cellular signals. Typical range is "
+                            f"[{self.thresholds.rssi_plausible_min_dbm}, {self.thresholds.rssi_plausible_max_dbm}] dBm."
+                        ),
+                        severity=Severity.WARNING,
+                        code="MEAS_RSSI_HIGH",
+                    )
+                )
+            elif measurement.rssi_dbm < self.thresholds.rssi_plausible_min_dbm:
+                result.errors.append(
+                    ValidationError(
+                        field="rssi_dbm",
+                        message=(
+                            f"RSSI value {measurement.rssi_dbm} dBm is extremely "
+                            "weak. Signal may be below the noise floor."
+                        ),
+                        severity=Severity.WARNING,
+                        code="MEAS_RSSI_LOW",
+                    )
+                )
+
+        # --- 4. TA vs RSSI consistency ---
         if (
             measurement.timing_advance is not None
-            and measurement.timing_advance > 10
-            and measurement.rssi_dbm > -50.0
+            and measurement.rssi_dbm is not None
+            and measurement.timing_advance > self.thresholds.ta_rssi_ta_threshold
+            and measurement.rssi_dbm > self.thresholds.ta_rssi_rssi_threshold_dbm
         ):
             result.errors.append(
                 ValidationError(
@@ -285,37 +350,38 @@ class MeasurementValidator:
                 )
             )
 
-        # --- 4. Future timestamp ---
-        now = datetime.now(timezone.utc)
-        ts = measurement.timestamp
-        if ts.tzinfo is None:
-            ts = ts.replace(tzinfo=timezone.utc)
-        if ts > now:
-            result.errors.append(
-                ValidationError(
-                    field="timestamp",
-                    message=(
-                        f"Measurement timestamp {measurement.timestamp.isoformat()} "
-                        "is in the future."
-                    ),
-                    code="MEAS_FUTURE_TIMESTAMP",
+        # --- 5. Future timestamp ---
+        if measurement.timestamp is not None:
+            now = datetime.now(timezone.utc)
+            ts = measurement.timestamp
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            if ts > now:
+                result.errors.append(
+                    ValidationError(
+                        field="timestamp",
+                        message=(
+                            f"Measurement timestamp {measurement.timestamp.isoformat()} "
+                            "is in the future."
+                        ),
+                        code="MEAS_FUTURE_TIMESTAMP",
+                    )
                 )
-            )
 
-        # --- 5. Excessively old timestamp ---
-        age_days = (now - ts).days
-        if age_days > MAX_MEASUREMENT_AGE_DAYS:
-            result.errors.append(
-                ValidationError(
-                    field="timestamp",
-                    message=(
-                        f"Measurement is {age_days} days old (> {MAX_MEASUREMENT_AGE_DAYS} "
-                        "days). Data may be stale."
-                    ),
-                    severity=Severity.WARNING,
-                    code="MEAS_STALE",
+            # --- 6. Excessively old timestamp ---
+            age_days = (now - ts).days
+            if age_days > self.thresholds.max_measurement_age_days:
+                result.errors.append(
+                    ValidationError(
+                        field="timestamp",
+                        message=(
+                            f"Measurement is {age_days} days old (> {self.thresholds.max_measurement_age_days} "
+                            "days). Data may be stale."
+                        ),
+                        severity=Severity.WARNING,
+                        code="MEAS_STALE",
+                    )
                 )
-            )
 
         return result
 
@@ -324,77 +390,165 @@ class TowerValidator:
     """Validates a single :class:`Tower` instance.
 
     Checks performed:
-        1. Frequency should be near a known cellular band (warning).
-        2. Transmit power should be within a realistic range (warning).
-        3. Antenna height should be within a plausible range (warning).
-        4. Coverage radius should not exceed a plausible maximum (warning).
+        1. Required fields presence.
+        2. Coordinates must fall within the expected operational area.
+        3. Frequency should be near a known cellular band (warning).
+        4. Transmit power should be within a realistic range (warning).
+        5. Antenna height should be within a plausible range (warning).
+        6. Coverage radius should not exceed a plausible maximum (warning).
     """
+
+    def __init__(
+        self, thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS
+    ) -> None:
+        self.thresholds = thresholds
 
     def validate(self, tower: Tower) -> ValidationResult:
         """Run all tower validation checks."""
         result = ValidationResult()
 
-        # --- 1. Frequency band plausibility ---
-        near_known_band = any(
-            abs(tower.frequency_mhz - band) <= BAND_TOLERANCE_MHZ
-            for band in CELLULAR_BANDS_MHZ
-        )
-        if not near_known_band:
+        # --- 1. Missing values check ---
+        if not tower.tower_id or tower.tower_id.strip() == "":
             result.errors.append(
                 ValidationError(
-                    field="frequency_mhz",
-                    message=(
-                        f"Frequency {tower.frequency_mhz} MHz is not near any "
-                        "standard cellular band. This may indicate a data entry "
-                        "error."
-                    ),
-                    severity=Severity.WARNING,
-                    code="TOWER_UNUSUAL_FREQ",
+                    field="tower_id",
+                    message="Tower ID must be provided.",
+                    code="TOWER_MISSING_ID",
                 )
             )
-
-        # --- 2. Transmit power range ---
-        if not (MIN_TX_POWER_DBM <= tower.transmit_power_dbm <= MAX_TX_POWER_DBM):
+        if tower.latitude is None or tower.longitude is None:
             result.errors.append(
                 ValidationError(
-                    field="transmit_power_dbm",
-                    message=(
-                        f"Transmit power {tower.transmit_power_dbm} dBm is outside "
-                        f"the typical range [{MIN_TX_POWER_DBM}, {MAX_TX_POWER_DBM}] dBm."
-                    ),
-                    severity=Severity.WARNING,
-                    code="TOWER_TX_POWER_RANGE",
+                    field="latitude/longitude",
+                    message="Tower coordinates must be provided.",
+                    code="TOWER_MISSING_COORDS",
                 )
             )
-
-        # --- 3. Antenna height plausibility ---
-        if not (MIN_ANTENNA_HEIGHT_M <= tower.antenna_height_m <= MAX_ANTENNA_HEIGHT_M):
+        if tower.antenna_height_m is None:
             result.errors.append(
                 ValidationError(
                     field="antenna_height_m",
-                    message=(
-                        f"Antenna height {tower.antenna_height_m} m is outside "
-                        f"the plausible range [{MIN_ANTENNA_HEIGHT_M}, "
-                        f"{MAX_ANTENNA_HEIGHT_M}] m."
-                    ),
-                    severity=Severity.WARNING,
-                    code="TOWER_HEIGHT_RANGE",
+                    message="Antenna height must be provided.",
+                    code="TOWER_MISSING_HEIGHT",
                 )
             )
-
-        # --- 4. Coverage radius ---
-        if tower.coverage_radius_m > MAX_COVERAGE_RADIUS_M:
+        if tower.frequency_mhz is None:
+            result.errors.append(
+                ValidationError(
+                    field="frequency_mhz",
+                    message="Operating frequency must be provided.",
+                    code="TOWER_MISSING_FREQUENCY",
+                )
+            )
+        if tower.transmit_power_dbm is None:
+            result.errors.append(
+                ValidationError(
+                    field="transmit_power_dbm",
+                    message="Transmit power must be provided.",
+                    code="TOWER_MISSING_TX_POWER",
+                )
+            )
+        if tower.coverage_radius_m is None:
             result.errors.append(
                 ValidationError(
                     field="coverage_radius_m",
-                    message=(
-                        f"Coverage radius {tower.coverage_radius_m} m exceeds the "
-                        f"plausible maximum of {MAX_COVERAGE_RADIUS_M} m."
-                    ),
-                    severity=Severity.WARNING,
-                    code="TOWER_COVERAGE_EXTREME",
+                    message="Coverage radius must be provided.",
+                    code="TOWER_MISSING_RADIUS",
                 )
             )
+
+        # --- 2. Coordinate operational bounds check ---
+        if tower.latitude is not None and tower.longitude is not None:
+            lat_min, lat_max = self.thresholds.latitude_range
+            lon_min, lon_max = self.thresholds.longitude_range
+            if not (lat_min <= tower.latitude <= lat_max) or not (
+                lon_min <= tower.longitude <= lon_max
+            ):
+                result.errors.append(
+                    ValidationError(
+                        field="latitude/longitude",
+                        message=(
+                            f"Tower coordinates ({tower.latitude}, {tower.longitude}) "
+                            f"are outside the expected operational area. "
+                            f"Allowed range: Latitude {self.thresholds.latitude_range}, Longitude {self.thresholds.longitude_range}."
+                        ),
+                        code="TOWER_COORDS_OUT_OF_BOUNDS",
+                    )
+                )
+
+        # --- 3. Frequency band plausibility ---
+        if tower.frequency_mhz is not None:
+            near_known_band = any(
+                abs(tower.frequency_mhz - band) <= self.thresholds.band_tolerance_mhz
+                for band in CELLULAR_BANDS_MHZ
+            )
+            if not near_known_band:
+                result.errors.append(
+                    ValidationError(
+                        field="frequency_mhz",
+                        message=(
+                            f"Frequency {tower.frequency_mhz} MHz is not near any "
+                            "standard cellular band. This may indicate a data entry "
+                            "error."
+                        ),
+                        severity=Severity.WARNING,
+                        code="TOWER_UNUSUAL_FREQ",
+                    )
+                )
+
+        # --- 4. Transmit power range ---
+        if tower.transmit_power_dbm is not None:
+            if not (
+                self.thresholds.min_tx_power_dbm
+                <= tower.transmit_power_dbm
+                <= self.thresholds.max_tx_power_dbm
+            ):
+                result.errors.append(
+                    ValidationError(
+                        field="transmit_power_dbm",
+                        message=(
+                            f"Transmit power {tower.transmit_power_dbm} dBm is outside "
+                            f"the typical range [{self.thresholds.min_tx_power_dbm}, {self.thresholds.max_tx_power_dbm}] dBm."
+                        ),
+                        severity=Severity.WARNING,
+                        code="TOWER_TX_POWER_RANGE",
+                    )
+                )
+
+        # --- 5. Antenna height plausibility ---
+        if tower.antenna_height_m is not None:
+            if not (
+                self.thresholds.min_antenna_height_m
+                <= tower.antenna_height_m
+                <= self.thresholds.max_antenna_height_m
+            ):
+                result.errors.append(
+                    ValidationError(
+                        field="antenna_height_m",
+                        message=(
+                            f"Antenna height {tower.antenna_height_m} m is outside "
+                            f"the plausible range [{self.thresholds.min_antenna_height_m}, "
+                            f"{self.thresholds.max_antenna_height_m}] m."
+                        ),
+                        severity=Severity.WARNING,
+                        code="TOWER_HEIGHT_RANGE",
+                    )
+                )
+
+        # --- 6. Coverage radius ---
+        if tower.coverage_radius_m is not None:
+            if tower.coverage_radius_m > self.thresholds.max_coverage_radius_m:
+                result.errors.append(
+                    ValidationError(
+                        field="coverage_radius_m",
+                        message=(
+                            f"Coverage radius {tower.coverage_radius_m} m exceeds the "
+                            f"plausible maximum of {self.thresholds.max_coverage_radius_m} m."
+                        ),
+                        severity=Severity.WARNING,
+                        code="TOWER_COVERAGE_EXTREME",
+                    )
+                )
 
         return result
 
@@ -403,14 +557,17 @@ class ScenarioValidator:
     """Validates a complete :class:`Scenario` instance.
 
     Checks performed:
-        1. All tower IDs must be unique within the scenario.
-        2. Every measurement must reference a tower that exists in the
+        1. Required fields presence.
+        2. All tower IDs must be unique within the scenario.
+        3. Every measurement must reference a tower that exists in the
            scenario's tower list.
-        3. If ground-truth coordinates are provided, both lat and lon
-           must be present.
-        4. At least one measurement should exist for each tower
+        4. Unique measurement IDs and duplicate record checks (same tower + timestamp).
+        5. If ground-truth coordinates are provided, both lat and lon
+           must be present, and must fall within expected operational areas.
+        6. At least one measurement should exist for each tower
            (warning if a tower has zero coverage).
-        5. All embedded towers and measurements pass their own
+        7. Physics consistency cross-checks between Timing Advance distance and RSSI decay models.
+        8. All embedded towers and measurements pass their own
            validators (deep validation).
 
     Parameters:
@@ -418,20 +575,55 @@ class ScenarioValidator:
               and :class:`MeasurementValidator` on each embedded object.
     """
 
-    def __init__(self, *, deep: bool = True) -> None:
+    def __init__(
+        self,
+        *,
+        deep: bool = True,
+        thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
+    ) -> None:
         self._deep = deep
-        self._tower_validator = TowerValidator()
-        self._measurement_validator = MeasurementValidator()
+        self.thresholds = thresholds
+        self._tower_validator = TowerValidator(thresholds=thresholds)
+        self._measurement_validator = MeasurementValidator(thresholds=thresholds)
 
     def validate(self, scenario: Scenario) -> ValidationResult:
         """Run all scenario validation checks."""
         result = ValidationResult()
 
-        # --- 1. Unique tower IDs ---
-        tower_ids = [t.tower_id for t in scenario.towers]
-        seen: set[str] = set()
+        # --- 1. Missing scenario values ---
+        if not scenario.scenario_id or scenario.scenario_id.strip() == "":
+            result.errors.append(
+                ValidationError(
+                    field="scenario_id",
+                    message="Scenario ID must be provided and cannot be empty.",
+                    code="SCENARIO_MISSING_ID",
+                )
+            )
+        if not scenario.name or scenario.name.strip() == "":
+            result.errors.append(
+                ValidationError(
+                    field="name",
+                    message="Scenario name must be provided and cannot be empty.",
+                    code="SCENARIO_MISSING_NAME",
+                )
+            )
+        if scenario.towers is None or len(scenario.towers) < 3:
+            result.errors.append(
+                ValidationError(
+                    field="towers",
+                    message=(
+                        f"At least 3 towers are required for localization. "
+                        f"Got {len(scenario.towers) if scenario.towers else 0}."
+                    ),
+                    code="SCENARIO_INSUFFICIENT_TOWERS",
+                )
+            )
+
+        # --- 2. Unique tower IDs ---
+        tower_ids = [t.tower_id for t in scenario.towers if t.tower_id] if scenario.towers else []
+        seen_towers: set[str] = set()
         for idx, tid in enumerate(tower_ids):
-            if tid in seen:
+            if tid in seen_towers:
                 result.errors.append(
                     ValidationError(
                         field=f"towers[{idx}].tower_id",
@@ -439,11 +631,28 @@ class ScenarioValidator:
                         code="SCENARIO_DUPLICATE_TOWER",
                     )
                 )
-            seen.add(tid)
+            seen_towers.add(tid)
 
-        # --- 2. Measurement → Tower referential integrity ---
+        # --- 3. Measurement → Tower referential integrity & duplicates ---
         tower_id_set = set(tower_ids)
-        for idx, m in enumerate(scenario.measurements):
+        seen_meas_ids: set[str] = set()
+        seen_meas_records: set[tuple[str, datetime]] = set()
+
+        measurements = scenario.measurements or []
+        for idx, m in enumerate(measurements):
+            # Check unique measurement IDs
+            if m.measurement_id:
+                if m.measurement_id in seen_meas_ids:
+                    result.errors.append(
+                        ValidationError(
+                            field=f"measurements[{idx}].measurement_id",
+                            message=f"Duplicate measurement_id '{m.measurement_id}' in scenario.",
+                            code="SCENARIO_DUPLICATE_MEASUREMENT",
+                        )
+                    )
+                seen_meas_ids.add(m.measurement_id)
+
+            # Referential integrity
             if m.tower_id not in tower_id_set:
                 result.errors.append(
                     ValidationError(
@@ -456,7 +665,23 @@ class ScenarioValidator:
                     )
                 )
 
-        # --- 3. Ground-truth coordinate pairing ---
+            # Check duplicate timestamps (same tower, same timestamp)
+            if m.tower_id and m.timestamp:
+                record_key = (m.tower_id, m.timestamp)
+                if record_key in seen_meas_records:
+                    result.errors.append(
+                        ValidationError(
+                            field=f"measurements[{idx}].timestamp",
+                            message=(
+                                f"Duplicate measurement record found for tower '{m.tower_id}' "
+                                f"at timestamp {m.timestamp.isoformat()}."
+                            ),
+                            code="SCENARIO_DUPLICATE_RECORD",
+                        )
+                    )
+                seen_meas_records.add(record_key)
+
+        # --- 4. Ground-truth coordinate pairing & bounds checking ---
         has_gt_lat = scenario.expected_device_lat is not None
         has_gt_lon = scenario.expected_device_lon is not None
         if has_gt_lat != has_gt_lon:
@@ -470,10 +695,29 @@ class ScenarioValidator:
                     code="SCENARIO_PARTIAL_GROUND_TRUTH",
                 )
             )
+        elif has_gt_lat and has_gt_lon:
+            lat_min, lat_max = self.thresholds.latitude_range
+            lon_min, lon_max = self.thresholds.longitude_range
+            if not (lat_min <= scenario.expected_device_lat <= lat_max) or not (
+                lon_min <= scenario.expected_device_lon <= lon_max
+            ):
+                result.errors.append(
+                    ValidationError(
+                        field="expected_device_lat/expected_device_lon",
+                        message=(
+                            f"Ground-truth coordinates ({scenario.expected_device_lat}, {scenario.expected_device_lon}) "
+                            f"are outside the expected operational area. "
+                            f"Allowed range: Latitude {self.thresholds.latitude_range}, Longitude {self.thresholds.longitude_range}."
+                        ),
+                        code="SCENARIO_COORDS_OUT_OF_BOUNDS",
+                    )
+                )
 
-        # --- 4. Tower coverage (every tower should have ≥1 measurement) ---
+        # --- 5. Tower coverage (every tower should have ≥1 measurement) ---
         if scenario.measurements:
-            referenced_towers = {m.tower_id for m in scenario.measurements}
+            referenced_towers = {
+                m.tower_id for m in scenario.measurements if m.tower_id
+            }
             uncovered = tower_id_set - referenced_towers
             for tid in uncovered:
                 result.errors.append(
@@ -488,31 +732,97 @@ class ScenarioValidator:
                     )
                 )
 
-        # --- 5. Deep validation of embedded objects ---
-        if self._deep:
-            for idx, tower in enumerate(scenario.towers):
-                sub = self._tower_validator.validate(tower)
-                for err in sub.errors:
-                    result.errors.append(
-                        ValidationError(
-                            field=f"towers[{idx}].{err.field}",
-                            message=err.message,
-                            severity=err.severity,
-                            code=err.code,
-                        )
-                    )
+        # --- 6. Physics-based TA vs RSSI decay model cross-check ---
+        if scenario.towers and scenario.measurements:
+            env_cfg = get_environment_config(scenario.environment_type)
+            exponent = env_cfg.path_loss_exponent
+            ref_loss = env_cfg.reference_loss_db
+            ref_dist = env_cfg.reference_distance_m
+            sigma = env_cfg.shadow_fading_std_db
 
-            for idx, meas in enumerate(scenario.measurements):
-                sub = self._measurement_validator.validate(meas)
-                for err in sub.errors:
-                    result.errors.append(
-                        ValidationError(
-                            field=f"measurements[{idx}].{err.field}",
-                            message=err.message,
-                            severity=err.severity,
-                            code=err.code,
+            tower_map = {t.tower_id: t for t in scenario.towers if t.tower_id}
+
+            for idx, m in enumerate(scenario.measurements):
+                if m.timing_advance is not None and m.rssi_dbm is not None:
+                    tower = tower_map.get(m.tower_id)
+                    if tower is not None and tower.transmit_power_dbm is not None:
+                        ta = m.timing_advance
+                        # Compute distance interval implied by TA
+                        d_min = max(ref_dist, (ta - 0.5) * TA_RESOLUTION_M)
+                        d_max = max(ref_dist, (ta + 0.5) * TA_RESOLUTION_M)
+
+                        # Compute path loss at the limits
+                        loss_min = ref_loss + 10.0 * exponent * math.log10(
+                            d_min / ref_dist
                         )
-                    )
+                        loss_max = ref_loss + 10.0 * exponent * math.log10(
+                            d_max / ref_dist
+                        )
+
+                        expected_rssi_max = tower.transmit_power_dbm - loss_min
+                        expected_rssi_min = tower.transmit_power_dbm - loss_max
+
+                        # Define upper and lower bounds with standard deviation margins
+                        rssi_upper_bound = expected_rssi_max + 3.0 * sigma
+                        rssi_lower_bound = expected_rssi_min - 4.0 * sigma
+
+                        # Check for wild mismatch
+                        if m.rssi_dbm > rssi_upper_bound:
+                            result.errors.append(
+                                ValidationError(
+                                    field=f"measurements[{idx}].timing_advance",
+                                    message=(
+                                        f"Physics Mismatch: Measurement '{m.measurement_id}' has RSSI of {m.rssi_dbm} dBm, "
+                                        f"which is physically too strong for the Timing Advance of {ta} "
+                                        f"(implied distance range: {d_min:.1f}m - {d_max:.1f}m, expected RSSI range: "
+                                        f"{expected_rssi_min:.1f} to {expected_rssi_max:.1f} dBm with shadow fading std {sigma} dB)."
+                                    ),
+                                    severity=Severity.WARNING,
+                                    code="SCENARIO_TA_RSSI_PHYSICS_MISMATCH",
+                                )
+                            )
+                        elif m.rssi_dbm < rssi_lower_bound:
+                            result.errors.append(
+                                ValidationError(
+                                    field=f"measurements[{idx}].timing_advance",
+                                    message=(
+                                        f"Physics Mismatch: Measurement '{m.measurement_id}' has RSSI of {m.rssi_dbm} dBm, "
+                                        f"which is physically too weak for the Timing Advance of {ta} "
+                                        f"(implied distance range: {d_min:.1f}m - {d_max:.1f}m, expected RSSI range: "
+                                        f"{expected_rssi_min:.1f} to {expected_rssi_max:.1f} dBm with shadow fading std {sigma} dB)."
+                                    ),
+                                    severity=Severity.WARNING,
+                                    code="SCENARIO_TA_RSSI_PHYSICS_MISMATCH",
+                                )
+                            )
+
+        # --- 7. Deep validation of embedded objects ---
+        if self._deep:
+            if scenario.towers:
+                for idx, tower in enumerate(scenario.towers):
+                    sub = self._tower_validator.validate(tower)
+                    for err in sub.errors:
+                        result.errors.append(
+                            ValidationError(
+                                field=f"towers[{idx}].{err.field}",
+                                message=err.message,
+                                severity=err.severity,
+                                code=err.code,
+                            )
+                        )
+
+            if scenario.measurements:
+                for idx, meas in enumerate(scenario.measurements):
+                    sub = self._measurement_validator.validate(meas)
+                    for err in sub.errors:
+                        result.errors.append(
+                            ValidationError(
+                                field=f"measurements[{idx}].{err.field}",
+                                message=err.message,
+                                severity=err.severity,
+                                code=err.code,
+                            )
+                        )
 
         return result
 
@@ -522,16 +832,27 @@ class ScenarioValidator:
 # ---------------------------------------------------------------------------
 
 
-def validate_measurement(measurement: Measurement) -> ValidationResult:
+def validate_measurement(
+    measurement: Measurement,
+    thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
+) -> ValidationResult:
     """Shortcut: validate a single Measurement."""
-    return MeasurementValidator().validate(measurement)
+    return MeasurementValidator(thresholds).validate(measurement)
 
 
-def validate_tower(tower: Tower) -> ValidationResult:
+def validate_tower(
+    tower: Tower,
+    thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
+) -> ValidationResult:
     """Shortcut: validate a single Tower."""
-    return TowerValidator().validate(tower)
+    return TowerValidator(thresholds).validate(tower)
 
 
-def validate_scenario(scenario: Scenario, *, deep: bool = True) -> ValidationResult:
+def validate_scenario(
+    scenario: Scenario,
+    *,
+    deep: bool = True,
+    thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
+) -> ValidationResult:
     """Shortcut: validate a complete Scenario (optionally with deep checks)."""
-    return ScenarioValidator(deep=deep).validate(scenario)
+    return ScenarioValidator(deep=deep, thresholds=thresholds).validate(scenario)
