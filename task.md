@@ -25,10 +25,10 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
 ---
 
 ## 📅 Day 2: Measurement Validation Engine
-- [ ] **Chaitanya (Scientific):**
-  - [ ] Expand coordinate, RSSI, and timing advance validators in `validators.py`
-  - [ ] Add WGS84 bounding checking rules
-  - [ ] Write unit tests checking out-of-bounds inputs and duplicates
+- [x] **Chaitanya (Scientific):**
+  - [x] Expand coordinate, RSSI, and timing advance validators in `validators.py`
+  - [x] Add WGS84 bounding checking rules
+  - [x] Write unit tests checking out-of-bounds inputs and duplicates
 - [x] **Sriram (Project Lead):**
   - [x] Create API endpoint `POST /measurements/validate`
   - [x] Integrate validators into backend service layer
@@ -40,24 +40,24 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
 ---
 
 ## 📅 Day 3: Localization Engine (Core NLLS)
-- [ ] **Chaitanya (Scientific):**
-  - [ ] Implement initial position estimation logic (e.g., using signal-strength weighted calculations) to provide starting guesses for NLLS optimization
-  - [ ] Implement NLLS Multilateration solver using `scipy.optimize.least_squares` (`scientific/pipeline/multilateration.py`)
-  - [ ] Write mathematical unit tests verifying geometry convergence on prepared validation scenarios
-- [ ] **Sriram (Project Lead):**
-  - [ ] Create `localization_results` ORM model (with `case_id` relation) and migrations
-  - [ ] Implement `LocalizationRepository` and `LocalizationService`
-  - [ ] Create endpoint `POST /localization/run` returning coordinates and computation timing
-- [ ] **Dinesh (Frontend):**
-  - [ ] Add API services client to call `/localization/run`
-  - [ ] Implement a static placeholder Localization Result Card detailing metrics
+- [x] **Chaitanya (Scientific):**
+  - [x] Implement initial position estimation logic (e.g., using signal-strength weighted calculations) to provide starting guesses for NLLS optimization
+  - [x] Implement NLLS Multilateration solver using `scipy.optimize.least_squares` (`scientific/pipeline/multilateration.py`)
+  - [x] Write mathematical unit tests verifying geometry convergence on prepared validation scenarios
+- [x] **Sriram (Project Lead):**
+  - [x] Create `localization_results` ORM model (with `case_id` relation) and migrations
+  - [x] Implement `LocalizationRepository` and `LocalizationService`
+  - [x] Create endpoint `POST /localization/run` returning coordinates and computation timing
+- [x] **Dinesh (Frontend):**
+  - [x] Add API services client to call `/localization/run`
+  - [x] Implement a static placeholder Localization Result Card detailing metrics
 
 ---
 
 ## 📅 Day 4: Tracking Engine (Kalman Filter)
-- [ ] **Chaitanya (Scientific):**
-  - [ ] Implement Constant-Velocity 2D Kalman Filter tracker (`scientific/pipeline/kalman_tracker.py`)
-  - [ ] Write unit tests verifying tracking path convergence and noise smoothing
+- [x] **Chaitanya (Scientific):**
+  - [x] Implement Constant-Velocity 2D Kalman Filter tracker (`scientific/pipeline/kalman_tracker.py`)
+  - [x] Write unit tests verifying tracking path convergence and noise smoothing
 - [ ] **Sriram (Project Lead):**
   - [ ] Create `tracking_results` ORM model (linking to `cases` and `localization_results.id`) and migrations
   - [ ] Implement `TrackingRepository` and `TrackingService`
