@@ -156,3 +156,49 @@ export interface LocalizationResult extends LocalizationResponse {
   error_distance_m: number | null;
   time_elapsed_ms: number;
 }
+
+// ── Tracking ────────────────────────────────────────────────────────────
+
+/**
+ * A single chronological step in the smoothed tracking path.
+ * Maps to the backend's `TrackingStep` model.
+ */
+export interface TrackingStep {
+  step_number: number;           // 1-indexed position in the path
+  latitude: number;              // smoothed WGS84 latitude
+  longitude: number;             // smoothed WGS84 longitude
+  velocity_kmh: number;          // estimated velocity at this step (km/h)
+  timestamp: string;             // ISO 8601
+  heading_deg?: number | null;   // optional bearing 0–360°
+}
+
+/**
+ * Payload sent to `POST /tracking/run`.
+ */
+export interface TrackingRequest {
+  case_code: string;
+  algorithm?: Algorithm;
+  smoothing_factor?: number;     // default 0.8
+}
+
+/**
+ * Raw response from `POST /tracking/run`.
+ */
+export interface TrackingResponse {
+  case_code: string;
+  total_steps: number;
+  path: TrackingStep[];
+  distance_km: number;           // total path distance
+  avg_velocity_kmh: number;
+  computation_time_ms: number;
+}
+
+/**
+ * Client-enriched tracking result.
+ *
+ * Extends the raw backend response with:
+ *   - `time_elapsed_ms` — wall-clock execution time
+ */
+export interface TrackingResult extends TrackingResponse {
+  time_elapsed_ms: number;
+}
