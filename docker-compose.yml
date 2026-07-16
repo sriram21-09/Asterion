@@ -11,6 +11,7 @@ services:
     volumes:
       - ./backend:/app
       - ./datasets:/app/datasets
+      - ./scientific:/app/scientific
     restart: always
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
