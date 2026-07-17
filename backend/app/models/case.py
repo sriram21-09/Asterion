@@ -7,6 +7,8 @@ if TYPE_CHECKING:
     from app.models.scenario import Scenario
     from app.models.measurement import Measurement
     from app.models.localization_result import LocalizationResult
+    from app.models.tracking_result import TrackingResult
+    from app.models.confidence_result import ConfidenceResult
 
 
 class Case(BaseModel):
@@ -27,4 +29,10 @@ class Case(BaseModel):
     )
     localization_results: Mapped[list["LocalizationResult"]] = relationship(
         "LocalizationResult", back_populates="case", cascade="all, delete-orphan"
+    )
+    tracking_results: Mapped[list["TrackingResult"]] = relationship(
+        "TrackingResult", back_populates="case", cascade="all, delete-orphan"
+    )
+    confidence_results: Mapped[list["ConfidenceResult"]] = relationship(
+        "ConfidenceResult", back_populates="case", cascade="all, delete-orphan"
     )

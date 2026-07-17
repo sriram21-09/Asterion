@@ -6,3 +6,5 @@ from app.models.scenario import Scenario  # noqa: F401
 from app.models.tower import Tower  # noqa: F401
 from app.models.measurement import Measurement  # noqa: F401
 from app.models.localization_result import LocalizationResult  # noqa: F401
+from app.models.tracking_result import TrackingResult  # noqa: F401
+from app.models.confidence_result import ConfidenceResult  # noqa: F401

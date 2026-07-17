@@ -24,6 +24,7 @@ from app.models.case import Case
 from app.models.scenario import Scenario
 from app.models.measurement import Measurement
 from app.models.localization_result import LocalizationResult
+from app.models.tracking_result import TrackingResult  # noqa: F401 - needed for mapper resolution
 from app.database.session import get_db
 from app.repositories.localization_repository import LocalizationRepository
 from app.services.localization_service import LocalizationService
