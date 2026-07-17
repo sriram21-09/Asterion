@@ -70,9 +70,9 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
 
 ## 📅 Day 5: Confidence & Evidence Engines
 - [ ] **Chaitanya (Scientific):**
-  - [ ] Implement GDOP-based geometric analysis and covariance-derived uncertainty calculations in `scientific/pipeline/confidence.py`
-  - [ ] Implement audit evidence builder inside `scientific/pipeline/evidence.py`
-  - [ ] Test confidence bounds on collinear vs. equilateral geometries
+  - [x] Implement GDOP-based geometric analysis and covariance-derived uncertainty calculations in `scientific/pipeline/confidence.py`
+  - [x] Implement audit evidence builder inside `scientific/pipeline/evidence.py`
+  - [x] Test confidence bounds on collinear vs. equilateral geometries
 - [ ] **Sriram (Project Lead):**
   - [ ] Create `confidence_results` database schema (linking to `cases` and `localization_results.id`) and migrations
   - [ ] Implement repository layers and services for confidence and case evidence retrieval
