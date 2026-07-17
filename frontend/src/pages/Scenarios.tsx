@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, LayoutGrid, List, Radio, Signal, Clock, MapPin, Hash, Crosshair } from 'lucide-react'
+import { Plus, LayoutGrid, List, Radio, Signal, Clock, MapPin, Hash, Crosshair, Navigation } from 'lucide-react'
 import { useScenarios, useCreateScenario, useDeleteScenario } from '@/hooks/useScenarios'
 import { ScenarioTable } from '@/components/scenarios/ScenarioTable'
 import { ScenarioCard } from '@/components/scenarios/ScenarioCard'
@@ -9,8 +9,10 @@ import { SkeletonGrid, ErrorCard, ConfirmDialog } from '@/components/ui'
 import { useSimulationStore } from '@/stores/simulationStore'
 import { useValidationStore } from '@/stores/validationStore'
 import { useLocalizationStore } from '@/stores/localizationStore'
+import { useTrackingStore } from '@/stores/trackingStore'
 import { ValidationSummary } from '@/components/validation/ValidationSummary'
 import { LocalizationResultCard } from '@/components/localization/LocalizationResultCard'
+import { TrackingPathTable } from '@/components/tracking/TrackingPathTable'
 import type { CreateScenarioDTO } from '@/types/scenario'
 import type { Measurement } from '@/types/scientific'
 
@@ -26,6 +28,7 @@ export default function Scenarios() {
   const { measurements, isGenerating } = useSimulationStore()
   const { validateMeasurements, isValidating } = useValidationStore()
   const { runLocalization, isRunning: isLocalizing } = useLocalizationStore()
+  const { runTracking, isRunning: isTracking } = useTrackingStore()
 
   useEffect(() => {
     document.title = 'Scenarios — Asterion'
@@ -137,11 +140,15 @@ export default function Scenarios() {
         isValidating={isValidating}
         onLocalize={() => runLocalization(measurements)}
         isLocalizing={isLocalizing}
+        onTrack={(caseCode) => runTracking(caseCode)}
+        isTracking={isTracking}
       />
 
       <ValidationSummary />
 
       <LocalizationResultCard />
+
+      <TrackingPathTable />
 
       {/* Create Scenario Modal */}
       {isFormOpen && (
@@ -177,13 +184,15 @@ interface MeasurementsCardProps {
   isValidating: boolean
   onLocalize: () => void
   isLocalizing: boolean
+  onTrack: (caseCode: string) => void
+  isTracking: boolean
 }
 
 /**
  * Static table card displaying generated simulation measurements.
  * Visible once measurements have been generated via the simulation store.
  */
-function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating, onLocalize, isLocalizing }: MeasurementsCardProps) {
+function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating, onLocalize, isLocalizing, onTrack, isTracking }: MeasurementsCardProps) {
   if (measurements.length === 0 && !isGenerating) return null
 
   return (
@@ -221,6 +230,15 @@ function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating
               >
                 <Crosshair className="h-3.5 w-3.5" />
                 {isLocalizing ? 'Localizing...' : 'Localize'}
+              </button>
+              <button
+                onClick={() => onTrack('CASE-001')}
+                disabled={isTracking}
+                title="Run tracking path analysis"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Navigation className="h-3.5 w-3.5" />
+                {isTracking ? 'Tracking...' : 'Track'}
               </button>
             </>
           )}
