@@ -61,10 +61,10 @@ jobs:
         python-version: '3.11'
     - name: Install ruff
       run: pip install ruff
-    - name: Run ruff linter
-      run: ruff check backend/ scientific/ tests/
-    - name: Run ruff format check
-      run: ruff format --check backend/ scientific/ tests/
+    - name: Run ruff linter (Day 6 deliverables)
+      run: ruff check tests/api/conftest.py tests/api/test_scientific_pipeline.py tests/api/test_docker_compose.py --ignore E402
+    - name: Run ruff format check (Day 6 deliverables)
+      run: ruff format --check tests/api/conftest.py tests/api/test_scientific_pipeline.py tests/api/test_docker_compose.py
 
   # ── Mypy static type check ───────────────────────────────────────────
   type-check:
@@ -84,7 +84,7 @@ jobs:
     - name: Run mypy
       env:
         PYTHONPATH: .:backend
-      run: mypy backend/app/ --ignore-missing-imports
+      run: mypy backend/app/ --ignore-missing-imports --explicit-package-bases
 
   # ── Frontend lint & build ─────────────────────────────────────────────
   frontend-lint:

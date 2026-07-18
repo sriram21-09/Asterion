@@ -65,9 +65,7 @@ class TestScientificPipelineE2E:
     def test_step2_create_case_linked_to_scenario(self, client):
         """POST /api/v1/cases/ creates a case linked to scenario."""
         # Create scenario first
-        scn = client.post(
-            "/api/v1/scenarios/", json={"name": "Case Link Scenario"}
-        )
+        scn = client.post("/api/v1/scenarios/", json={"name": "Case Link Scenario"})
         scn_id = scn.json()["data"]["id"]
 
         response = client.post(
@@ -103,7 +101,9 @@ class TestScientificPipelineE2E:
         data = response.json()
         assert data["success"] is True
         measurements = data["data"]
-        assert len(measurements) >= 3, f"Expected >= 3 measurements, got {len(measurements)}"
+        assert len(measurements) >= 3, (
+            f"Expected >= 3 measurements, got {len(measurements)}"
+        )
 
     def test_step4_run_localization(self, client, seed_scenario_and_case):
         """POST /api/v1/localization/run runs multilateration solver."""
@@ -124,9 +124,7 @@ class TestScientificPipelineE2E:
         )
 
         # Run localization
-        response = client.post(
-            f"/api/v1/localization/run?case_code={case_code}"
-        )
+        response = client.post(f"/api/v1/localization/run?case_code={case_code}")
         assert response.status_code == 200, f"Localization failed: {response.json()}"
         data = response.json()["data"]
         assert "estimated_latitude" in data
@@ -155,9 +153,7 @@ class TestScientificPipelineE2E:
         client.post(f"/api/v1/localization/run?case_code={case_code}")
 
         # Run tracking
-        response = client.post(
-            f"/api/v1/tracking/run?case_code={case_code}"
-        )
+        response = client.post(f"/api/v1/tracking/run?case_code={case_code}")
         assert response.status_code == 200, f"Tracking failed: {response.json()}"
         data = response.json()["data"]
         assert "total_steps" in data
@@ -187,9 +183,7 @@ class TestScientificPipelineE2E:
         client.post(f"/api/v1/localization/run?case_code={case_code}")
 
         # Run confidence
-        response = client.post(
-            f"/api/v1/confidence/run?case_code={case_code}"
-        )
+        response = client.post(f"/api/v1/confidence/run?case_code={case_code}")
         assert response.status_code == 200, f"Confidence failed: {response.json()}"
         data = response.json()["data"]
         assert "confidence_score" in data
@@ -447,7 +441,9 @@ class TestSwaggerDocs:
 class TestPipelineErrorHandling:
     """Verify pipeline endpoints return proper errors for invalid inputs."""
 
-    def test_localization_without_measurements_fails(self, client, seed_scenario_and_case):
+    def test_localization_without_measurements_fails(
+        self, client, seed_scenario_and_case
+    ):
         """Localization with no measurements returns 400."""
         _, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
@@ -463,7 +459,9 @@ class TestPipelineErrorHandling:
         response = client.post(f"/api/v1/tracking/run?case_code={case_code}")
         assert response.status_code in (400, 422)
 
-    def test_confidence_without_measurements_fails(self, client, seed_scenario_and_case):
+    def test_confidence_without_measurements_fails(
+        self, client, seed_scenario_and_case
+    ):
         """Confidence with no measurements returns 400."""
         _, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
