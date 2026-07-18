@@ -9,6 +9,8 @@ from app.api.v1.routers.simulation import router as simulation_router
 from app.api.v1.routers.measurements import router as measurements_router
 from app.api.v1.routers.localization import router as localization_router
 from app.api.v1.routers.tracking import router as tracking_router
+from app.api.v1.routers.confidence import router as confidence_router
+from app.api.v1.routers.evidence import router as evidence_router
 from app.exceptions.handlers import register_exception_handlers
 from app.middleware.logging import LoggingMiddleware
 from app.core.config import settings
@@ -42,6 +44,8 @@ app.include_router(simulation_router, prefix=settings.api_prefix)
 app.include_router(measurements_router, prefix=settings.api_prefix)
 app.include_router(localization_router, prefix=settings.api_prefix)
 app.include_router(tracking_router, prefix=settings.api_prefix)
+app.include_router(confidence_router, prefix=settings.api_prefix)
+app.include_router(evidence_router, prefix=settings.api_prefix)
 
 
 class TowerSignal(BaseModel):

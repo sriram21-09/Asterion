@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, LayoutGrid, List, Radio, Signal, Clock, MapPin, Hash, Crosshair, Navigation } from 'lucide-react'
+import { Plus, LayoutGrid, List, Radio, Signal, Clock, MapPin, Hash, Crosshair, Navigation, ShieldCheck, FileCheck } from 'lucide-react'
 import { useScenarios, useCreateScenario, useDeleteScenario } from '@/hooks/useScenarios'
 import { ScenarioTable } from '@/components/scenarios/ScenarioTable'
 import { ScenarioCard } from '@/components/scenarios/ScenarioCard'
@@ -10,9 +10,13 @@ import { useSimulationStore } from '@/stores/simulationStore'
 import { useValidationStore } from '@/stores/validationStore'
 import { useLocalizationStore } from '@/stores/localizationStore'
 import { useTrackingStore } from '@/stores/trackingStore'
+import { useConfidenceStore } from '@/stores/confidenceStore'
+import { useEvidenceStore } from '@/stores/evidenceStore'
 import { ValidationSummary } from '@/components/validation/ValidationSummary'
 import { LocalizationResultCard } from '@/components/localization/LocalizationResultCard'
 import { TrackingPathTable } from '@/components/tracking/TrackingPathTable'
+import { ConfidenceScoreCard } from '@/components/confidence/ConfidenceScoreCard'
+import { EvidenceAuditCard } from '@/components/evidence/EvidenceAuditCard'
 import type { CreateScenarioDTO } from '@/types/scenario'
 import type { Measurement } from '@/types/scientific'
 
@@ -29,6 +33,8 @@ export default function Scenarios() {
   const { validateMeasurements, isValidating } = useValidationStore()
   const { runLocalization, isRunning: isLocalizing } = useLocalizationStore()
   const { runTracking, isRunning: isTracking } = useTrackingStore()
+  const { runConfidence, isRunning: isAnalyzing } = useConfidenceStore()
+  const { fetchEvidence, isLoading: isFetchingEvidence } = useEvidenceStore()
 
   useEffect(() => {
     document.title = 'Scenarios — Asterion'
@@ -142,6 +148,10 @@ export default function Scenarios() {
         isLocalizing={isLocalizing}
         onTrack={(caseCode) => runTracking(caseCode)}
         isTracking={isTracking}
+        onConfidence={(caseCode) => runConfidence(caseCode)}
+        isAnalyzing={isAnalyzing}
+        onEvidence={(caseCode) => fetchEvidence(caseCode)}
+        isFetchingEvidence={isFetchingEvidence}
       />
 
       <ValidationSummary />
@@ -149,6 +159,10 @@ export default function Scenarios() {
       <LocalizationResultCard />
 
       <TrackingPathTable />
+
+      <ConfidenceScoreCard />
+
+      <EvidenceAuditCard />
 
       {/* Create Scenario Modal */}
       {isFormOpen && (
@@ -186,13 +200,17 @@ interface MeasurementsCardProps {
   isLocalizing: boolean
   onTrack: (caseCode: string) => void
   isTracking: boolean
+  onConfidence: (caseCode: string) => void
+  isAnalyzing: boolean
+  onEvidence: (caseCode: string) => void
+  isFetchingEvidence: boolean
 }
 
 /**
  * Static table card displaying generated simulation measurements.
  * Visible once measurements have been generated via the simulation store.
  */
-function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating, onLocalize, isLocalizing, onTrack, isTracking }: MeasurementsCardProps) {
+function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating, onLocalize, isLocalizing, onTrack, isTracking, onConfidence, isAnalyzing, onEvidence, isFetchingEvidence }: MeasurementsCardProps) {
   if (measurements.length === 0 && !isGenerating) return null
 
   return (
@@ -239,6 +257,24 @@ function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating
               >
                 <Navigation className="h-3.5 w-3.5" />
                 {isTracking ? 'Tracking...' : 'Track'}
+              </button>
+              <button
+                onClick={() => onConfidence('CASE-001')}
+                disabled={isAnalyzing}
+                title="Run confidence analysis"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                {isAnalyzing ? 'Analyzing...' : 'Confidence'}
+              </button>
+              <button
+                onClick={() => onEvidence('CASE-001')}
+                disabled={isFetchingEvidence}
+                title="Retrieve evidence audit packet"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FileCheck className="h-3.5 w-3.5" />
+                {isFetchingEvidence ? 'Fetching...' : 'Evidence'}
               </button>
             </>
           )}
