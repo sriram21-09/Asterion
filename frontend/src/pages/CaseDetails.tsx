@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
-  Briefcase,
   Calendar,
   ChevronLeft,
   Radio,
@@ -82,7 +81,17 @@ export default function CaseDetails() {
       clearConfidence()
       clearEvidence()
     }
-  }, [caseCode, caseData])
+  }, [
+    caseCode,
+    caseData,
+    clearResults,
+    clearValidation,
+    clearLocalization,
+    clearTracking,
+    clearConfidence,
+    clearEvidence,
+    fetchMeasurements,
+  ])
 
   const handleRunSimulation = async () => {
     if (!caseData?.scenario_id || !associatedScenario) return
