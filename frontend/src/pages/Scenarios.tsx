@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, LayoutGrid, List, Radio, Signal, Clock, MapPin, Hash, Crosshair, Navigation, ShieldCheck, FileCheck } from 'lucide-react'
+import { Plus, LayoutGrid, List, Radio, Signal, Clock, MapPin, Hash, Crosshair, Navigation, ShieldCheck, Shield, FileCheck, Zap, RotateCcw } from 'lucide-react'
 import { useScenarios, useCreateScenario, useDeleteScenario } from '@/hooks/useScenarios'
 import { ScenarioTable } from '@/components/scenarios/ScenarioTable'
 import { ScenarioCard } from '@/components/scenarios/ScenarioCard'
@@ -12,6 +12,9 @@ import { useLocalizationStore } from '@/stores/localizationStore'
 import { useTrackingStore } from '@/stores/trackingStore'
 import { useConfidenceStore } from '@/stores/confidenceStore'
 import { useEvidenceStore } from '@/stores/evidenceStore'
+import { usePipelineCoordinator } from '@/stores/pipelineCoordinator'
+import { PipelineProgress } from '@/components/pipeline/PipelineProgress'
+import { PipelineWarningCards } from '@/components/pipeline/PipelineWarningCards'
 import { ValidationSummary } from '@/components/validation/ValidationSummary'
 import { LocalizationResultCard } from '@/components/localization/LocalizationResultCard'
 import { TrackingPathTable } from '@/components/tracking/TrackingPathTable'
@@ -29,16 +32,55 @@ export default function Scenarios() {
   const createScenario = useCreateScenario()
   const deleteScenario = useDeleteScenario()
 
+  // ── Existing store subscriptions (for display) ───────────────────────
   const { measurements, isGenerating } = useSimulationStore()
-  const { validateMeasurements, isValidating } = useValidationStore()
-  const { runLocalization, isRunning: isLocalizing } = useLocalizationStore()
-  const { runTracking, isRunning: isTracking } = useTrackingStore()
-  const { runConfidence, isRunning: isAnalyzing } = useConfidenceStore()
-  const { fetchEvidence, isLoading: isFetchingEvidence } = useEvidenceStore()
+  const { isValidating } = useValidationStore()
+  const { isRunning: isLocalizing } = useLocalizationStore()
+  const { isRunning: isTracking } = useTrackingStore()
+  const { isRunning: isAnalyzing } = useConfidenceStore()
+  const { isLoading: isFetchingEvidence } = useEvidenceStore()
+
+  // ── Pipeline coordinator ─────────────────────────────────────────────
+  const {
+    currentStage,
+    isPipelineRunning,
+    runFullPipeline,
+    clearPipeline,
+  } = usePipelineCoordinator()
 
   useEffect(() => {
     document.title = 'Scenarios — Asterion'
   }, [])
+
+  // ── Pipeline-driven simulation trigger ───────────────────────────────
+  const handleRunSimulation = async (id: number, name: string) => {
+    try {
+      await runFullPipeline(id, name)
+    } catch (err) {
+      console.error('Pipeline run failed:', err)
+    }
+  }
+
+  // ── Manual re-run handlers (for individual stages after pipeline) ────
+  const handleManualValidate = () => {
+    useValidationStore.getState().validateMeasurements(measurements)
+  }
+
+  const handleManualLocalize = () => {
+    useLocalizationStore.getState().runLocalization(measurements)
+  }
+
+  const handleManualTrack = (caseCode: string) => {
+    useTrackingStore.getState().runTracking(caseCode)
+  }
+
+  const handleManualConfidence = (caseCode: string) => {
+    useConfidenceStore.getState().runConfidence(caseCode)
+  }
+
+  const handleManualEvidence = (caseCode: string) => {
+    useEvidenceStore.getState().fetchEvidence(caseCode)
+  }
 
   const handleCreateScenario = (data: CreateScenarioDTO) => {
     createScenario.mutate(data, {
@@ -122,6 +164,7 @@ export default function Scenarios() {
               scenarios={scenarios}
               onDelete={(id) => setDeleteTarget(id)}
               isDeleting={deleteScenario.isPending}
+              onRunSimulation={(id, name) => handleRunSimulation(id, name)}
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -138,21 +181,30 @@ export default function Scenarios() {
         </>
       )}
 
+      {/* ── Pipeline Progress Indicator ─────────────────────────────────── */}
+      <PipelineProgress />
+
       {/* ── Generated Measurements Table ──────────────────────────────── */}
-      <MeasurementsCard 
-        measurements={measurements} 
-        isGenerating={isGenerating} 
-        onValidate={() => validateMeasurements(measurements)}
+      <MeasurementsCard
+        measurements={measurements}
+        isGenerating={isGenerating || currentStage === 'simulating'}
+        isPipelineRunning={isPipelineRunning}
+        currentStage={currentStage}
+        onClearPipeline={clearPipeline}
+        onValidate={handleManualValidate}
         isValidating={isValidating}
-        onLocalize={() => runLocalization(measurements)}
+        onLocalize={handleManualLocalize}
         isLocalizing={isLocalizing}
-        onTrack={(caseCode) => runTracking(caseCode)}
+        onTrack={handleManualTrack}
         isTracking={isTracking}
-        onConfidence={(caseCode) => runConfidence(caseCode)}
+        onConfidence={handleManualConfidence}
         isAnalyzing={isAnalyzing}
-        onEvidence={(caseCode) => fetchEvidence(caseCode)}
+        onEvidence={handleManualEvidence}
         isFetchingEvidence={isFetchingEvidence}
       />
+
+      {/* ── Pipeline Warning Cards ──────────────────────────────────────── */}
+      <PipelineWarningCards />
 
       <ValidationSummary />
 
@@ -194,6 +246,9 @@ export default function Scenarios() {
 interface MeasurementsCardProps {
   measurements: Measurement[]
   isGenerating: boolean
+  isPipelineRunning: boolean
+  currentStage: string
+  onClearPipeline: () => void
   onValidate: () => void
   isValidating: boolean
   onLocalize: () => void
@@ -209,9 +264,32 @@ interface MeasurementsCardProps {
 /**
  * Static table card displaying generated simulation measurements.
  * Visible once measurements have been generated via the simulation store.
+ *
+ * When the pipeline is running, individual re-run buttons are disabled.
+ * After the pipeline completes, manual re-run buttons become available
+ * as small secondary/outline actions.
  */
-function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating, onLocalize, isLocalizing, onTrack, isTracking, onConfidence, isAnalyzing, onEvidence, isFetchingEvidence }: MeasurementsCardProps) {
+function MeasurementsCard({
+  measurements,
+  isGenerating,
+  isPipelineRunning,
+  currentStage,
+  onClearPipeline,
+  onValidate,
+  isValidating,
+  onLocalize,
+  isLocalizing,
+  onTrack,
+  isTracking,
+  onConfidence,
+  isAnalyzing,
+  onEvidence,
+  isFetchingEvidence,
+}: MeasurementsCardProps) {
   if (measurements.length === 0 && !isGenerating) return null
+
+  const pipelineComplete = currentStage === 'complete' || currentStage === 'failed'
+  const showManualButtons = pipelineComplete && measurements.length > 0
 
   return (
     <div className="rounded-2xl border border-border-primary bg-surface-primary shadow-sm overflow-hidden">
@@ -230,59 +308,84 @@ function MeasurementsCard({ measurements, isGenerating, onValidate, isValidating
             </p>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          {!isGenerating && measurements.length > 0 && (
-            <>
-              <button
-                onClick={onValidate}
-                disabled={isValidating}
-                className="inline-flex items-center px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isValidating ? 'Validating...' : 'Validate'}
-              </button>
-              <button
-                onClick={onLocalize}
-                disabled={isLocalizing || measurements.length < 3}
-                title={measurements.length < 3 ? 'At least 3 signals required' : 'Run localization engine'}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-primary text-white border border-brand-primary/20 rounded-xl text-sm font-semibold hover:bg-brand-primary/90 transition-colors shadow-lg shadow-brand-primary/15 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Crosshair className="h-3.5 w-3.5" />
-                {isLocalizing ? 'Localizing...' : 'Localize'}
-              </button>
-              <button
-                onClick={() => onTrack('CASE-001')}
-                disabled={isTracking}
-                title="Run tracking path analysis"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Navigation className="h-3.5 w-3.5" />
-                {isTracking ? 'Tracking...' : 'Track'}
-              </button>
-              <button
-                onClick={() => onConfidence('CASE-001')}
-                disabled={isAnalyzing}
-                title="Run confidence analysis"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                {isAnalyzing ? 'Analyzing...' : 'Confidence'}
-              </button>
-              <button
-                onClick={() => onEvidence('CASE-001')}
-                disabled={isFetchingEvidence}
-                title="Retrieve evidence audit packet"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-surface-secondary text-content-primary border border-border-primary rounded-xl text-sm font-semibold hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FileCheck className="h-3.5 w-3.5" />
-                {isFetchingEvidence ? 'Fetching...' : 'Evidence'}
-              </button>
-            </>
+        <div className="flex items-center space-x-2">
+          {/* Pipeline running indicator */}
+          {isPipelineRunning && (
+            <span className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-full bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+              <Zap className="w-3 h-3 animate-pulse" />
+              <span>Pipeline Running…</span>
+            </span>
           )}
-          {isGenerating && (
+
+          {/* Generating indicator */}
+          {isGenerating && !isPipelineRunning && (
             <span className="inline-flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
               <span>Generating…</span>
             </span>
+          )}
+
+          {/* Clear / Reset button */}
+          {pipelineComplete && (
+            <button
+              onClick={onClearPipeline}
+              title="Clear pipeline results"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-content-tertiary hover:text-content-primary bg-surface-secondary border border-border-primary rounded-lg transition-colors"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Reset
+            </button>
+          )}
+
+          {/* Manual re-run buttons (only after pipeline completes) */}
+          {showManualButtons && (
+            <>
+              <button
+                onClick={onValidate}
+                disabled={isValidating || isPipelineRunning}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-content-secondary bg-surface-secondary border border-border-primary rounded-lg hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Re-run validation"
+              >
+                <ShieldCheck className="h-3 w-3" />
+                {isValidating ? '…' : 'Validate'}
+              </button>
+              <button
+                onClick={onLocalize}
+                disabled={isLocalizing || isPipelineRunning || measurements.length < 3}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-content-secondary bg-surface-secondary border border-border-primary rounded-lg hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Re-run localization"
+              >
+                <Crosshair className="h-3 w-3" />
+                {isLocalizing ? '…' : 'Localize'}
+              </button>
+              <button
+                onClick={() => onTrack('CASE-001')}
+                disabled={isTracking || isPipelineRunning}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-content-secondary bg-surface-secondary border border-border-primary rounded-lg hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Re-run tracking"
+              >
+                <Navigation className="h-3 w-3" />
+                {isTracking ? '…' : 'Track'}
+              </button>
+              <button
+                onClick={() => onConfidence('CASE-001')}
+                disabled={isAnalyzing || isPipelineRunning}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-content-secondary bg-surface-secondary border border-border-primary rounded-lg hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Re-run confidence"
+              >
+                <Shield className="h-3 w-3" />
+                {isAnalyzing ? '…' : 'Confidence'}
+              </button>
+              <button
+                onClick={() => onEvidence('CASE-001')}
+                disabled={isFetchingEvidence || isPipelineRunning}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-content-secondary bg-surface-secondary border border-border-primary rounded-lg hover:bg-surface-tertiary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Re-run evidence"
+              >
+                <FileCheck className="h-3 w-3" />
+                {isFetchingEvidence ? '…' : 'Evidence'}
+              </button>
+            </>
           )}
         </div>
       </div>

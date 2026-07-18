@@ -32,6 +32,9 @@ from scientific.validation.validators import (
     validate_measurement,
     validate_scenario,
     validate_tower,
+    ResultValidator,
+    cross_validate,
+    validate_batch,
 )
 
 __all__ = [
@@ -44,4 +47,7 @@ __all__ = [
     "validate_measurement",
     "validate_tower",
     "validate_scenario",
+    "ResultValidator",
+    "cross_validate",
+    "validate_batch",
 ]
