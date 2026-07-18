@@ -20,7 +20,6 @@ import pytest
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
-from scientific.models.measurement import Measurement
 from scientific.models.result import LocalizationResult, ConfidenceResult, PipelineResult
 from scientific.validation.validators import (
     ResultValidator,

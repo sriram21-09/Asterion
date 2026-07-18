@@ -15,8 +15,6 @@ Test count: 72 tests
 
 import logging
 import math
-import os
-from datetime import datetime, timezone
 
 import pytest
 
@@ -40,7 +38,6 @@ from scientific.constants import (
     DEFAULT_ANTENNA_HEIGHT_M,
     DEFAULT_COVERAGE_RADIUS_M,
     DEFAULT_FREQUENCY_MHZ,
-    DEFAULT_NOISE_FLOOR_DBM,
     DEFAULT_TRANSMIT_POWER_DBM,
     DEG_TO_RAD,
     EARTH_RADIUS_M,
@@ -50,7 +47,6 @@ from scientific.constants import (
     MAX_ANTENNA_HEIGHT_M,
     MAX_COVERAGE_RADIUS_M,
     MAX_TX_POWER_DBM,
-    METERS_PER_DEGREE_LAT,
     MIN_ANTENNA_HEIGHT_M,
     MIN_TX_POWER_DBM,
     PI,
@@ -65,7 +61,6 @@ from scientific.constants import (
     TA_MAX_VALUE,
     TA_RESOLUTION_M,
     THERMAL_NOISE_DBM_HZ,
-    TYPICAL_CHANNEL_BW_HZ,
     WGS84_FLATTENING_INV,
     WGS84_SEMI_MAJOR_M,
     db_to_linear,
@@ -76,8 +71,6 @@ from scientific.constants import (
     watts_to_dbm,
 )
 from scientific.logger import (
-    DEFAULT_DATE_FORMAT,
-    DEFAULT_FORMAT,
     FALLBACK_LEVEL,
     LOG_LEVEL_ENV_VAR,
     ROOT_LOGGER_NAME,

@@ -8,11 +8,8 @@ Tests cover:
   - API response model conformance
 """
 
-import json
 import pytest
-from pathlib import Path
 from datetime import datetime, timezone
-from unittest.mock import patch, MagicMock
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -27,7 +24,6 @@ from app.models.localization_result import LocalizationResult
 from app.models.tracking_result import TrackingResult  # noqa: F401 - needed for mapper resolution
 from app.database.session import get_db
 from app.repositories.localization_repository import LocalizationRepository
-from app.services.localization_service import LocalizationService
 
 
 # ---------------------------------------------------------------------------

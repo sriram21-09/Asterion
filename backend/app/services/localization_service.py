@@ -1,5 +1,4 @@
 import json
-import time
 from pathlib import Path
 from typing import List
 from sqlalchemy.orm import Session
@@ -16,8 +15,6 @@ from scientific.models.tower import Tower as ScientificTower
 from scientific.models.result import LocalizationResult as ScientificResult
 from scientific.models.scenario_config import (
     ScenarioConfig,
-    PropagationDefaults,
-    SimulationParameters,
 )
 from scientific.pipeline.multilateration import solve_multilateration
 

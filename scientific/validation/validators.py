@@ -42,7 +42,7 @@ import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional, Protocol, TypeVar, Dict, Any
+from typing import List, Optional, Protocol, TypeVar, Dict
 
 from scientific.models.measurement import Measurement
 from scientific.models.scenario import Scenario
