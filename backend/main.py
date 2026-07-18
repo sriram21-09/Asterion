@@ -1,3 +1,12 @@
+import os
+import sys
+from pathlib import Path
+
+# Ensure root and backend directories are in sys.path for local and nested imports
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "backend"))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel

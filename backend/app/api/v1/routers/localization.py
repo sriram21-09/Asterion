@@ -16,7 +16,6 @@ from app.database.session import get_db
 from app.schemas.response import APIResponse
 from app.schemas.localization import LocalizationRunResponse
 from app.services.localization_service import LocalizationService
-from app.shared.validation import encode_case_code, encode_scenario_code
 
 router = APIRouter(prefix="/localization", tags=["localization"])
 

@@ -9,10 +9,8 @@ Tests cover:
   - API endpoint response shape and error cases
 """
 
-import math
 import pytest
 from datetime import datetime, timezone
-from unittest.mock import patch, MagicMock
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -22,12 +20,10 @@ from sqlalchemy.pool import StaticPool
 from app.models.base import Base
 from app.models.case import Case
 from app.models.scenario import Scenario
-from app.models.measurement import Measurement
 from app.models.localization_result import LocalizationResult
 from app.models.tracking_result import TrackingResult
 from app.database.session import get_db
 from app.repositories.tracking_repository import TrackingRepository
-from app.repositories.localization_repository import LocalizationRepository
 from app.services.tracking_service import TrackingService
 
 

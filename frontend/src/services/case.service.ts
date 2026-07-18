@@ -8,6 +8,7 @@ const mapCaseResponse = (raw: any): Case => {
     title: raw.title,
     description: raw.description || undefined,
     status: raw.status,
+    scenario_id: raw.scenario_id != null ? Number(raw.scenario_id) : undefined,
     created_at: raw.created_at || raw.createdAt,
     updated_at: raw.updated_at || raw.updatedAt,
     createdAt: raw.created_at || raw.createdAt,

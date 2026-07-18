@@ -10,7 +10,6 @@ Tests every deliverable from Day 3 (Chaitanya — Scientific Engineer):
 
 import json
 import sys
-import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -425,7 +424,6 @@ from app.shared.validation import (
     DEFAULT_PAGE,
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
-    MAX_BULK_ITEMS,
 )
 
 
