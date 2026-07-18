@@ -11,7 +11,6 @@ Usage:
 
 import sys
 from pathlib import Path
-from datetime import datetime, timezone
 
 # Setup path for backend imports
 ROOT = Path(__file__).resolve().parents[1]

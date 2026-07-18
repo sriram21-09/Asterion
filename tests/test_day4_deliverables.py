@@ -34,7 +34,6 @@ from scientific.models.scenario_config import (
 )
 from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
-from scientific.models.measurement import Measurement
 
 
 # ── TowerPlacement Tests ─────────────────────────────────────────────

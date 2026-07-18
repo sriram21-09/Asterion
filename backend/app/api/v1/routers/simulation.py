@@ -48,3 +48,46 @@ def generate_simulation(
         )
 
     return APIResponse(success=True, data=data)
+
+
+@router.get(
+    "/measurements",
+    response_model=APIResponse[List[MeasurementResponse]],
+    status_code=status.HTTP_200_OK,
+    summary="Get measurements for a case",
+    description="Retrieve stored measurements for the given case.",
+)
+def get_measurements(
+    case_code: str = Query(..., description="The unique Case Code (e.g. CASE-001)"),
+    db: Session = Depends(get_db),
+):
+    from fastapi import HTTPException
+    from app.shared.validation import decode_case_code
+    from app.repositories.measurement_repository import MeasurementRepository
+    from app.repositories.case_repository import CaseRepository
+
+    case_id = decode_case_code(case_code)
+    case = CaseRepository.get(db, case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+
+    measurements = MeasurementRepository.get_by_case(db, case_id)
+
+    data = []
+    for m in measurements:
+        data.append(
+            MeasurementResponse(
+                measurement_code=m.measurement_code,
+                case_code=encode_case_code(m.case_id),
+                scenario_code=encode_scenario_code(m.scenario_id) if m.scenario_id else None,
+                timestamp=m.timestamp,
+                rssi_dbm=m.rssi_dbm,
+                latitude=m.latitude,
+                longitude=m.longitude,
+                timing_advance=m.timing_advance,
+                uncertainty_m=m.uncertainty_m,
+            )
+        )
+
+    return APIResponse(success=True, data=data)
+

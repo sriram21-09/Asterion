@@ -22,9 +22,8 @@ from app.repositories.localization_repository import LocalizationRepository
 from app.repositories.case_repository import CaseRepository
 from app.shared.validation import ValidationError, decode_case_code
 
-from scientific.constants import haversine_distance_m, METERS_PER_DEGREE_LAT
+from scientific.constants import haversine_distance_m
 from scientific.models.result import LocalizationResult as ScientificResult
-from scientific.models.scenario_config import ScenarioConfig
 from scientific.pipeline.kalman_tracker import track_positions
 
 

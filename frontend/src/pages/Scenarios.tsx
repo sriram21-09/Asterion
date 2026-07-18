@@ -81,7 +81,6 @@ export default function Scenarios() {
   const handleManualEvidence = (caseCode: string) => {
     useEvidenceStore.getState().fetchEvidence(caseCode)
   }
-
   const handleCreateScenario = (data: CreateScenarioDTO) => {
     createScenario.mutate(data, {
       onSuccess: () => setIsFormOpen(false),
@@ -290,8 +289,6 @@ function MeasurementsCard({
 
   const pipelineComplete = currentStage === 'complete' || currentStage === 'failed'
   const showManualButtons = pipelineComplete && measurements.length > 0
-
-  return (
     <div className="rounded-2xl border border-border-primary bg-surface-primary shadow-sm overflow-hidden">
       {/* Card Header */}
       <div className="px-6 py-4 border-b border-border-primary bg-surface-secondary/50 flex items-center justify-between">
@@ -315,6 +312,10 @@ function MeasurementsCard({
               <Zap className="w-3 h-3 animate-pulse" />
               <span>Pipeline Running…</span>
             </span>
+                {isFetchingEvidence ? 'Fetching...' : 'Evidence'}
+              </button>
+            </>
+>>>>>>> main
           )}
 
           {/* Generating indicator */}

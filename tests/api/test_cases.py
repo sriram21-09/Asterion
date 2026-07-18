@@ -13,8 +13,6 @@ from sqlalchemy.orm import sessionmaker
 from main import app
 from app.database.session import get_db
 from app.models.base import Base
-from app.models.case import Case
-from app.models.scenario import Scenario
 
 # Setup in-memory database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
