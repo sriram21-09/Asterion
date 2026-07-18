@@ -29,7 +29,7 @@ export default function Scenarios() {
   const createScenario = useCreateScenario()
   const deleteScenario = useDeleteScenario()
 
-  const { measurements, isGenerating } = useSimulationStore()
+  const { measurements, isGenerating, generateMeasurements } = useSimulationStore()
   const { validateMeasurements, isValidating } = useValidationStore()
   const { runLocalization, isRunning: isLocalizing } = useLocalizationStore()
   const { runTracking, isRunning: isTracking } = useTrackingStore()
@@ -39,6 +39,25 @@ export default function Scenarios() {
   useEffect(() => {
     document.title = 'Scenarios — Asterion'
   }, [])
+
+  const handleRunSimulation = async (id: number, name: string) => {
+    try {
+      await generateMeasurements({
+        scenario_id: String(id),
+        name: name,
+        tower_placements: [],
+        simulation: {
+          algorithm: 'multilateration',
+          max_iterations: 100,
+          convergence_threshold_m: 1.0,
+          measurement_count: 5,
+          enable_noise: true,
+        }
+      })
+    } catch (err) {
+      console.error("Simulation run failed:", err)
+    }
+  }
 
   const handleCreateScenario = (data: CreateScenarioDTO) => {
     createScenario.mutate(data, {
@@ -122,6 +141,7 @@ export default function Scenarios() {
               scenarios={scenarios}
               onDelete={(id) => setDeleteTarget(id)}
               isDeleting={deleteScenario.isPending}
+              onRunSimulation={(id, name) => handleRunSimulation(id, name)}
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

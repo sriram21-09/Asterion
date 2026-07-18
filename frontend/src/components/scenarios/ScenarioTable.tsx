@@ -5,9 +5,10 @@ interface ScenarioTableProps {
   scenarios: Scenario[];
   onDelete: (id: number) => void;
   isDeleting: boolean;
+  onRunSimulation: (id: number, name: string) => void;
 }
 
-export function ScenarioTable({ scenarios, onDelete, isDeleting }: ScenarioTableProps) {
+export function ScenarioTable({ scenarios, onDelete, isDeleting, onRunSimulation }: ScenarioTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-border-primary bg-surface-primary shadow-sm">
       <table className="w-full text-left text-sm text-content-secondary">
@@ -38,8 +39,9 @@ export function ScenarioTable({ scenarios, onDelete, isDeleting }: ScenarioTable
               </td>
               <td className="px-6 py-4 text-right space-x-2">
                 <button
+                  onClick={() => onRunSimulation(s.id, s.name)}
                   className="p-2 text-content-tertiary hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-colors"
-                  title="View Scenario"
+                  title="Run Simulation"
                 >
                   <Eye className="w-4 h-4" />
                 </button>
