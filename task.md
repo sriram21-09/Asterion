@@ -86,9 +86,9 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
 
 ## 📅 Day 6: Pipeline Integration & E2E Testing
 - [ ] **Chaitanya (Scientific):**
-  - [ ] Create the central runner script `scientific/pipeline/runner.py` connecting the modules
-  - [ ] Benchmark execution time (ensuring performance runs within HLD performance targets: <2s for localization on the demo dataset)
-  - [ ] Add pipeline runner integration tests
+  - [x] Create the central runner script `scientific/pipeline/runner.py` connecting the modules
+  - [x] Benchmark execution time (ensuring performance runs within HLD performance targets: <2s for localization on the demo dataset)
+  - [x] Add pipeline runner integration tests
 - [ ] **Sriram (Project Lead):**
   - [ ] Run complete database persistence test suites
   - [ ] Perform Docker stack smoke testing (`docker compose up --build`)

@@ -14,6 +14,7 @@ from scientific.pipeline.evidence import synthesize_evidence
 from scientific.pipeline.kalman_tracker import KalmanTracker, track_positions
 from scientific.pipeline.multilateration import solve_multilateration
 from scientific.pipeline.weighted_centroid import solve_weighted_centroid
+from scientific.pipeline.runner import run_pipeline
 
 __all__ = [
     "solve_weighted_centroid",
@@ -22,4 +23,5 @@ __all__ = [
     "track_positions",
     "compute_confidence",
     "synthesize_evidence",
+    "run_pipeline",
 ]
