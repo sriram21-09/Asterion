@@ -92,11 +92,47 @@ export const useSimulationStore = create<SimulationState>()(
         set({ isGenerating: true, error: null });
         try {
           const response = await simulationService.generateMeasurements(request);
+          
+          const rawList = Array.isArray(response) ? response : (response as any).measurements || [];
+          const measurementsList = rawList.map((m: any, idx: number) => {
+            // Map measurement_code to measurement_id
+            // Extract tower_id if present (e.g. MEAS-SCNXXX-TYYY-ZZZZ), otherwise fallback to round-robin
+            const parts = (m.measurement_code || '').split('-');
+            let towerId = null;
+            for (const part of parts) {
+              if (part.startsWith('T') && /^\d+$/.test(part.slice(1))) {
+                towerId = part;
+                break;
+              }
+            }
+            if (!towerId) {
+              const match = (m.measurement_code || '').match(/\d+/);
+              const num = match ? parseInt(match[0], 10) : (idx + 1);
+              const towerIndex = ((num - 1) % 3) + 1;
+              towerId = `T${String(towerIndex).padStart(3, '0')}`;
+            }
+
+            return {
+              measurement_id: m.measurement_code,
+              tower_id: towerId,
+              timestamp: m.timestamp,
+              rssi_dbm: m.rssi_dbm,
+              latitude: m.latitude,
+              longitude: m.longitude,
+              timing_advance: m.timing_advance,
+              uncertainty_m: m.uncertainty_m,
+            };
+          });
+
+          const scenarioId = Array.isArray(response) ? (response[0]?.scenario_code || null) : (response as any).scenario_id || null;
+          const measurementCount = measurementsList.length;
+          const towerCount = new Set(measurementsList.map((m: any) => m.tower_id)).size;
+
           set({
-            measurements: response.measurements,
-            scenarioId: response.scenario_id,
-            towerCount: response.tower_count,
-            measurementCount: response.measurement_count,
+            measurements: measurementsList,
+            scenarioId,
+            towerCount,
+            measurementCount,
             isGenerating: false,
             error: null,
           });

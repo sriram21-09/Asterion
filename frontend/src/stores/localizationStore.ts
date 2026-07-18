@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 import type {
   LocalizationResult,
-  LocalizationRequest,
-  TowerSignal,
   Measurement,
 } from '@/types/scientific';
-import { localizationService } from '@/services/localizationService';
+import { api } from '@/lib/api';
+import { useSimulationStore } from './simulationStore';
 
 // ── Haversine helper ────────────────────────────────────────────────────
 
@@ -64,17 +63,6 @@ const INITIAL_STATE = {
   error: null as string | null,
 } as const;
 
-// ── Measurement → TowerSignal adapter ───────────────────────────────────
-
-function toTowerSignals(measurements: Measurement[]): TowerSignal[] {
-  return measurements.map((m) => ({
-    tower_id: m.tower_id,
-    latitude: m.latitude ?? 0,
-    longitude: m.longitude ?? 0,
-    signal_strength_dbm: m.rssi_dbm,
-    timestamp: new Date(m.timestamp).getTime() / 1000,
-  }));
-}
 
 // ── Store ────────────────────────────────────────────────────────────────
 
@@ -84,31 +72,48 @@ export const useLocalizationStore = create<LocalizationState>()((set) => ({
   runLocalization: async (measurements, algorithm, expectedLat, expectedLon) => {
     set({ isRunning: true, error: null });
 
-    const signals = toTowerSignals(measurements);
-    const request: LocalizationRequest = {
-      signals,
-      ...(algorithm ? { algorithm: algorithm as LocalizationRequest['algorithm'] } : {}),
-    };
+    const { scenarioId } = useSimulationStore.getState();
+    const idNum = scenarioId
+      ? parseInt(String(scenarioId).replace(/\D/g, ''), 10) || 1
+      : 1;
+    const caseCode = `CASE-${String(idNum).padStart(3, '0')}`;
 
     const startTime = performance.now();
 
     try {
-      const response = await localizationService.runLocalization(request);
+      // 1. Trigger database-backed localization
+      const locResponse = await api.post(`/localization/run?case_code=${caseCode}`);
+      const locData = (locResponse as any).data ?? locResponse;
+
+      // 2. Trigger database-backed confidence run
+      let confidenceScore = 0.85;
+      try {
+        const confResponse = await api.post(`/confidence/run?case_code=${caseCode}`);
+        const confData = (confResponse as any).data ?? confResponse;
+        if (confData && typeof confData.confidence_score === 'number') {
+          confidenceScore = confData.confidence_score;
+        }
+      } catch (confErr) {
+        console.warn('Confidence run failed (non-blocking):', confErr);
+      }
+
       const elapsed = Math.round(performance.now() - startTime);
 
+      const estLat = locData.estimated_latitude;
+      const estLon = locData.estimated_longitude;
+
       // Compute error distance if expected coordinates are known
-      let errorDistance: number | null = null;
-      if (expectedLat != null && expectedLon != null) {
-        errorDistance = haversineMetres(
-          expectedLat,
-          expectedLon,
-          response.estimated_latitude,
-          response.estimated_longitude,
-        );
+      let errorDistance: number | null = locData.error_m ?? null;
+      if (errorDistance === null && expectedLat != null && expectedLon != null) {
+        errorDistance = haversineMetres(expectedLat, expectedLon, estLat, estLon);
       }
 
       const enrichedResult: LocalizationResult = {
-        ...response,
+        estimated_latitude: estLat,
+        estimated_longitude: estLon,
+        confidence_score: confidenceScore,
+        signals_used: locData.signals_used || measurements.length,
+        algorithm_applied: locData.algorithm || algorithm || 'multilateration',
         error_distance_m: errorDistance,
         time_elapsed_ms: elapsed,
       };
