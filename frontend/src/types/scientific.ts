@@ -202,3 +202,103 @@ export interface TrackingResponse {
 export interface TrackingResult extends TrackingResponse {
   time_elapsed_ms: number;
 }
+
+// ── Confidence ─────────────────────────────────────────────────────────
+
+/**
+ * Payload sent to `POST /confidence/run` (as query param).
+ */
+export interface ConfidenceRunRequest {
+  case_code: string;
+}
+
+/**
+ * Raw response from `POST /confidence/run`.
+ * Maps to `app.schemas.confidence.ConfidenceRunResponse`.
+ */
+export interface ConfidenceRunResponse {
+  case_code: string;
+  confidence_score: number;          // 0–1
+  confidence_level: string;          // "High" | "Medium" | "Low"
+  error_ellipse_semi_major_m: number | null;
+  error_ellipse_semi_minor_m: number | null;
+  error_ellipse_orientation_deg: number | null;
+  gdop: number | null;
+  method: string;
+  computation_time_ms: number;
+}
+
+// ── Evidence ───────────────────────────────────────────────────────────
+
+/**
+ * Summary statistics of measurement validation in an evidence packet.
+ * Maps to `app.schemas.evidence.EvidenceSummary`.
+ */
+export interface EvidenceSummary {
+  total_measurements: number;
+  accepted_measurements: number;
+  rejected_measurements: number;
+  towers_total: number;
+  towers_used_count: number;
+}
+
+/**
+ * Per-tower measurement audit detail.
+ * Maps to `app.schemas.evidence.EvidenceTower`.
+ */
+export interface EvidenceTower {
+  tower_id: string;
+  latitude: number;
+  longitude: number;
+  total_measurements: number;
+  accepted_measurements: number;
+  rejected_measurements: number;
+  status: string;
+}
+
+/**
+ * A single rejection error detail.
+ * Maps to `app.schemas.evidence.EvidenceRejectionError`.
+ */
+export interface EvidenceRejectionError {
+  field: string;
+  message: string;
+  code: string;
+  severity: string;                  // "error" | "warning"
+}
+
+/**
+ * Details of a rejected measurement.
+ * Maps to `app.schemas.evidence.EvidenceRejection`.
+ */
+export interface EvidenceRejection {
+  measurement_id: string | null;
+  tower_id: string | null;
+  timestamp: string | null;
+  errors: EvidenceRejectionError[];
+}
+
+/**
+ * Confidence data included in an evidence packet (optional).
+ * Maps to `app.schemas.evidence.EvidenceConfidence`.
+ */
+export interface EvidenceConfidence {
+  confidence_score: number | null;
+  confidence_level: string | null;
+  gdop: number | null;
+  method: string | null;
+}
+
+/**
+ * Full evidence audit packet response.
+ * Maps to `app.schemas.evidence.EvidenceResponse`.
+ */
+export interface EvidenceResponse {
+  case_code: string;
+  scenario_id: string | null;
+  summary: EvidenceSummary;
+  towers: EvidenceTower[];
+  accepted_measurement_ids: string[];
+  rejections: EvidenceRejection[];
+  confidence: EvidenceConfidence | null;
+}

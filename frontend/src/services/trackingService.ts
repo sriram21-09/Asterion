@@ -21,8 +21,8 @@ export const trackingService = {
     payload: TrackingRequest,
   ): Promise<TrackingResponse> => {
     const { data } = await api.post<TrackingResponse>(
-      '/tracking/run',
-      payload,
+      `/tracking/run?case_code=${payload.case_code}`,
+      {}
     );
     return data;
   },

@@ -43,7 +43,11 @@ def list_cases(
     description="Returns the health status of the cases component.",
 )
 def health_check():
-    return {"status": "healthy", "service": "cases-api", "version": settings.app_version}
+    return {
+        "status": "healthy",
+        "service": "cases-api",
+        "version": settings.app_version,
+    }
 
 
 @router.get(

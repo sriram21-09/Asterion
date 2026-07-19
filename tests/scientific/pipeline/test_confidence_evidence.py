@@ -1,8 +1,4 @@
-import math
-import pytest
 from datetime import datetime, timezone
-
-from scientific.config import ValidationThresholds
 from scientific.models.measurement import Measurement
 from scientific.models.tower import Tower
 from scientific.pipeline.confidence import compute_confidence

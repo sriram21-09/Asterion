@@ -8,7 +8,7 @@ measurement covariance.
 """
 
 import math
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
@@ -145,7 +145,8 @@ def compute_confidence(
     # 5. Compute Error Ellipse Parameters
     # Get range measurement standard deviation (sigma) from measurements' uncertainty_m
     valid_uncertainties = [
-        m.uncertainty_m for m in measurements 
+        m.uncertainty_m
+        for m in measurements
         if m.uncertainty_m is not None and m.uncertainty_m > 0
     ]
     if valid_uncertainties:
@@ -161,7 +162,7 @@ def compute_confidence(
     a, b = Sigma[0, 0], Sigma[0, 1]
     c = Sigma[1, 1]
 
-    discriminant = math.sqrt((a - c)**2 + 4 * b**2)
+    discriminant = math.sqrt((a - c) ** 2 + 4 * b**2)
     lambda_1 = (a + c + discriminant) / 2.0
     lambda_2 = (a + c - discriminant) / 2.0
 

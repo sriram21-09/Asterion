@@ -12,7 +12,6 @@ from typing import Optional
 from scientific.constants import (
     RSSI_ABSOLUTE_MAX_DBM,
     RSSI_ABSOLUTE_MIN_DBM,
-    db_to_linear,
     dbm_to_watts,
     watts_to_dbm,
 )
@@ -57,7 +56,7 @@ class AWGNModel:
         """
         if std_dev_db <= 0:
             return ideal_rssi
-        
+
         fading = self.rng.gauss(0.0, std_dev_db)
         return ideal_rssi + fading
 

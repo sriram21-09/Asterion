@@ -5,7 +5,7 @@ import numpy as np
 
 from scientific.constants import METERS_PER_DEGREE_LAT
 from scientific.models.result import LocalizationResult
-from scientific.pipeline.kalman_tracker import KalmanTracker, track_positions
+from scientific.pipeline.kalman_tracker import track_positions
 
 
 def test_kalman_empty_and_single_input():

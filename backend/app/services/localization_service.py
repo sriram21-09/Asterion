@@ -1,5 +1,4 @@
 import json
-import time
 from pathlib import Path
 from typing import List
 from sqlalchemy.orm import Session
@@ -16,8 +15,6 @@ from scientific.models.tower import Tower as ScientificTower
 from scientific.models.result import LocalizationResult as ScientificResult
 from scientific.models.scenario_config import (
     ScenarioConfig,
-    PropagationDefaults,
-    SimulationParameters,
 )
 from scientific.pipeline.multilateration import solve_multilateration
 
@@ -171,28 +168,48 @@ class LocalizationService:
                 )
             )
 
-        # 6. Call the multilateration solver
-        result: ScientificResult = solve_multilateration(
-            scenario_id=config.scenario_id,
-            towers=scientific_towers,
-            measurements=scientific_measurements,
-            propagation=config.propagation,
-            simulation=config.simulation,
-            expected_device_lat=config.expected_device_lat,
-            expected_device_lon=config.expected_device_lon,
-        )
+        # Group measurements by timestamp
+        from collections import defaultdict
 
-        # 7. Persist result
-        db_result = LocalizationResultORM(
-            case_id=case_id,
-            scenario_id=case.scenario_id,
-            algorithm=result.algorithm,
-            estimated_latitude=result.estimated_latitude,
-            estimated_longitude=result.estimated_longitude,
-            error_m=result.error_m,
-            computation_time_ms=result.computation_time_ms,
-            signals_used=result.signals_used,
-        )
-        LocalizationRepository.create(db, db_result)
+        measurements_by_time = defaultdict(list)
+        for m in scientific_measurements:
+            measurements_by_time[m.timestamp].append(m)
 
-        return result
+        # Clear previous localization results for this case to avoid staled state
+        db.query(LocalizationResultORM).filter(
+            LocalizationResultORM.case_id == case_id
+        ).delete()
+        db.commit()
+
+        # Run multilateration solver for each timestamp group
+        results: List[ScientificResult] = []
+        sorted_times = sorted(measurements_by_time.keys())
+        for t in sorted_times:
+            group = measurements_by_time[t]
+            result: ScientificResult = solve_multilateration(
+                scenario_id=config.scenario_id,
+                towers=scientific_towers,
+                measurements=group,
+                propagation=config.propagation,
+                simulation=config.simulation,
+                expected_device_lat=config.expected_device_lat,
+                expected_device_lon=config.expected_device_lon,
+            )
+            # Sync timestamp to the group timestamp
+            result.timestamp = t
+            results.append(result)
+
+            db_result = LocalizationResultORM(
+                case_id=case_id,
+                scenario_id=case.scenario_id,
+                algorithm=result.algorithm,
+                estimated_latitude=result.estimated_latitude,
+                estimated_longitude=result.estimated_longitude,
+                error_m=result.error_m,
+                computation_time_ms=result.computation_time_ms,
+                signals_used=result.signals_used,
+                created_at=t,
+            )
+            LocalizationRepository.create(db, db_result)
+
+        return results[-1]

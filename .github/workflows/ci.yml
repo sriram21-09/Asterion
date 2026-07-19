@@ -7,6 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
+  # ── Backend unit tests (inside backend/) ──────────────────────────────
   backend-test:
     runs-on: ubuntu-latest
     steps:
@@ -28,6 +29,64 @@ jobs:
         cd backend
         pytest
 
+  # ── Root-level integration & scientific tests ─────────────────────────
+  root-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest httpx pyyaml
+    - name: Run root test suite
+      env:
+        PYTHONPATH: .:backend
+      run: |
+        pytest tests/ -v
+
+  # ── Ruff format & lint check ──────────────────────────────────────────
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install ruff
+      run: pip install ruff
+    - name: Run ruff linter (Day 6 deliverables)
+      run: ruff check tests/api/conftest.py tests/api/test_scientific_pipeline.py tests/api/test_docker_compose.py --ignore E402
+    - name: Run ruff format check (Day 6 deliverables)
+      run: ruff format --check tests/api/conftest.py tests/api/test_scientific_pipeline.py tests/api/test_docker_compose.py
+
+  # ── Mypy static type check ───────────────────────────────────────────
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install mypy
+    - name: Run mypy
+      env:
+        PYTHONPATH: .:backend
+      run: mypy backend/app/ --ignore-missing-imports --explicit-package-bases
+
+  # ── Frontend lint & build ─────────────────────────────────────────────
   frontend-lint:
     runs-on: ubuntu-latest
     steps:

@@ -10,10 +10,10 @@
 
 <p align="center">
 
-![Version](https://img.shields.io/badge/Version-0.1.0-blue?style=flat-square)
-![Status](https://img.shields.io/badge/Status-MVP%20Development-orange?style=flat-square)
+![Version](https://img.shields.io/badge/Version-0.2.0-blue?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Scientific%20Release-blue?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-![Tests](https://img.shields.io/badge/Tests-323%20Passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/Tests-503%20Passing-brightgreen?style=flat-square)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)
@@ -251,9 +251,9 @@ Asterion/
 
 ## 📊 Current Development Status
 
-> **Project Maturity:** MVP Development — Foundation Sprint (Week 1) Complete
+> **Project Maturity:** Scientific Engine Release — Week 2 Complete
 
-> **Current Version:** `v0.1.0` — Foundation Release ([Changelog](CHANGELOG.md))
+> **Current Version:** `v0.2.0` — Scientific Release ([Changelog](CHANGELOG.md))
 
 ### Implementation Status Matrix
 
@@ -274,14 +274,14 @@ Asterion/
 | **Scientific Package** | ✅ Complete | Constants, config, models, validators — fully decoupled |
 | **CI/CD Pipeline** | ✅ Complete | GitHub Actions running backend tests + frontend lint/build |
 | **Docker Environment** | ✅ Complete | Docker Compose with health checks for both services |
-| **Test Suite** | ✅ Complete | 323 passing tests across all modules |
-| **Measurement Simulator** | 📅 Planned | Week 2 — RSSI signal generation and noise models |
-| **Measurement Validation API** | 📅 Planned | Week 2 — REST endpoint for measurement validation |
-| **Localization Engine (NLLS)** | 📅 Planned | Week 2 — Non-Linear Least Squares multilateration |
-| **Tracking Engine (Kalman)** | 📅 Planned | Week 2 — 2D constant-velocity Kalman Filter |
-| **Confidence Engine** | 📅 Planned | Week 2 — GDOP and covariance error ellipses |
-| **Evidence Engine** | 📅 Planned | Week 2 — Audit trail and rejection matrices |
-| **Pipeline Runner** | 📅 Planned | Week 2 — End-to-end orchestration |
+| **Test Suite** | ✅ Complete | 503 passing tests across all modules |
+| **Measurement Simulator** | ✅ Complete | Week 2 — RSSI signal generation and noise models |
+| **Measurement Validation API** | ✅ Complete | Week 2 — REST endpoint for measurement validation |
+| **Localization Engine (NLLS)** | ✅ Complete | Week 2 — Non-Linear Least Squares multilateration |
+| **Tracking Engine (Kalman)** | ✅ Complete | Week 2 — 2D constant-velocity Kalman Filter |
+| **Confidence Engine** | ✅ Complete | Week 2 — GDOP and covariance error ellipses |
+| **Evidence Engine** | ✅ Complete | Week 2 — Audit trail and rejection matrices |
+| **Pipeline Runner** | ✅ Complete | Week 2 — End-to-end orchestration |
 | **Interactive Map** | 📅 Planned | Week 3 — Leaflet geospatial visualization |
 | **Report Generator** | 📅 Planned | Week 3–4 — Investigation report export |
 | **Performance Testing** | 📅 Planned | Week 4 — Benchmark and optimization |
@@ -385,7 +385,7 @@ The frontend will be available at `http://localhost:3000`.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `APP_NAME` | `Asterion` | Application display name |
-| `APP_VERSION` | `0.1.0` | Current version |
+| `APP_VERSION` | `0.2.0` | Current version |
 | `API_PREFIX` | `/api/v1` | API route prefix |
 | `DATABASE_URL` | `sqlite:///./asterion.db` | SQLite database path |
 | `LOG_LEVEL` | `INFO` | Logging verbosity |
@@ -409,7 +409,7 @@ The frontend will be available at `http://localhost:3000`.
 
 The backend exposes a versioned REST API at `/api/v1`. Interactive documentation is available via Swagger UI at `/docs` when the server is running.
 
-### Implemented Endpoints (v0.1.0)
+### Implemented Endpoints (v0.2.0)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -425,18 +425,12 @@ The backend exposes a versioned REST API at `/api/v1`. Interactive documentation
 | `GET` | `/api/v1/scenarios/{id}` | Get scenario by ID |
 | `PUT` | `/api/v1/scenarios/{id}` | Update a scenario |
 | `DELETE` | `/api/v1/scenarios/{id}` | Delete a scenario |
-| `POST` | `/api/localize` | Weighted centroid localization (skeleton) |
-
-### Planned Endpoints (Week 2)
-
-| Method | Endpoint | Sprint |
-|--------|----------|--------|
-| `POST` | `/api/v1/simulation/generate` | Week 2 Day 1 |
-| `POST` | `/api/v1/measurements/validate` | Week 2 Day 2 |
-| `POST` | `/api/v1/localization/run` | Week 2 Day 3 |
-| `POST` | `/api/v1/tracking/run` | Week 2 Day 4 |
-| `POST` | `/api/v1/confidence/run` | Week 2 Day 5 |
-| `GET` | `/api/v1/evidence/{case_id}` | Week 2 Day 5 |
+| `POST` | `/api/v1/simulation/generate` | Generate synthetic signal strength measurements for a scenario |
+| `POST` | `/api/v1/measurements/validate` | Validate a batch of measurements against physical/logical rules |
+| `POST` | `/api/v1/localization/run` | Run non-linear least squares (NLLS) multilateration on stored measurements |
+| `POST` | `/api/v1/tracking/run` | Run Kalman-smoothed position tracking on stored localization results |
+| `POST` | `/api/v1/confidence/run` | Compute GDOP and error covariance ellipses on localization results |
+| `GET` | `/api/v1/evidence/{case_code}` | Generate comprehensive audit evidence packet for a case |
 
 > All API responses follow a standardized `APIResponse` wrapper with `success`, `data`, and `error` fields.
 
@@ -496,7 +490,7 @@ result = validator.validate(scenario)
 print(f"Valid: {result.is_valid}")  # Valid: True
 ```
 
-### Week 2 Scientific Pipeline (Planned)
+### Scientific Pipeline Architecture
 
 ```text
 ScenarioConfig
@@ -532,7 +526,7 @@ For detailed documentation, see [`scientific/README.md`](scientific/README.md).
 
 ## 🧪 Testing
 
-The project maintains a comprehensive test suite with **323 passing tests** across all modules.
+The project maintains a comprehensive test suite with **503 passing tests** across all modules.
 
 ### Test Distribution
 
@@ -545,6 +539,7 @@ The project maintains a comprehensive test suite with **323 passing tests** acro
 | `tests/api/` | 22 | Case CRUD and Scenario CRUD endpoint tests |
 | `tests/database/` | 12 | Database model validation (Cases, Scenarios, Towers) |
 | `backend/tests/` | 18 | Core config, logging, exception handling, middleware |
+| `tests/test_week2_pipeline.py` | 180 | E2E pipeline integration, solvers, tracking, validation |
 
 ### Running Tests
 
@@ -595,18 +590,18 @@ npm run build
 
 ---
 
-### Sprint 2 — Scientific Engine 📅 In Planning
+### Sprint 2 — Scientific Engine ✅ Complete
 
-> **Target:** v0.2.0 · 7-day sprint
+> **Released as v0.2.0** · [View Changelog](CHANGELOG.md)
 
-- [ ] Measurement Simulator (RSSI generation, noise models)
-- [ ] Measurement Validation REST API
-- [ ] NLLS Multilateration Solver (scipy)
-- [ ] 2D Kalman Filter Tracker
-- [ ] GDOP Confidence Estimator
-- [ ] Evidence Audit Engine
-- [ ] End-to-End Pipeline Runner
-- [ ] Frontend API client integration
+- [x] Measurement Simulator (RSSI generation, noise models)
+- [x] Measurement Validation REST API
+- [x] NLLS Multilateration Solver (scipy)
+- [x] 2D Kalman Filter Tracker
+- [x] GDOP Confidence Estimator
+- [x] Evidence Audit Engine
+- [x] End-to-End Pipeline Runner
+- [x] Frontend API client integration
 
 ---
 
@@ -708,5 +703,5 @@ MIT License · Copyright (c) 2026 Kasukurthi Sriram
 ---
 
 <p align="center">
-  <sub>Built with transparency in mind · Asterion v0.1.0</sub>
+  <sub>Built with transparency in mind · Asterion v0.2.0</sub>
 </p>

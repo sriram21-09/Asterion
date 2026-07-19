@@ -19,14 +19,13 @@ Test count: 45 tests
 """
 
 import json
-import math
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from scientific.models.tower import Tower
-from scientific.validation.validators import TowerValidator, ValidationResult, Severity
+from scientific.validation.validators import TowerValidator, Severity
 
 
 # ═══════════════════════════════════════════════════════════════════════════

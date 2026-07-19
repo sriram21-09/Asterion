@@ -1,5 +1,6 @@
 import type { Case } from '@/types/case';
 import { Eye, Trash2, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 
 interface CaseCardProps {
@@ -56,12 +57,13 @@ export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
         </div>
         
         <div className="flex items-center space-x-1">
-          <button
-            className="p-1.5 text-content-tertiary hover:text-brand-primary hover:bg-brand-primary/10 rounded-md transition-colors"
+          <Link
+            to={`/cases/${c.id}`}
+            className="p-1.5 text-content-tertiary hover:text-brand-primary hover:bg-brand-primary/10 rounded-md transition-colors inline-flex items-center"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
-          </button>
+          </Link>
           <button
             onClick={() => onDelete(c.id)}
             disabled={isDeleting}

@@ -22,9 +22,8 @@ from app.repositories.localization_repository import LocalizationRepository
 from app.repositories.case_repository import CaseRepository
 from app.shared.validation import ValidationError, decode_case_code
 
-from scientific.constants import haversine_distance_m, METERS_PER_DEGREE_LAT
+from scientific.constants import haversine_distance_m
 from scientific.models.result import LocalizationResult as ScientificResult
-from scientific.models.scenario_config import ScenarioConfig
 from scientific.pipeline.kalman_tracker import track_positions
 
 
@@ -85,7 +84,9 @@ class TrackingService:
         for loc in db_loc_results:
             scientific_results.append(
                 ScientificResult(
-                    scenario_id=f"SCN-{loc.scenario_id:03d}" if loc.scenario_id else "SCN-000",
+                    scenario_id=(
+                        f"SCN-{loc.scenario_id:03d}" if loc.scenario_id else "SCN-000"
+                    ),
                     algorithm=loc.algorithm,
                     estimated_latitude=loc.estimated_latitude,
                     estimated_longitude=loc.estimated_longitude,
@@ -163,7 +164,11 @@ class TrackingService:
                     "longitude": row.smoothed_longitude,
                     "velocity_kmh": round(speed_kmh, 2),
                     "timestamp": row.timestamp.isoformat() if row.timestamp else None,
-                    "heading_deg": round(row.heading_deg, 1) if row.heading_deg is not None else None,
+                    "heading_deg": (
+                        round(row.heading_deg, 1)
+                        if row.heading_deg is not None
+                        else None
+                    ),
                 }
             )
 

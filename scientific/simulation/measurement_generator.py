@@ -40,7 +40,10 @@ class MeasurementGenerator:
         Raises:
             ValueError: If expected_device_lat or expected_device_lon is missing.
         """
-        if self.config.expected_device_lat is None or self.config.expected_device_lon is None:
+        if (
+            self.config.expected_device_lat is None
+            or self.config.expected_device_lon is None
+        ):
             raise ValueError(
                 "Cannot generate measurements without expected_device_lat and "
                 "expected_device_lon ground truth coordinates in the configuration."
@@ -78,6 +81,7 @@ class MeasurementGenerator:
                     )
                 else:
                     from scientific.simulation.noise_model import bound_rssi
+
                     final_rssi = bound_rssi(ideal_rssi)
 
                 # Generate a unique measurement ID and slightly staggered timestamp
@@ -113,7 +117,9 @@ def generate_scenario_measurements(
 
     for m in measurements:
         # Find the tower placement that corresponds to this measurement's tower_id
-        tower = next((t for t in config.tower_placements if t.tower_id == m.tower_id), None)
+        tower = next(
+            (t for t in config.tower_placements if t.tower_id == m.tower_id), None
+        )
         if tower:
             # Calculate distance
             distance = RSSIGenerator.calculate_distance(

@@ -13,7 +13,7 @@ def test_default_settings():
 
         settings = Settings()
         assert settings.app_name == "Asterion"
-        assert settings.app_version == "0.1.0"
+        assert settings.app_version == "0.2.0"
         assert settings.api_prefix == "/api/v1"
         assert settings.database_url == "sqlite:///./asterion.db"
         assert settings.log_level == "INFO"

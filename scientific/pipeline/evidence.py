@@ -44,7 +44,8 @@ def synthesize_evidence(
             "accepted_measurements": 0,
             "rejected_measurements": 0,
         }
-        for t in towers if t.tower_id
+        for t in towers
+        if t.tower_id
     }
 
     # Run validation on each measurement
@@ -75,35 +76,48 @@ def synthesize_evidence(
                     "field": err.field,
                     "message": err.message,
                     "code": err.code,
-                    "severity": err.severity.value if hasattr(err.severity, "value") else str(err.severity)
+                    "severity": (
+                        err.severity.value
+                        if hasattr(err.severity, "value")
+                        else str(err.severity)
+                    ),
                 }
                 for err in validation_result.errors
                 if err.severity == Severity.ERROR or str(err.severity) == "error"
             ]
-            rejected_details.append({
-                "measurement_id": m.measurement_id,
-                "tower_id": m.tower_id,
-                "timestamp": m.timestamp.isoformat() if m.timestamp else None,
-                "errors": errors
-            })
+            rejected_details.append(
+                {
+                    "measurement_id": m.measurement_id,
+                    "tower_id": m.tower_id,
+                    "timestamp": m.timestamp.isoformat() if m.timestamp else None,
+                    "errors": errors,
+                }
+            )
 
     # Compile tower info
     towers_list = []
     for t in towers:
-        stats = tower_stats.get(t.tower_id, {
-            "total_measurements": 0,
-            "accepted_measurements": 0,
-            "rejected_measurements": 0,
-        })
-        towers_list.append({
-            "tower_id": t.tower_id,
-            "latitude": t.latitude,
-            "longitude": t.longitude,
-            "total_measurements": stats["total_measurements"],
-            "accepted_measurements": stats["accepted_measurements"],
-            "rejected_measurements": stats["rejected_measurements"],
-            "status": "active" if stats["accepted_measurements"] > 0 else "inactive",
-        })
+        stats = tower_stats.get(
+            t.tower_id,
+            {
+                "total_measurements": 0,
+                "accepted_measurements": 0,
+                "rejected_measurements": 0,
+            },
+        )
+        towers_list.append(
+            {
+                "tower_id": t.tower_id,
+                "latitude": t.latitude,
+                "longitude": t.longitude,
+                "total_measurements": stats["total_measurements"],
+                "accepted_measurements": stats["accepted_measurements"],
+                "rejected_measurements": stats["rejected_measurements"],
+                "status": (
+                    "active" if stats["accepted_measurements"] > 0 else "inactive"
+                ),
+            }
+        )
 
     # Calculate summary metrics
     total_count = len(measurements)
@@ -121,6 +135,8 @@ def synthesize_evidence(
             "towers_used_count": active_towers_count,
         },
         "towers": towers_list,
-        "accepted_measurement_ids": [m.measurement_id for m in accepted_measurements if m.measurement_id],
+        "accepted_measurement_ids": [
+            m.measurement_id for m in accepted_measurements if m.measurement_id
+        ],
         "rejections": rejected_details,
     }

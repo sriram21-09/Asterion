@@ -519,7 +519,8 @@ def decode_scenario_code(code: str) -> int:
         return int(parts[1])
     except (IndexError, ValueError) as e:
         raise ValidationError(
-            "scenario_code", f"Invalid Scenario Code format. Expected SCN-XXX, got {code}."
+            "scenario_code",
+            f"Invalid Scenario Code format. Expected SCN-XXX, got {code}.",
         ) from e
 
 
@@ -542,7 +543,8 @@ def decode_measurement_code(code: str) -> int:
         return int(parts[1])
     except (IndexError, ValueError) as e:
         raise ValidationError(
-            "measurement_code", f"Invalid Measurement Code format. Expected MEAS-XXX, got {code}."
+            "measurement_code",
+            f"Invalid Measurement Code format. Expected MEAS-XXX, got {code}.",
         ) from e
 
 
