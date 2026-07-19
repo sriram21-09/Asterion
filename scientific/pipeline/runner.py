@@ -7,15 +7,14 @@ ScenarioConfig → Validation → Simulation → Evidence Synthesis → Localiza
 """
 
 import time
-from typing import List, Dict, Any, Optional
+from typing import List, Dict
 from collections import defaultdict
 
 from scientific.logger import get_logger
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
-from scientific.models.measurement import Measurement
-from scientific.models.result import LocalizationResult, ConfidenceResult, PipelineResult
+from scientific.models.result import LocalizationResult, PipelineResult
 from scientific.validation.validators import ScenarioValidator, ResultValidator
 from scientific.simulation.measurement_generator import generate_scenario_measurements
 from scientific.pipeline.evidence import synthesize_evidence
@@ -79,6 +78,7 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     measurements = generate_scenario_measurements(config)
     # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
     from datetime import timedelta, timezone, datetime
+
     now_utc = datetime.now(timezone.utc)
     for m in measurements:
         if m.timestamp:
