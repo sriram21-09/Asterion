@@ -8,7 +8,6 @@ Implements a linear Kalman filter for smoothing sequential geodetic coordinates
 
 import math
 import time
-from datetime import datetime, timezone
 from typing import List, Optional
 
 import numpy as np
@@ -59,7 +58,9 @@ class KalmanTracker:
         cos_lat = max(1e-2, math.cos(lat_ref_rad))
 
         # Initial measurement error in degrees
-        err_m = max(1.0, error_m if error_m is not None else self.default_measurement_noise_m)
+        err_m = max(
+            1.0, error_m if error_m is not None else self.default_measurement_noise_m
+        )
         sig_lat = err_m / METERS_PER_DEGREE_LAT
         sig_lon = err_m / (METERS_PER_DEGREE_LAT * cos_lat)
 
@@ -69,12 +70,14 @@ class KalmanTracker:
         sig_v_lon = vel_err_m_s / (METERS_PER_DEGREE_LAT * cos_lat)
 
         self.x = np.array([lat, lon, 0.0, 0.0], dtype=float)
-        self.P = np.diag([
-            sig_lat**2,
-            sig_lon**2,
-            sig_v_lat**2,
-            sig_v_lon**2,
-        ])
+        self.P = np.diag(
+            [
+                sig_lat**2,
+                sig_lon**2,
+                sig_v_lat**2,
+                sig_v_lon**2,
+            ]
+        )
 
     def predict(self, dt: float):
         """Perform the state and covariance prediction step.
@@ -89,12 +92,15 @@ class KalmanTracker:
             return  # No time elapsed, skip prediction
 
         # 1. State transition matrix (F)
-        F = np.array([
-            [1.0, 0.0, dt,   0.0],
-            [0.0, 1.0, 0.0,  dt],
-            [0.0, 0.0, 1.0,  0.0],
-            [0.0, 0.0, 0.0,  1.0]
-        ], dtype=float)
+        F = np.array(
+            [
+                [1.0, 0.0, dt, 0.0],
+                [0.0, 1.0, 0.0, dt],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ],
+            dtype=float,
+        )
 
         # 2. Process noise covariance (Q)
         lat_ref_rad = math.radians(self.x[0])
@@ -108,12 +114,15 @@ class KalmanTracker:
         w_lon = q_acc_lon**2
 
         # Discrete process noise covariance formulation for constant acceleration noise
-        Q = np.array([
-            [(dt**3 / 3.0) * w_lat, 0.0,                   (dt**2 / 2.0) * w_lat, 0.0],
-            [0.0,                   (dt**3 / 3.0) * w_lon, 0.0,                   (dt**2 / 2.0) * w_lon],
-            [(dt**2 / 2.0) * w_lat, 0.0,                   dt * w_lat,             0.0],
-            [0.0,                   (dt**2 / 2.0) * w_lon, 0.0,                   dt * w_lon]
-        ], dtype=float)
+        Q = np.array(
+            [
+                [(dt**3 / 3.0) * w_lat, 0.0, (dt**2 / 2.0) * w_lat, 0.0],
+                [0.0, (dt**3 / 3.0) * w_lon, 0.0, (dt**2 / 2.0) * w_lon],
+                [(dt**2 / 2.0) * w_lat, 0.0, dt * w_lat, 0.0],
+                [0.0, (dt**2 / 2.0) * w_lon, 0.0, dt * w_lon],
+            ],
+            dtype=float,
+        )
 
         # 3. Predict state and covariance
         self.x = F @ self.x
@@ -134,16 +143,15 @@ class KalmanTracker:
         z = np.array([lat, lon], dtype=float)
 
         # 2. Measurement model matrix (H)
-        H = np.array([
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0]
-        ], dtype=float)
+        H = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]], dtype=float)
 
         # 3. Measurement noise covariance (R)
         lat_ref_rad = math.radians(self.x[0])
         cos_lat = max(1e-2, math.cos(lat_ref_rad))
 
-        err_m = max(1.0, error_m if error_m is not None else self.default_measurement_noise_m)
+        err_m = max(
+            1.0, error_m if error_m is not None else self.default_measurement_noise_m
+        )
         r_lat = err_m / METERS_PER_DEGREE_LAT
         r_lon = err_m / (METERS_PER_DEGREE_LAT * cos_lat)
 
@@ -159,8 +167,8 @@ class KalmanTracker:
         # 6. Update state and covariance (Joseph stabilized form)
         self.x = self.x + K @ y
 
-        I = np.eye(4, dtype=float)
-        ImKH = I - K @ H
+        identity_matrix = np.eye(4, dtype=float)
+        ImKH = identity_matrix - K @ H
         self.P = ImKH @ self.P @ ImKH.T + K @ R @ K.T
 
 
@@ -204,14 +212,18 @@ def track_positions(
     smoothed_results: List[LocalizationResult] = []
 
     # Helper to create LocalizationResult
-    def make_result(res_obj: LocalizationResult, x_state: np.ndarray, elapsed_ms: float) -> LocalizationResult:
+    def make_result(
+        res_obj: LocalizationResult, x_state: np.ndarray, elapsed_ms: float
+    ) -> LocalizationResult:
         est_lat = float(x_state[0])
         est_lon = float(x_state[1])
 
         # Compute error if ground truth is available
         error_m = None
         if expected_device_lat is not None and expected_device_lon is not None:
-            error_m = haversine_distance_m(expected_device_lat, expected_device_lon, est_lat, est_lon)
+            error_m = haversine_distance_m(
+                expected_device_lat, expected_device_lon, est_lat, est_lon
+            )
 
         # Compute velocities in meters per second (mps) for physical interpretation
         lat_rad = math.radians(est_lat)
@@ -250,7 +262,9 @@ def track_positions(
 
         # Run Kalman prediction and update step
         tracker.predict(dt)
-        tracker.update(lat=res.estimated_latitude, lon=res.estimated_longitude, error_m=res.error_m)
+        tracker.update(
+            lat=res.estimated_latitude, lon=res.estimated_longitude, error_m=res.error_m
+        )
 
         end_time = time.perf_counter()
         elapsed_ms = (end_time - start_time) * 1000.0

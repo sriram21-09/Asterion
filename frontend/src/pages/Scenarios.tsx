@@ -57,7 +57,7 @@ export default function Scenarios() {
     try {
       await runFullPipeline(id, name)
     } catch (err) {
-      console.error('Pipeline run failed:', err)
+      if (import.meta.env.DEV) console.error('Pipeline run failed:', err)
     }
   }
 

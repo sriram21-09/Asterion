@@ -14,7 +14,7 @@ Welcome to the **Asterion Scientific Engine** package. This is a standalone, dec
 
 ```text
 scientific/
-├── __init__.py              # Package entrypoint (specifies version 0.1.0)
+├── __init__.py              # Package entrypoint (specifies version 0.2.0)
 ├── config.py                # Frozen SimulationConfig, ValidationThresholds, EnvironmentConfig
 ├── constants.py             # Haversine distance, dB/linear conversions, WGS84, Cellular Bands
 ├── logger.py                # Standardized console logging helper
@@ -27,11 +27,17 @@ scientific/
 │   └── result.py            # Localization and confidence calculation outputs
 ├── validation/
 │   ├── __init__.py          # Combined validator exports
-│   └── validators.py        # Measurement, Tower, and Scenario validators
+│   └── validators.py        # Measurement, Tower, Scenario, and Result validators
 ├── simulation/
-│   └── __init__.py          # Placeholder for Week 2 (RSSI signal generator, noise models)
+│   ├── rssi_generator.py    # RSSI signal strength generator using path-loss models
+│   ├── noise_model.py       # Gaussian noise fading models
+│   └── generator.py         # Synthetic measurement generator
 └── pipeline/
-    └── __init__.py          # Placeholder for Week 2 (runner orchestrator, NLLS solver, Kalman tracker)
+    ├── multilateration.py   # NLLS multilateration localization solver
+    ├── weighted_centroid.py # Fallback weighted centroid localization solver
+    ├── kalman_tracker.py    # Kalman tracking filter for device tracks
+    ├── confidence.py        # GDOP and error covariance ellipse estimator
+    └── runner.py            # Central coordinator for E2E processing
 ```
 
 ---
@@ -131,15 +137,15 @@ pytest
 
 ---
 
-## 🚀 Week 2 — Development Roadmap
+## 🚀 Completed Scientific Engine Features (v0.2.0)
 
-Week 2 will implement the computational pipeline to resolve a device's location based on synthetic or real measurements. See [week2_scientific_checklist.md](../Plans/week2_scientific_checklist.md) for full task details:
+The core scientific and mathematical components are fully implemented and integrated:
 
-1. **RSSI Signal Generator** (`scientific/simulation/rssi_generator.py`)
-2. **Noise Injection Model** (`scientific/simulation/noise_model.py`)
-3. **Measurement Synthesizer** (`scientific/simulation/measurement_generator.py`)
-4. **Non-Linear Least Squares Solver (NLLS)** (`scientific/pipeline/multilateration.py`)
-5. **Weighted Centroid Fallback** (`scientific/pipeline/weighted_centroid.py`)
-6. **Kalman Position Tracker** (`scientific/pipeline/kalman_tracker.py`)
-7. **GDOP & Covariance confidence estimator** (`scientific/pipeline/confidence.py`)
-8. **End-to-End Pipeline Orchestrator** (`scientific/pipeline/runner.py`)
+1. **RSSI Signal Generator** (`scientific/simulation/rssi_generator.py`): Simulates log-distance path loss.
+2. **Noise Injection Model** (`scientific/simulation/noise_model.py`): Models shadow fading using standard normal distributions.
+3. **Measurement Synthesizer** (`scientific/simulation/generator.py`): Produces synthetic measurements from scenarios.
+4. **Non-Linear Least Squares Solver (NLLS)** (`scientific/pipeline/multilateration.py`): Performs trilateration.
+5. **Weighted Centroid Fallback** (`scientific/pipeline/weighted_centroid.py`): Centroid estimation based on RSSI weights.
+6. **Kalman Position Tracker** (`scientific/pipeline/kalman_tracker.py`): Performs 2D constant-velocity smoothing.
+7. **GDOP & Covariance confidence estimator** (`scientific/pipeline/confidence.py`): Evaluates geometric errors.
+8. **End-to-End Pipeline Orchestrator** (`scientific/pipeline/runner.py`): Orchestrates simulation, validation, localization, tracking, and confidence.

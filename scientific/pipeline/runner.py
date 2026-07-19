@@ -7,15 +7,23 @@ ScenarioConfig → Validation → Simulation → Evidence Synthesis → Localiza
 """
 
 import time
+<<<<<<< HEAD
 from typing import List, Dict, Any, Optional
+=======
+from typing import List, Dict
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
 from collections import defaultdict
 
 from scientific.logger import get_logger
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
+<<<<<<< HEAD
 from scientific.models.measurement import Measurement
 from scientific.models.result import LocalizationResult, ConfidenceResult, PipelineResult
+=======
+from scientific.models.result import LocalizationResult, PipelineResult
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
 from scientific.validation.validators import ScenarioValidator, ResultValidator
 from scientific.simulation.measurement_generator import generate_scenario_measurements
 from scientific.pipeline.evidence import synthesize_evidence
@@ -60,25 +68,44 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         expected_device_lat=config.expected_device_lat,
         expected_device_lon=config.expected_device_lon,
     )
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
     validator = ScenarioValidator(deep=True)
     val_res = validator.validate(scenario)
     if not val_res.is_valid:
         errors_str = "; ".join(f"{err.field}: {err.message}" for err in val_res.errors)
         logger.error(f"Scenario configuration validation failed: {errors_str}")
         raise ValueError(f"Invalid ScenarioConfig: {errors_str}")
+<<<<<<< HEAD
     
     time_breakdown["validation"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(f"Stage 1 complete: Config validated in {time_breakdown['validation']:.2f} ms")
+=======
+
+    time_breakdown["validation"] = (time.perf_counter() - stage_start) * 1000.0
+    logger.info(
+        f"Stage 1 complete: Config validated in {time_breakdown['validation']:.2f} ms"
+    )
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
 
     # -------------------------------------------------------------------------
     # Stage 2: Generate synthetic measurements
     # -------------------------------------------------------------------------
     stage_start = time.perf_counter()
     measurements = generate_scenario_measurements(config)
+<<<<<<< HEAD
     
     # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
     from datetime import timedelta, timezone, datetime
+=======
+
+    # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
+    from datetime import timedelta, timezone, datetime
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
     now_utc = datetime.now(timezone.utc)
     for m in measurements:
         if m.timestamp:
@@ -86,7 +113,11 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
                 m.timestamp = m.timestamp.replace(tzinfo=timezone.utc)
             if m.timestamp > now_utc:
                 m.timestamp -= timedelta(minutes=1)
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
     scenario.measurements = measurements
     time_breakdown["generation"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
@@ -104,6 +135,7 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         measurements=measurements,
         thresholds=validator.thresholds,
     )
+<<<<<<< HEAD
     
     accepted_ids = set(evidence.get("accepted_measurement_ids", []))
     accepted_measurements = [m for m in measurements if m.measurement_id in accepted_ids]
@@ -112,6 +144,20 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         logger.error("All generated measurements were rejected by validation checks.")
         raise ValueError("All measurements were rejected by validation, cannot locate device.")
         
+=======
+
+    accepted_ids = set(evidence.get("accepted_measurement_ids", []))
+    accepted_measurements = [
+        m for m in measurements if m.measurement_id in accepted_ids
+    ]
+
+    if not accepted_measurements:
+        logger.error("All generated measurements were rejected by validation checks.")
+        raise ValueError(
+            "All measurements were rejected by validation, cannot locate device."
+        )
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
     time_breakdown["evidence"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 3 complete: Filtered {len(accepted_measurements)}/{len(measurements)} "
@@ -122,11 +168,16 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     # Stage 4: Run localization algorithm
     # -------------------------------------------------------------------------
     stage_start = time.perf_counter()
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
     # Group accepted measurements by timestamp for multi-epoch calculations
     meas_by_timestamp = defaultdict(list)
     for m in accepted_measurements:
         meas_by_timestamp[m.timestamp].append(m)
+<<<<<<< HEAD
         
     sorted_timestamps = sorted(meas_by_timestamp.keys())
     raw_localization_results: List[LocalizationResult] = []
@@ -139,6 +190,17 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     for ts in sorted_timestamps:
         epoch_meas = meas_by_timestamp[ts]
         
+=======
+
+    sorted_timestamps = sorted(meas_by_timestamp.keys())
+    raw_localization_results: List[LocalizationResult] = []
+
+    algorithm = config.simulation.algorithm
+
+    for ts in sorted_timestamps:
+        epoch_meas = meas_by_timestamp[ts]
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
         if algorithm == "weighted_centroid":
             loc_res = solve_weighted_centroid(
                 scenario_id=config.scenario_id,
@@ -158,7 +220,11 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
                 expected_device_lat=config.expected_device_lat,
                 expected_device_lon=config.expected_device_lon,
             )
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
         # Override algorithm identifier if we are running kalman/hybrid so the raw epoch holds
         # the base algorithm used
         raw_localization_results.append(loc_res)
@@ -173,7 +239,11 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     # Stage 5: Apply tracking / smoothing (if requested)
     # -------------------------------------------------------------------------
     stage_start = time.perf_counter()
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
     if algorithm in ("kalman", "hybrid"):
         smoothed_results = track_positions(
             results=raw_localization_results,
@@ -185,15 +255,27 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         final_history = raw_localization_results
 
     final_loc_res = final_history[-1]
+<<<<<<< HEAD
     
     time_breakdown["tracking"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(f"Stage 5 complete: Tracker smoothing in {time_breakdown['tracking']:.2f} ms")
+=======
+
+    time_breakdown["tracking"] = (time.perf_counter() - stage_start) * 1000.0
+    logger.info(
+        f"Stage 5 complete: Tracker smoothing in {time_breakdown['tracking']:.2f} ms"
+    )
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
 
     # -------------------------------------------------------------------------
     # Stage 6: Confidence estimation
     # -------------------------------------------------------------------------
     stage_start = time.perf_counter()
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
     confidence = compute_confidence(
         scenario_id=config.scenario_id,
         estimated_latitude=final_loc_res.estimated_latitude,
@@ -202,9 +284,17 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         measurements=accepted_measurements,
         thresholds=validator.thresholds,
     )
+<<<<<<< HEAD
     
     time_breakdown["confidence"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(f"Stage 6 complete: Calculated confidence in {time_breakdown['confidence']:.2f} ms")
+=======
+
+    time_breakdown["confidence"] = (time.perf_counter() - stage_start) * 1000.0
+    logger.info(
+        f"Stage 6 complete: Calculated confidence in {time_breakdown['confidence']:.2f} ms"
+    )
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
 
     # -------------------------------------------------------------------------
     # Compile results and metadata

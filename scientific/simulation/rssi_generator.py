@@ -53,8 +53,11 @@ class RSSIGenerator:
         eff_distance = max(distance_m, propagation.reference_distance_m)
 
         # Log-distance path loss formula: L = L0 + 10 * n * log10(d / d0)
-        loss = propagation.reference_loss_db + 10.0 * propagation.path_loss_exponent * math.log10(
-            eff_distance / propagation.reference_distance_m
+        loss = (
+            propagation.reference_loss_db
+            + 10.0
+            * propagation.path_loss_exponent
+            * math.log10(eff_distance / propagation.reference_distance_m)
         )
         return loss
 

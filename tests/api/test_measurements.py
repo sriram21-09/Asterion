@@ -10,7 +10,6 @@ from fastapi.testclient import TestClient
 from datetime import datetime, timezone, timedelta
 
 from main import app
-from app.schemas.validation import Severity
 
 
 @pytest.fixture(scope="module")

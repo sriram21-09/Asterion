@@ -17,7 +17,15 @@ Exports:
 """
 
 from scientific.models.measurement import Measurement
+<<<<<<< HEAD
 from scientific.models.result import ConfidenceResult, LocalizationResult, PipelineResult
+=======
+from scientific.models.result import (
+    ConfidenceResult,
+    LocalizationResult,
+    PipelineResult,
+)
+>>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
 from scientific.models.scenario import Scenario
 from scientific.models.scenario_config import (
     PropagationDefaults,

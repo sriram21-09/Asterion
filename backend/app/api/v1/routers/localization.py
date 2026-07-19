@@ -16,7 +16,6 @@ from app.database.session import get_db
 from app.schemas.response import APIResponse
 from app.schemas.localization import LocalizationRunResponse
 from app.services.localization_service import LocalizationService
-from app.shared.validation import encode_case_code, encode_scenario_code
 
 router = APIRouter(prefix="/localization", tags=["localization"])
 
@@ -31,9 +30,22 @@ router = APIRouter(prefix="/localization", tags=["localization"])
         "for the given case. Returns computed coordinates, signal count, "
         "error metrics, and execution time."
     ),
+    responses={
+        400: {
+            "model": APIResponse,
+            "description": "Insufficient signal measurements (minimum 3 distinct towers required) to perform multilateration",
+        },
+        404: {"model": APIResponse, "description": "Case or measurements not found"},
+        422: {
+            "model": APIResponse,
+            "description": "Validation error in query parameters",
+        },
+    },
 )
 def run_localization(
-    case_code: str = Query(..., description="The unique Case Code (e.g. CASE-001)"),
+    case_code: str = Query(
+        ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
+    ),
     db: Session = Depends(get_db),
 ):
     result = LocalizationService.run_localization(db=db, case_code=case_code)

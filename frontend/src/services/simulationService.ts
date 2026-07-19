@@ -32,4 +32,19 @@ export const simulationService = {
     );
     return data;
   },
+
+  /**
+   * Fetch existing measurements for a case.
+   *
+   * GET /simulation/measurements
+   */
+  getMeasurements: async (
+    caseCode: string,
+  ): Promise<any[]> => {
+    const { data } = await api.get<any>(
+      `/simulation/measurements?case_code=${caseCode}`
+    );
+    return data;
+  },
 };
+
