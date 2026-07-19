@@ -24,7 +24,6 @@ sys.path.insert(0, str(ROOT))
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # 1. E2E Scientific Pipeline — Sequential Endpoint Tests
 # ---------------------------------------------------------------------------
@@ -101,9 +100,9 @@ class TestScientificPipelineE2E:
         data = response.json()
         assert data["success"] is True
         measurements = data["data"]
-        assert len(measurements) >= 3, (
-            f"Expected >= 3 measurements, got {len(measurements)}"
-        )
+        assert (
+            len(measurements) >= 3
+        ), f"Expected >= 3 measurements, got {len(measurements)}"
 
     def test_step4_run_localization(self, client, seed_scenario_and_case):
         """POST /api/v1/localization/run runs multilateration solver."""
@@ -409,9 +408,9 @@ class TestSwaggerDocs:
             "/api/v1/evidence",
         ]
         for prefix in expected_prefixes:
-            assert prefix in path_keys, (
-                f"Missing endpoint prefix in OpenAPI schema: {prefix}"
-            )
+            assert (
+                prefix in path_keys
+            ), f"Missing endpoint prefix in OpenAPI schema: {prefix}"
 
     def test_docs_page_accessible(self, client):
         """GET /docs returns the Swagger UI page."""

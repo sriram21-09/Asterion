@@ -29,7 +29,9 @@ from app.shared.validation import (
 
 # Setup in-memory database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -53,6 +55,7 @@ def client(db_session):
             yield db_session
         finally:
             pass
+
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -152,6 +155,7 @@ class TestMeasurementDatabase:
         db_session.commit()
 
         from app.repositories.measurement_repository import MeasurementRepository
+
         results = MeasurementRepository.get_by_case_code(db_session, "CASE-001")
         assert len(results) == 1
         assert results[0].id == meas.id
@@ -185,7 +189,11 @@ class TestMeasurementDatabase:
         db_session.commit()
 
         # Verify measurement cascade deleted
-        db_meas = db_session.query(Measurement).filter_by(measurement_code="MEAS-0001").first()
+        db_meas = (
+            db_session.query(Measurement)
+            .filter_by(measurement_code="MEAS-0001")
+            .first()
+        )
         assert db_meas is None
 
     def test_cascade_delete_scenario(self, db_session):
@@ -212,7 +220,11 @@ class TestMeasurementDatabase:
         db_session.commit()
 
         # Verify measurement cascade deleted
-        db_meas = db_session.query(Measurement).filter_by(measurement_code="MEAS-0002").first()
+        db_meas = (
+            db_session.query(Measurement)
+            .filter_by(measurement_code="MEAS-0002")
+            .first()
+        )
         assert db_meas is None
 
 
@@ -237,12 +249,11 @@ class TestSimulationAPI:
             "convergence_threshold_m": 1.0,
             "measurement_count": 2,
             "enable_noise": True,
-            "random_seed": 42
+            "random_seed": 42,
         }
 
         response = client.post(
-            "/api/v1/simulation/generate?case_code=CASE-001",
-            json=payload
+            "/api/v1/simulation/generate?case_code=CASE-001", json=payload
         )
         assert response.status_code == 200
         data = response.json()
@@ -270,11 +281,10 @@ class TestSimulationAPI:
             "convergence_threshold_m": 1.0,
             "measurement_count": 2,
             "enable_noise": True,
-            "random_seed": 42
+            "random_seed": 42,
         }
         response = client.post(
-            "/api/v1/simulation/generate?case_code=CASE-999",
-            json=payload
+            "/api/v1/simulation/generate?case_code=CASE-999", json=payload
         )
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
@@ -292,11 +302,10 @@ class TestSimulationAPI:
             "convergence_threshold_m": 1.0,
             "measurement_count": 2,
             "enable_noise": True,
-            "random_seed": 42
+            "random_seed": 42,
         }
         response = client.post(
-            f"/api/v1/simulation/generate?case_code={case_code}",
-            json=payload
+            f"/api/v1/simulation/generate?case_code={case_code}", json=payload
         )
         assert response.status_code == 400
         assert "scenario" in response.json()["error"]["message"].lower()

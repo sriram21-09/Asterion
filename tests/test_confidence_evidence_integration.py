@@ -30,7 +30,6 @@ from app.repositories.confidence_repository import ConfidenceRepository
 from app.services.confidence_service import ConfidenceService
 from app.services.evidence_service import EvidenceService
 
-
 # ---------------------------------------------------------------------------
 # Test database fixture
 # ---------------------------------------------------------------------------
@@ -447,9 +446,7 @@ class TestEvidenceService:
         with pytest.raises(ValidationError):
             EvidenceService.get_evidence(db, case_code)
 
-    def test_get_evidence_success(
-        self, db: Session, sample_case, sample_measurements
-    ):
+    def test_get_evidence_success(self, db: Session, sample_case, sample_measurements):
         """Service returns evidence audit packet with expected structure."""
         case_code = f"CASE-{sample_case.id:03d}"
         result = EvidenceService.get_evidence(db, case_code)
@@ -608,7 +605,11 @@ class TestEvidenceAPIConformance:
 
     def test_response_schema_fields(self):
         """Verify the response schema has all expected fields."""
-        from app.schemas.evidence import EvidenceResponse, EvidenceSummary, EvidenceTower
+        from app.schemas.evidence import (
+            EvidenceResponse,
+            EvidenceSummary,
+            EvidenceTower,
+        )
 
         fields = EvidenceResponse.model_fields
         expected_fields = [

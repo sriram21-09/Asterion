@@ -35,7 +35,6 @@ from scientific.models.scenario_config import (
 from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
 
-
 # ── TowerPlacement Tests ─────────────────────────────────────────────
 
 
@@ -88,13 +87,17 @@ class TestTowerPlacement:
     def test_negative_antenna_height_rejected(self):
         with pytest.raises(Exception):
             TowerPlacement(
-                tower_id="T001", latitude=0.0, longitude=0.0,
+                tower_id="T001",
+                latitude=0.0,
+                longitude=0.0,
                 antenna_height_m=-5.0,
             )
 
     def test_serialization_roundtrip(self):
         tp = TowerPlacement(
-            tower_id="T001", latitude=12.97, longitude=77.59,
+            tower_id="T001",
+            latitude=12.97,
+            longitude=77.59,
             sector="C",
         )
         data = tp.model_dump()
@@ -302,12 +305,23 @@ class TestScenarioConfig:
 
     def test_from_scenario_factory(self):
         towers = [
-            Tower(tower_id="T001", latitude=12.9716, longitude=77.5946,
-                  antenna_height_m=35.0, frequency_mhz=1800.0,
-                  transmit_power_dbm=43.0, coverage_radius_m=1200.0,
-                  sector="A"),
-            Tower(tower_id="T002", latitude=12.9750, longitude=77.5900,
-                  antenna_height_m=40.0, frequency_mhz=2100.0),
+            Tower(
+                tower_id="T001",
+                latitude=12.9716,
+                longitude=77.5946,
+                antenna_height_m=35.0,
+                frequency_mhz=1800.0,
+                transmit_power_dbm=43.0,
+                coverage_radius_m=1200.0,
+                sector="A",
+            ),
+            Tower(
+                tower_id="T002",
+                latitude=12.9750,
+                longitude=77.5900,
+                antenna_height_m=40.0,
+                frequency_mhz=2100.0,
+            ),
             Tower(tower_id="T003", latitude=12.9700, longitude=77.6000),
         ]
         scenario = Scenario(
@@ -399,8 +413,14 @@ class TestScenarioExampleDataset:
         fields = doc["fields"]
         # All Tower model fields should be documented
         for field_name in [
-            "tower_id", "latitude", "longitude", "antenna_height_m",
-            "frequency_mhz", "transmit_power_dbm", "sector", "coverage_radius_m",
+            "tower_id",
+            "latitude",
+            "longitude",
+            "antenna_height_m",
+            "frequency_mhz",
+            "transmit_power_dbm",
+            "sector",
+            "coverage_radius_m",
         ]:
             assert field_name in fields, f"Missing documentation for {field_name}"
             field_doc = fields[field_name]
@@ -487,7 +507,8 @@ class ScenarioORM(_Base):
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     created_at = Column(
-        DateTime, nullable=False,
+        DateTime,
+        nullable=False,
         default=lambda: datetime.now(timezone.utc),
     )
 
@@ -528,10 +549,12 @@ class TestScenarioRepository:
     def test_list_scenarios(self, scenario_db: Session):
         """Create multiple scenarios and verify list retrieval."""
         for i in range(5):
-            scenario_db.add(ScenarioORM(
-                name=f"Scenario {i+1}",
-                description=f"Test scenario number {i+1}",
-            ))
+            scenario_db.add(
+                ScenarioORM(
+                    name=f"Scenario {i+1}",
+                    description=f"Test scenario number {i+1}",
+                )
+            )
         scenario_db.commit()
 
         results = scenario_db.query(ScenarioORM).all()
@@ -598,9 +621,11 @@ class TestScenarioService:
     def test_scenario_to_config_roundtrip(self):
         """Scenario → ScenarioConfig → JSON → ScenarioConfig roundtrip."""
         towers = [
-            Tower(tower_id=f"T{i+1:03d}",
-                  latitude=12.97 + i * 0.003,
-                  longitude=77.59 - i * 0.005)
+            Tower(
+                tower_id=f"T{i+1:03d}",
+                latitude=12.97 + i * 0.003,
+                longitude=77.59 - i * 0.005,
+            )
             for i in range(3)
         ]
         scenario = Scenario(
@@ -624,22 +649,33 @@ class TestScenarioService:
     def test_config_environment_affects_propagation(self):
         """Different environment types should produce different propagation."""
         placements = [
-            TowerPlacement(tower_id=f"T{i+1:03d}",
-                           latitude=12.97 + i * 0.003,
-                           longitude=77.59 - i * 0.005)
+            TowerPlacement(
+                tower_id=f"T{i+1:03d}",
+                latitude=12.97 + i * 0.003,
+                longitude=77.59 - i * 0.005,
+            )
             for i in range(3)
         ]
         urban = ScenarioConfig(
-            scenario_id="U", name="Urban",
-            tower_placements=placements, environment_type="urban",
+            scenario_id="U",
+            name="Urban",
+            tower_placements=placements,
+            environment_type="urban",
         )
         rural = ScenarioConfig(
-            scenario_id="R", name="Rural",
-            tower_placements=placements, environment_type="rural",
+            scenario_id="R",
+            name="Rural",
+            tower_placements=placements,
+            environment_type="rural",
         )
 
-        assert urban.propagation.path_loss_exponent > rural.propagation.path_loss_exponent
-        assert urban.propagation.shadow_fading_std_db > rural.propagation.shadow_fading_std_db
+        assert (
+            urban.propagation.path_loss_exponent > rural.propagation.path_loss_exponent
+        )
+        assert (
+            urban.propagation.shadow_fading_std_db
+            > rural.propagation.shadow_fading_std_db
+        )
 
 
 # =====================================================================
