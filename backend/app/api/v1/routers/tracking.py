@@ -31,9 +31,25 @@ router = APIRouter(prefix="/tracking", tags=["tracking"])
         "of smoothed track coordinates, velocities, headings, and "
         "overall path metrics."
     ),
+    responses={
+        400: {
+            "model": APIResponse,
+            "description": "Insufficient localization results (minimum 2 sequential results required) to construct a track",
+        },
+        404: {
+            "model": APIResponse,
+            "description": "Case or localization results not found",
+        },
+        422: {
+            "model": APIResponse,
+            "description": "Validation error in query parameters",
+        },
+    },
 )
 def run_tracking(
-    case_code: str = Query(..., description="The unique Case Code (e.g. CASE-001)"),
+    case_code: str = Query(
+        ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
+    ),
     db: Session = Depends(get_db),
 ):
     result = TrackingService.run_tracking(db=db, case_code=case_code)

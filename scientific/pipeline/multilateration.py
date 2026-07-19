@@ -59,8 +59,7 @@ def solve_multilateration(
         tower_rssis.setdefault(m.tower_id, []).append(m.rssi_dbm)
 
     avg_tower_rssi = {
-        tid: sum(rssi_list) / len(rssi_list)
-        for tid, rssi_list in tower_rssis.items()
+        tid: sum(rssi_list) / len(rssi_list) for tid, rssi_list in tower_rssis.items()
     }
 
     # 2. Map tower ID to tower configurations and filter available towers
@@ -107,11 +106,13 @@ def solve_multilateration(
 
     for tid, rssi in valid_towers_rssi.items():
         tower = tower_map[tid]
-        
+
         # Calculate estimated distance
         numerator = tower.transmit_power_dbm - rssi - propagation.reference_loss_db
         denominator = 10.0 * propagation.path_loss_exponent
-        est_dist = propagation.reference_distance_m * (10.0 ** (numerator / denominator))
+        est_dist = propagation.reference_distance_m * (
+            10.0 ** (numerator / denominator)
+        )
         est_distances.append(est_dist)
 
         # Calculate Cartesian coordinates (relative to weighted centroid reference)
@@ -133,7 +134,9 @@ def solve_multilateration(
         x, y = coords
         # residual_i = model_distance_i - estimated_distance_i
         # Adding 1e-9 inside sqrt to ensure differentiability at zero
-        model_distances = np.sqrt((tower_xs_arr - x)**2 + (tower_ys_arr - y)**2 + 1e-9)
+        model_distances = np.sqrt(
+            (tower_xs_arr - x) ** 2 + (tower_ys_arr - y) ** 2 + 1e-9
+        )
         return model_distances - est_distances_arr
 
     # Run solver
@@ -148,7 +151,9 @@ def solve_multilateration(
         )
 
         if not res.success:
-            logger.warning("Least squares optimization failed to converge. Falling back to Weighted Centroid.")
+            logger.warning(
+                "Least squares optimization failed to converge. Falling back to Weighted Centroid."
+            )
             return wc_result
 
         # Extract optimal Cartesian coordinates
@@ -159,7 +164,9 @@ def solve_multilateration(
         est_lon = lon_ref + (x_opt / meters_per_deg_lon)
 
     except Exception as e:
-        logger.error(f"Error during NLLS multilateration optimization: {e}. Falling back to Weighted Centroid.")
+        logger.error(
+            f"Error during NLLS multilateration optimization: {e}. Falling back to Weighted Centroid."
+        )
         return wc_result
 
     end_time = time.perf_counter()

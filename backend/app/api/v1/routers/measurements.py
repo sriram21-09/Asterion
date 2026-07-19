@@ -34,6 +34,12 @@ router = APIRouter(prefix="/measurements", tags=["measurements"])
         "(RSSI range, coordinate bounds, timestamp plausibility, etc.) "
         "and return structured validation results with per-field errors."
     ),
+    responses={
+        422: {
+            "model": APIResponse[ValidateMeasurementsResponse],
+            "description": "Validation failed: some measurements were rejected due to data anomalies",
+        },
+    },
 )
 def validate_measurements(payload: ValidateMeasurementsRequest):
     result = validate_measurements_batch(payload.measurements)

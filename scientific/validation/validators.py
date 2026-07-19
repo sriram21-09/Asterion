@@ -42,10 +42,11 @@ import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional, Protocol, TypeVar, Dict, Any
+from typing import List, Optional, Protocol, TypeVar, Dict
 
 from scientific.models.measurement import Measurement
 from scientific.models.scenario import Scenario
+from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.tower import Tower
 from scientific.models.result import LocalizationResult, ConfidenceResult
 from scientific.config import (
@@ -621,7 +622,11 @@ class ScenarioValidator:
             )
 
         # --- 2. Unique tower IDs ---
-        tower_ids = [t.tower_id for t in scenario.towers if t.tower_id] if scenario.towers else []
+        tower_ids = (
+            [t.tower_id for t in scenario.towers if t.tower_id]
+            if scenario.towers
+            else []
+        )
         seen_towers: set[str] = set()
         for idx, tid in enumerate(tower_ids):
             if tid in seen_towers:
@@ -920,12 +925,18 @@ class ResultValidator:
         # Buffer distance in degrees (based on max coverage radius of the towers, or default 5000m)
         max_coverage = max((t.coverage_radius_m for t in towers), default=5000.0)
         from scientific.constants import METERS_PER_DEGREE_LAT
+
         buffer_deg_lat = (max_coverage * 1.5) / METERS_PER_DEGREE_LAT
         lat_rad = math.radians((min_tower_lat + max_tower_lat) / 2.0)
-        buffer_deg_lon = (max_coverage * 1.5) / (METERS_PER_DEGREE_LAT * max(0.1, math.cos(lat_rad)))
+        buffer_deg_lon = (max_coverage * 1.5) / (
+            METERS_PER_DEGREE_LAT * max(0.1, math.cos(lat_rad))
+        )
 
-        if not (min_tower_lat - buffer_deg_lat <= lat <= max_tower_lat + buffer_deg_lat) or \
-           not (min_tower_lon - buffer_deg_lon <= lon <= max_tower_lon + buffer_deg_lon):
+        if not (
+            min_tower_lat - buffer_deg_lat <= lat <= max_tower_lat + buffer_deg_lat
+        ) or not (
+            min_tower_lon - buffer_deg_lon <= lon <= max_tower_lon + buffer_deg_lon
+        ):
             validation_res.errors.append(
                 ValidationError(
                     field="estimated_latitude/estimated_longitude",
@@ -1021,4 +1032,3 @@ def validate_batch(
     """Validate a batch of Scenario objects, returning a mapping of scenario_id to ValidationResult."""
     validator = ScenarioValidator(deep=deep, thresholds=thresholds)
     return {s.scenario_id: validator.validate(s) for s in scenarios}
-

@@ -8,7 +8,7 @@ Endpoints:
   - ``GET /evidence/{case_code}`` — get evidence audit packet
 """
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Path
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
@@ -36,9 +36,22 @@ router = APIRouter(prefix="/evidence", tags=["evidence"])
         "The packet includes measurement validation results, tower usage "
         "statistics, rejection details, and optionally confidence data."
     ),
+    responses={
+        400: {
+            "model": APIResponse,
+            "description": "Insufficient signal measurements to synthesize an evidence packet",
+        },
+        404: {"model": APIResponse, "description": "Case or measurements not found"},
+        422: {
+            "model": APIResponse,
+            "description": "Validation error in path parameters",
+        },
+    },
 )
 def get_evidence(
-    case_code: str,
+    case_code: str = Path(
+        ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
+    ),
     db: Session = Depends(get_db),
 ):
     result = EvidenceService.get_evidence(db=db, case_code=case_code)

@@ -56,7 +56,7 @@ class AWGNModel:
         """
         if std_dev_db <= 0:
             return ideal_rssi
-        
+
         fading = self.rng.gauss(0.0, std_dev_db)
         return ideal_rssi + fading
 

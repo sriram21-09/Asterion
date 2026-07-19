@@ -30,9 +30,22 @@ router = APIRouter(prefix="/confidence", tags=["confidence"])
         "results for the given case. Returns confidence score, level, "
         "GDOP, and error ellipse parameters."
     ),
+    responses={
+        400: {
+            "model": APIResponse,
+            "description": "Insufficient signal measurements (minimum 3 distinct towers required) to perform confidence analysis",
+        },
+        404: {"model": APIResponse, "description": "Case or measurements not found"},
+        422: {
+            "model": APIResponse,
+            "description": "Validation error in query parameters",
+        },
+    },
 )
 def run_confidence(
-    case_code: str = Query(..., description="The unique Case Code (e.g. CASE-001)"),
+    case_code: str = Query(
+        ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
+    ),
     db: Session = Depends(get_db),
 ):
     result = ConfidenceService.run_confidence(db=db, case_code=case_code)

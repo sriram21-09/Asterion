@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "backend"))
@@ -25,12 +26,19 @@ try:
     db.query(Scenario).delete()
     db.commit()
 
-    s = Scenario(name="Urban 3-Tower Test", description="Standard multilateration scenario in Bangalore core.")
+    s = Scenario(
+        name="Urban 3-Tower Test",
+        description="Standard multilateration scenario in Bangalore core.",
+    )
     db.add(s)
     db.commit()
     db.refresh(s)
-    
-    c = Case(title="MG Road Missing Person Search", description="Tracking device signals near MG Road.", scenario_id=s.id)
+
+    c = Case(
+        title="MG Road Missing Person Search",
+        description="Tracking device signals near MG Road.",
+        scenario_id=s.id,
+    )
     db.add(c)
     db.commit()
     print("Database seeded successfully with case and scenario!")

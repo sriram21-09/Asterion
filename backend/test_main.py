@@ -72,5 +72,5 @@ def test_health():
     assert response.json() == {
         "status": "healthy",
         "service": "asterion-api",
-        "version": "0.1.0",
+        "version": "0.2.0",
     }

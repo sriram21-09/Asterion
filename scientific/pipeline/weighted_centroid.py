@@ -48,8 +48,7 @@ def solve_weighted_centroid(
 
     # Compute average RSSI per unique tower
     avg_tower_rssi = {
-        tid: sum(rssi_list) / len(rssi_list)
-        for tid, rssi_list in tower_rssis.items()
+        tid: sum(rssi_list) / len(rssi_list) for tid, rssi_list in tower_rssis.items()
     }
 
     # 2. Map tower ID to tower configurations

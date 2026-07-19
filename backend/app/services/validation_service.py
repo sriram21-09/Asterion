@@ -173,7 +173,11 @@ def _validate_single(
             validator = MeasurementValidator()
             result = validator.validate(sci_m)
             for err in result.errors:
-                sev = Severity.ERROR if err.severity == SciSeverity.ERROR else Severity.WARNING
+                sev = (
+                    Severity.ERROR
+                    if err.severity == SciSeverity.ERROR
+                    else Severity.WARNING
+                )
                 issues.append(
                     ValidationErrorItem(
                         field=err.field,

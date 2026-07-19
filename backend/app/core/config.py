@@ -8,7 +8,7 @@ load_dotenv()
 
 class Settings(BaseModel):
     app_name: str = os.getenv("APP_NAME", "Asterion")
-    app_version: str = os.getenv("APP_VERSION", "0.1.0")
+    app_version: str = os.getenv("APP_VERSION", "0.2.0")
     api_prefix: str = os.getenv("API_PREFIX", "/api/v1")
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./asterion.db")
     log_level: str = os.getenv("LOG_LEVEL", "INFO")

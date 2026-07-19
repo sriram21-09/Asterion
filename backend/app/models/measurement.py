@@ -21,9 +21,7 @@ class Measurement(BaseModel):
     measurement_code: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False
     )
-    timestamp: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     rssi_dbm: Mapped[float] = mapped_column(Float, nullable=False)
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -31,4 +29,6 @@ class Measurement(BaseModel):
     uncertainty_m: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
     case: Mapped["Case"] = relationship("Case", back_populates="measurements")
-    scenario: Mapped[Optional["Scenario"]] = relationship("Scenario", back_populates="measurements")
+    scenario: Mapped[Optional["Scenario"]] = relationship(
+        "Scenario", back_populates="measurements"
+    )
