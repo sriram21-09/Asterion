@@ -18,10 +18,23 @@ router = APIRouter(prefix="/simulation", tags=["simulation"])
     status_code=status.HTTP_200_OK,
     summary="Generate simulation measurements",
     description="Generate synthetic signal strength measurements for a case's scenario using the simulation engine.",
+    responses={
+        400: {
+            "model": APIResponse,
+            "description": "Case does not have an associated scenario, or simulation parameters are invalid",
+        },
+        404: {"model": APIResponse, "description": "Case not found"},
+        422: {
+            "model": APIResponse,
+            "description": "Validation error in query parameters or payload",
+        },
+    },
 )
 def generate_simulation(
     params: SimulationParameters,
-    case_code: str = Query(..., description="The unique Case Code (e.g. CASE-001)"),
+    case_code: str = Query(
+        ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
+    ),
     db: Session = Depends(get_db),
 ):
     saved_measurements = MeasurementService.generate_measurements(
@@ -37,7 +50,9 @@ def generate_simulation(
             MeasurementResponse(
                 measurement_code=m.measurement_code,
                 case_code=encode_case_code(m.case_id),
-                scenario_code=encode_scenario_code(m.scenario_id) if m.scenario_id else None,
+                scenario_code=(
+                    encode_scenario_code(m.scenario_id) if m.scenario_id else None
+                ),
                 timestamp=m.timestamp,
                 rssi_dbm=m.rssi_dbm,
                 latitude=m.latitude,
@@ -56,9 +71,18 @@ def generate_simulation(
     status_code=status.HTTP_200_OK,
     summary="Get measurements for a case",
     description="Retrieve stored measurements for the given case.",
+    responses={
+        404: {"model": APIResponse, "description": "Case not found"},
+        422: {
+            "model": APIResponse,
+            "description": "Validation error in query parameters",
+        },
+    },
 )
 def get_measurements(
-    case_code: str = Query(..., description="The unique Case Code (e.g. CASE-001)"),
+    case_code: str = Query(
+        ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
+    ),
     db: Session = Depends(get_db),
 ):
     from fastapi import HTTPException
@@ -79,7 +103,9 @@ def get_measurements(
             MeasurementResponse(
                 measurement_code=m.measurement_code,
                 case_code=encode_case_code(m.case_id),
-                scenario_code=encode_scenario_code(m.scenario_id) if m.scenario_id else None,
+                scenario_code=(
+                    encode_scenario_code(m.scenario_id) if m.scenario_id else None
+                ),
                 timestamp=m.timestamp,
                 rssi_dbm=m.rssi_dbm,
                 latitude=m.latitude,
@@ -90,4 +116,3 @@ def get_measurements(
         )
 
     return APIResponse(success=True, data=data)
-

@@ -18,7 +18,9 @@ class ConfidenceRepository:
         return result
 
     @staticmethod
-    def bulk_create(db: Session, results: List[ConfidenceResult]) -> List[ConfidenceResult]:
+    def bulk_create(
+        db: Session, results: List[ConfidenceResult]
+    ) -> List[ConfidenceResult]:
         """Persist a list of confidence results in one commit."""
         db.add_all(results)
         db.commit()
