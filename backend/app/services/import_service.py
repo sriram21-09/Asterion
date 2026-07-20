@@ -338,8 +338,9 @@ class CDRImportService:
         file_bytes: bytes,
         case_id: Optional[int] = None,
         operator: Optional[str] = None,
-        db: Session = None,
+        db: Session = None,  # type: ignore[assignment]
     ) -> Dict[str, Any]:
+
         content = file_bytes.decode("utf-8", errors="replace")
 
         detected_op = operator

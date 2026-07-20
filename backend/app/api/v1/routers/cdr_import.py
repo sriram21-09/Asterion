@@ -25,7 +25,8 @@ async def upload_cdr_file(
     operator: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
-    if not file.filename.lower().endswith(".csv") and not file.filename.lower().endswith(".txt"):
+    filename = file.filename or "unknown.csv"
+    if not filename.lower().endswith(".csv") and not filename.lower().endswith(".txt"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only CSV and TXT files are supported for CDR import.",
@@ -40,12 +41,13 @@ async def upload_cdr_file(
 
     service = CDRImportService()
     result = service.process_upload(
-        file_name=file.filename,
+        file_name=filename,
         file_bytes=content,
         case_id=case_id,
         operator=operator,
         db=db,
     )
+
 
     upload_resp = CDRUploadResponse(
         job=ImportJobResponse.model_validate(result["job"]),
