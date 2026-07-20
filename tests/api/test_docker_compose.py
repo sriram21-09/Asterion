@@ -78,17 +78,17 @@ class TestDockerComposeStructure:
         backend = compose_config["services"]["backend"]
         assert "volumes" in backend
         volumes_str = " ".join(str(v) for v in backend["volumes"])
-        assert (
-            "datasets" in volumes_str
-        ), "Backend must mount datasets directory for scenario configs"
+        assert "datasets" in volumes_str, (
+            "Backend must mount datasets directory for scenario configs"
+        )
 
     def test_backend_volumes_mount_scientific(self, compose_config):
         """backend mounts the scientific directory."""
         backend = compose_config["services"]["backend"]
         volumes_str = " ".join(str(v) for v in backend["volumes"])
-        assert (
-            "scientific" in volumes_str
-        ), "Backend must mount scientific directory for solver code"
+        assert "scientific" in volumes_str, (
+            "Backend must mount scientific directory for solver code"
+        )
 
     def test_frontend_depends_on_backend(self, compose_config):
         """frontend depends_on backend with service_healthy condition."""
