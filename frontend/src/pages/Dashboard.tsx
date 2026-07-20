@@ -26,16 +26,16 @@ const platformModules = [
     description:
       'Generate synthetic RSSI measurement samples with adjustable noise values (Gaussian/multi-path fade) for tracking tests.',
     icon: Radio,
-    timeline: 'Week 2 — In Progress',
-    shipped: false,
+    timeline: 'Shipped ✓',
+    shipped: true,
   },
   {
     title: 'Explainable Localization (NLLS)',
     description:
       'Execute multilateration algorithms (Non-Linear Least Squares) and track devices using Kalman filters with full mathematical overlays.',
     icon: Eye,
-    timeline: 'Week 2 — In Progress',
-    shipped: false,
+    timeline: 'Shipped ✓',
+    shipped: true,
   },
 ]
 
@@ -72,7 +72,7 @@ export default function Dashboard() {
 
         <div className="relative z-10 max-w-2xl space-y-4">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-muted text-brand-secondary border border-brand-primary/20">
-            v0.2.0 — Week 2 Sprint
+            v0.2.0 — Sprint Review
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-content-primary leading-tight">
             Asterion Localization & Investigation Platform

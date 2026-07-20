@@ -141,15 +141,17 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
         totalElapsedMs: 0,
       });
 
-      // ── Console: Pipeline Start ────────────────────────────────────
-      console.group(
-        `%c🚀 ASTERION PIPELINE — Starting`,
-        'color: #7c3aed; font-weight: bold; font-size: 14px',
-      );
-      console.log(`%cScenario: #${scenarioId} "${scenarioName}"`, 'color: #a78bfa');
-      console.log(`%cCase Code: ${caseCode}`, 'color: #a78bfa');
-      console.log(`%cTimestamp: ${new Date().toISOString()}`, 'color: #6b7280');
-      console.log('─'.repeat(50));
+      // ── Console: Pipeline Start (dev only) ──────────────────────────
+      if (import.meta.env.DEV) {
+        console.group(
+          `%c🚀 ASTERION PIPELINE — Starting`,
+          'color: #7c3aed; font-weight: bold; font-size: 14px',
+        );
+        console.log(`%cScenario: #${scenarioId} "${scenarioName}"`, 'color: #a78bfa');
+        console.log(`%cCase Code: ${caseCode}`, 'color: #a78bfa');
+        console.log(`%cTimestamp: ${new Date().toISOString()}`, 'color: #6b7280');
+        console.log('─'.repeat(50));
+      }
 
       // ── Helper: advance stage ──────────────────────────────────────
       const advanceStage = (stage: PipelineStage) => {
@@ -163,6 +165,7 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
       const totalStages = 6;
 
       const logStageStart = (stage: string) => {
+        if (!import.meta.env.DEV) return;
         stageIndex.current += 1;
         const icon = STAGE_ICONS[stage] || '▶';
         const label = STAGE_LABELS[stage] || stage;
@@ -173,6 +176,7 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
       };
 
       const logStageSuccess = (detail: string) => {
+        if (!import.meta.env.DEV) return;
         console.log(
           `%c   ✅ ${detail}`,
           'color: #34d399',
@@ -180,6 +184,7 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
       };
 
       const logStageWarning = (detail: string) => {
+        if (!import.meta.env.DEV) return;
         console.log(
           `%c   ⚠️ ${detail}`,
           'color: #fbbf24',
@@ -187,6 +192,7 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
       };
 
       const logStageError = (detail: string) => {
+        if (!import.meta.env.DEV) return;
         console.log(
           `%c   ❌ ${detail}`,
           'color: #f87171',
@@ -469,23 +475,25 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
           totalElapsedMs: totalElapsed,
         }));
 
-        // ── Console: Pipeline Summary ────────────────────────────────
-        console.log('─'.repeat(50));
-        if (collectedWarnings.length > 0) {
+        // ── Console: Pipeline Summary (dev only) ─────────────────────
+        if (import.meta.env.DEV) {
+          console.log('─'.repeat(50));
+          if (collectedWarnings.length > 0) {
+            console.log(
+              `%c⚠️ Warnings: ${collectedWarnings.length}`,
+              'color: #fbbf24; font-weight: bold',
+            );
+            collectedWarnings.forEach((w) => {
+              const icon = w.severity === 'danger' ? '🔴' : w.severity === 'warning' ? '🟡' : '🔵';
+              console.log(`   ${icon} ${w.title}: ${w.message}`);
+            });
+          }
           console.log(
-            `%c⚠️ Warnings: ${collectedWarnings.length}`,
-            'color: #fbbf24; font-weight: bold',
+            `%c✅ Pipeline Complete (${totalElapsed.toLocaleString()}ms)`,
+            'color: #34d399; font-weight: bold; font-size: 13px',
           );
-          collectedWarnings.forEach((w) => {
-            const icon = w.severity === 'danger' ? '🔴' : w.severity === 'warning' ? '🟡' : '🔵';
-            console.log(`   ${icon} ${w.title}: ${w.message}`);
-          });
+          console.groupEnd();
         }
-        console.log(
-          `%c✅ Pipeline Complete (${totalElapsed.toLocaleString()}ms)`,
-          'color: #34d399; font-weight: bold; font-size: 13px',
-        );
-        console.groupEnd();
       } catch (fatalErr) {
         // ── Fatal error — pipeline cannot continue ───────────────────
         const totalElapsed = Math.round(performance.now() - pipelineStart);
@@ -502,11 +510,13 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
         }));
 
         logStageError(`FATAL: ${message}`);
-        console.log(
-          `%c❌ Pipeline Failed (${totalElapsed.toLocaleString()}ms)`,
-          'color: #f87171; font-weight: bold; font-size: 13px',
-        );
-        console.groupEnd();
+        if (import.meta.env.DEV) {
+          console.log(
+            `%c❌ Pipeline Failed (${totalElapsed.toLocaleString()}ms)`,
+            'color: #f87171; font-weight: bold; font-size: 13px',
+          );
+          console.groupEnd();
+        }
       }
     },
 

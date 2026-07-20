@@ -1,6 +1,5 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+/**
+ * @deprecated Use `@/lib/cn` instead. This file is a duplicate and will be
+ * removed in the next cleanup pass. No consumers import from this path.
+ */
+export { cn } from './cn';

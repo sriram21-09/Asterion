@@ -70,7 +70,7 @@ export default function CaseDetails() {
 
       // Fetch case measurements from DB
       fetchMeasurements(caseCode).catch((err) => {
-        console.warn('No active measurements found for this case yet.', err)
+        if (import.meta.env.DEV) console.warn('No active measurements found for this case yet.', err)
       })
     }
     return () => {
@@ -109,7 +109,7 @@ export default function CaseDetails() {
         }
       })
     } catch (err) {
-      console.error('Simulation run failed:', err)
+      if (import.meta.env.DEV) console.error('Simulation run failed:', err)
     }
   }
 
@@ -230,7 +230,7 @@ export default function CaseDetails() {
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-content-secondary">Engine Status</span>
-                <span className={`font-semibold ${measurements.length > 0 ? 'text-success' : 'text-content-terisary'}`}>
+                <span className={`font-semibold ${measurements.length > 0 ? 'text-success' : 'text-content-tertiary'}`}>
                   {measurements.length > 0 ? 'Ready' : 'Pending Simulation'}
                 </span>
               </div>

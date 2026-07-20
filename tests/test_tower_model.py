@@ -27,6 +27,7 @@ from pydantic import ValidationError
 from scientific.models.tower import Tower
 from scientific.validation.validators import TowerValidator, Severity
 
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Fixtures
 # ═══════════════════════════════════════════════════════════════════════════

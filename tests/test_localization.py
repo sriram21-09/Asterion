@@ -24,6 +24,7 @@ from app.models.localization_result import LocalizationResult
 from app.database.session import get_db
 from app.repositories.localization_repository import LocalizationRepository
 
+
 # ---------------------------------------------------------------------------
 # Test database fixture
 # ---------------------------------------------------------------------------
