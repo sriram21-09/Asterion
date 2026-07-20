@@ -16,6 +16,7 @@ Exports:
     ConfidenceResult: Confidence assessment output schema.
 """
 
+from scientific.models.cdr_record import CDRRecord
 from scientific.models.measurement import Measurement
 from scientific.models.result import (
     ConfidenceResult,
@@ -42,4 +43,6 @@ __all__ = [
     "LocalizationResult",
     "ConfidenceResult",
     "PipelineResult",
+    "CDRRecord",
 ]
+
