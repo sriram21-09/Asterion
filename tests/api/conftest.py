@@ -34,7 +34,6 @@ from app.models.tracking_result import TrackingResult  # noqa: F401
 from app.models.confidence_result import ConfidenceResult  # noqa: F401
 from app.models.tower import Tower  # noqa: F401
 
-
 # ---------------------------------------------------------------------------
 # In-memory SQLite engine (shared across tests/api)
 # ---------------------------------------------------------------------------

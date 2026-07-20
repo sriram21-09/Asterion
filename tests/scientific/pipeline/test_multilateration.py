@@ -31,23 +31,44 @@ def simulation_params():
     )
 
 
-def test_multilateration_zero_noise_reconstruction(propagation_params, simulation_params):
+def test_multilateration_zero_noise_reconstruction(
+    propagation_params, simulation_params
+):
     """Verify that under zero noise, NLLS multilateration reconstructs the exact device position."""
     device_lat = 12.9716
     device_lon = 77.5946
 
     # Place 3 towers around the device
     towers = [
-        Tower(tower_id="T001", latitude=12.9600, longitude=77.5800, transmit_power_dbm=43.0),
-        Tower(tower_id="T002", latitude=12.9850, longitude=77.5850, transmit_power_dbm=43.0),
-        Tower(tower_id="T003", latitude=12.9700, longitude=77.6100, transmit_power_dbm=43.0),
+        Tower(
+            tower_id="T001",
+            latitude=12.9600,
+            longitude=77.5800,
+            transmit_power_dbm=43.0,
+        ),
+        Tower(
+            tower_id="T002",
+            latitude=12.9850,
+            longitude=77.5850,
+            transmit_power_dbm=43.0,
+        ),
+        Tower(
+            tower_id="T003",
+            latitude=12.9700,
+            longitude=77.6100,
+            transmit_power_dbm=43.0,
+        ),
     ]
 
     # Generate ideal RSSI for each tower based on its distance to the device
     measurements = []
     for i, tower in enumerate(towers):
-        dist = haversine_distance_m(tower.latitude, tower.longitude, device_lat, device_lon)
-        rssi = RSSIGenerator.compute_ideal_rssi(dist, tower.transmit_power_dbm, propagation_params)
+        dist = haversine_distance_m(
+            tower.latitude, tower.longitude, device_lat, device_lon
+        )
+        rssi = RSSIGenerator.compute_ideal_rssi(
+            dist, tower.transmit_power_dbm, propagation_params
+        )
         measurements.append(
             Measurement(
                 measurement_id=f"M{i:03d}",
@@ -83,18 +104,42 @@ def test_multilateration_noisy_convergence(propagation_params, simulation_params
     device_lon = 77.5946
 
     towers = [
-        Tower(tower_id="T001", latitude=12.9600, longitude=77.5800, transmit_power_dbm=43.0),
-        Tower(tower_id="T002", latitude=12.9850, longitude=77.5850, transmit_power_dbm=43.0),
-        Tower(tower_id="T003", latitude=12.9700, longitude=77.6100, transmit_power_dbm=43.0),
-        Tower(tower_id="T004", latitude=12.9800, longitude=77.6000, transmit_power_dbm=43.0),
+        Tower(
+            tower_id="T001",
+            latitude=12.9600,
+            longitude=77.5800,
+            transmit_power_dbm=43.0,
+        ),
+        Tower(
+            tower_id="T002",
+            latitude=12.9850,
+            longitude=77.5850,
+            transmit_power_dbm=43.0,
+        ),
+        Tower(
+            tower_id="T003",
+            latitude=12.9700,
+            longitude=77.6100,
+            transmit_power_dbm=43.0,
+        ),
+        Tower(
+            tower_id="T004",
+            latitude=12.9800,
+            longitude=77.6000,
+            transmit_power_dbm=43.0,
+        ),
     ]
 
     # Inject minor noise (+- 2 dB) to the measurements
     noise_offsets = [1.5, -2.0, 0.8, -1.2]
     measurements = []
     for i, tower in enumerate(towers):
-        dist = haversine_distance_m(tower.latitude, tower.longitude, device_lat, device_lon)
-        ideal_rssi = RSSIGenerator.compute_ideal_rssi(dist, tower.transmit_power_dbm, propagation_params)
+        dist = haversine_distance_m(
+            tower.latitude, tower.longitude, device_lat, device_lon
+        )
+        ideal_rssi = RSSIGenerator.compute_ideal_rssi(
+            dist, tower.transmit_power_dbm, propagation_params
+        )
         noisy_rssi = ideal_rssi + noise_offsets[i]
         measurements.append(
             Measurement(
@@ -123,7 +168,9 @@ def test_multilateration_noisy_convergence(propagation_params, simulation_params
     assert result.error_m < 300.0
 
 
-def test_multilateration_insufficient_towers_fallback(propagation_params, simulation_params):
+def test_multilateration_insufficient_towers_fallback(
+    propagation_params, simulation_params
+):
     """Verify that the solver immediately falls back to weighted centroid if unique towers are less than 3."""
     towers = [
         Tower(tower_id="T001", latitude=10.0, longitude=10.0, transmit_power_dbm=43.0),
@@ -131,8 +178,18 @@ def test_multilateration_insufficient_towers_fallback(propagation_params, simula
     ]
 
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0),
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
     ]
 
     # Run solver with 2 towers
@@ -153,23 +210,54 @@ def test_multilateration_insufficient_towers_fallback(propagation_params, simula
 
 def test_multilateration_solver_failure_fallback(propagation_params, simulation_params):
     """Verify that solver falls back to weighted centroid if scipy least_squares fails."""
-    device_lat = 12.9716
-    device_lon = 77.5946
 
     towers = [
-        Tower(tower_id="T001", latitude=12.9600, longitude=77.5800, transmit_power_dbm=43.0),
-        Tower(tower_id="T002", latitude=12.9850, longitude=77.5850, transmit_power_dbm=43.0),
-        Tower(tower_id="T003", latitude=12.9700, longitude=77.6100, transmit_power_dbm=43.0),
+        Tower(
+            tower_id="T001",
+            latitude=12.9600,
+            longitude=77.5800,
+            transmit_power_dbm=43.0,
+        ),
+        Tower(
+            tower_id="T002",
+            latitude=12.9850,
+            longitude=77.5850,
+            transmit_power_dbm=43.0,
+        ),
+        Tower(
+            tower_id="T003",
+            latitude=12.9700,
+            longitude=77.6100,
+            transmit_power_dbm=43.0,
+        ),
     ]
 
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
-        Measurement(measurement_id="M003", tower_id="T003", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
+        Measurement(
+            measurement_id="M003",
+            tower_id="T003",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
     ]
 
     # Mock least_squares to raise an exception
-    with patch("scientific.pipeline.multilateration.least_squares", side_effect=RuntimeError("Solver error")):
+    with patch(
+        "scientific.pipeline.multilateration.least_squares",
+        side_effect=RuntimeError("Solver error"),
+    ):
         result = solve_multilateration(
             scenario_id="SCN-FAIL-SOLVER",
             towers=towers,

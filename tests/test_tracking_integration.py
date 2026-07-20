@@ -26,7 +26,6 @@ from app.database.session import get_db
 from app.repositories.tracking_repository import TrackingRepository
 from app.services.tracking_service import TrackingService
 
-
 # ---------------------------------------------------------------------------
 # Test database fixture
 # ---------------------------------------------------------------------------
@@ -189,7 +188,9 @@ class TestTrackingResultModel:
         assert result.computation_time_ms is None
         assert result.localization_result_id is None
 
-    def test_localization_result_fk(self, db: Session, sample_case, sample_localization_results):
+    def test_localization_result_fk(
+        self, db: Session, sample_case, sample_localization_results
+    ):
         """TrackingResult can reference a localization result."""
         loc = sample_localization_results[0]
         result = TrackingResult(
@@ -341,9 +342,7 @@ class TestTrackingService:
         with pytest.raises(ValidationError):
             TrackingService.run_tracking(db, case_code)
 
-    def test_run_tracking_requires_localization_results(
-        self, db: Session, sample_case
-    ):
+    def test_run_tracking_requires_localization_results(self, db: Session, sample_case):
         """Service raises error when fewer than 2 localization results exist."""
         from app.shared.validation import ValidationError
 
@@ -495,4 +494,6 @@ class TestTrackingAPIConformance:
             "heading_deg",
         ]
         for field in expected_step_fields:
-            assert field in step_fields, f"Missing field in TrackingStepResponse: {field}"
+            assert (
+                field in step_fields
+            ), f"Missing field in TrackingStepResponse: {field}"

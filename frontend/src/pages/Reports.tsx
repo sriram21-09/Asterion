@@ -4,7 +4,6 @@ import { useCases } from '@/hooks/useCases'
 import { useScenarios } from '@/hooks/useScenarios'
 import { Button, LoadingSpinner, ErrorCard } from '@/components/ui'
 import { toast } from 'sonner'
-import { cn } from '@/lib/cn'
 
 export default function Reports() {
   const { data: cases, isLoading: loadingCases, error: caseError } = useCases()
@@ -60,14 +59,14 @@ export default function Reports() {
           <Button 
             variant="secondary"
             onClick={() => handleExport('PDF')}
-            icon={<Download className="w-4 h-4" />}
           >
+            <Download className="w-4 h-4 mr-2 inline" />
             Export PDF
           </Button>
           <Button 
             onClick={() => handleExport('CSV')}
-            icon={<Database className="w-4 h-4" />}
           >
+            <Database className="w-4 h-4 mr-2 inline" />
             Export Raw CSV
           </Button>
         </div>
@@ -172,7 +171,8 @@ function ReportTemplate({ title, description, tag, onExport }: { title: string, 
         </div>
         <p className="text-xs text-content-tertiary line-clamp-1">{description}</p>
       </div>
-      <Button variant="secondary" onClick={onExport} icon={<Download className="w-4 h-4" />}>
+      <Button variant="secondary" onClick={onExport}>
+        <Download className="w-4 h-4 mr-2 inline" />
         Export
       </Button>
     </div>

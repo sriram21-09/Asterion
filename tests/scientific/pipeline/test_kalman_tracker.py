@@ -43,7 +43,7 @@ def test_kalman_empty_and_single_input():
 def test_constant_velocity_tracking():
     """Verify tracking and velocity estimation for a target moving at constant speed."""
     t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
-    
+
     # Ground-truth: starts at (12.97, 77.59) and moves north at 15 m/s (~54 km/h)
     true_lat_start = 12.9700
     true_lon = 77.5900
@@ -62,10 +62,12 @@ def test_constant_velocity_tracking():
     for i in range(steps):
         t = t0 + timedelta(seconds=i * dt)
         true_lat = true_lat_start + i * dt * velocity_deg_s
-        
+
         # Inject noise into position
         noisy_lat = true_lat + np.random.normal(0, noise_std_deg)
-        noisy_lon = true_lon + np.random.normal(0, noise_std_deg / math.cos(math.radians(true_lat)))
+        noisy_lon = true_lon + np.random.normal(
+            0, noise_std_deg / math.cos(math.radians(true_lat))
+        )
 
         results.append(
             LocalizationResult(
@@ -91,7 +93,7 @@ def test_constant_velocity_tracking():
     )
 
     assert len(smoothed) == steps
-    
+
     # Compare errors: last smoothed position should be closer to ground truth than raw noisy estimate
     raw_final = results[-1]
     smooth_final = smoothed[-1]
@@ -101,7 +103,7 @@ def test_constant_velocity_tracking():
 
     # The smoothed error should generally be smaller than raw error due to noise dampening
     assert abs(smooth_error) < abs(raw_error) or smooth_final.error_m < noise_std_m * 2
-    
+
     # Verify velocity estimate converges towards the true velocity
     final_v_lat_mps = smooth_final.velocity_lat_mps
     # True velocity is 15.0 m/s
@@ -146,13 +148,15 @@ def test_noise_smoothing_outlier_rejection():
 
     # The smoothed spike should be less than 60% of the raw jump
     assert abs(smoothed_spike) < 0.6 * abs(raw_spike)
-    print(f"Raw jump: {raw_spike * METERS_PER_DEGREE_LAT:.2f}m, Smoothed: {smoothed_spike * METERS_PER_DEGREE_LAT:.2f}m")
+    print(
+        f"Raw jump: {raw_spike * METERS_PER_DEGREE_LAT:.2f}m, Smoothed: {smoothed_spike * METERS_PER_DEGREE_LAT:.2f}m"
+    )
 
 
 def test_zero_time_delta_handling():
     """Verify that the filter handles duplicate/zero-time-delta timestamps cleanly."""
     t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
-    
+
     results = [
         LocalizationResult(
             scenario_id="SCN-ZERO-DT",

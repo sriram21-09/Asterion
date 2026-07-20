@@ -189,8 +189,12 @@ class TestDuplicateRecords:
     def test_duplicate_measurement_ids_rejected(self, valid_towers):
         ts = datetime.now(timezone.utc)
         measurements = [
-            Measurement(measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-70.0),
-            Measurement(measurement_id="M001", tower_id="T002", timestamp=ts, rssi_dbm=-80.0), # Dup ID
+            Measurement(
+                measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-70.0
+            ),
+            Measurement(
+                measurement_id="M001", tower_id="T002", timestamp=ts, rssi_dbm=-80.0
+            ),  # Dup ID
         ]
         s = Scenario(
             scenario_id="SCN-001",
@@ -205,8 +209,12 @@ class TestDuplicateRecords:
     def test_duplicate_timestamps_for_same_tower_rejected(self, valid_towers):
         ts = datetime.now(timezone.utc)
         measurements = [
-            Measurement(measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-70.0),
-            Measurement(measurement_id="M002", tower_id="T001", timestamp=ts, rssi_dbm=-72.0), # Same tower & timestamp
+            Measurement(
+                measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-70.0
+            ),
+            Measurement(
+                measurement_id="M002", tower_id="T001", timestamp=ts, rssi_dbm=-72.0
+            ),  # Same tower & timestamp
         ]
         s = Scenario(
             scenario_id="SCN-001",
@@ -226,9 +234,24 @@ class TestPhysicsTAvsRSSI:
     def standard_towers(self):
         # standard macro cells with 43 dBm EIRP
         return [
-            Tower(tower_id="T001", latitude=12.9716, longitude=77.5946, transmit_power_dbm=43.0),
-            Tower(tower_id="T002", latitude=12.9750, longitude=77.5900, transmit_power_dbm=43.0),
-            Tower(tower_id="T003", latitude=12.9700, longitude=77.6000, transmit_power_dbm=43.0),
+            Tower(
+                tower_id="T001",
+                latitude=12.9716,
+                longitude=77.5946,
+                transmit_power_dbm=43.0,
+            ),
+            Tower(
+                tower_id="T002",
+                latitude=12.9750,
+                longitude=77.5900,
+                transmit_power_dbm=43.0,
+            ),
+            Tower(
+                tower_id="T003",
+                latitude=12.9700,
+                longitude=77.6000,
+                transmit_power_dbm=43.0,
+            ),
         ]
 
     def test_consistent_ta_rssi_passes(self, standard_towers):
@@ -239,7 +262,13 @@ class TestPhysicsTAvsRSSI:
         # An RSSI of -90 dBm should be perfectly fine.
         ts = datetime.now(timezone.utc)
         measurements = [
-            Measurement(measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-90.0, timing_advance=1),
+            Measurement(
+                measurement_id="M001",
+                tower_id="T001",
+                timestamp=ts,
+                rssi_dbm=-90.0,
+                timing_advance=1,
+            ),
         ]
         s = Scenario(
             scenario_id="SCN-001",
@@ -261,7 +290,13 @@ class TestPhysicsTAvsRSSI:
         # A measurement with RSSI of -50 dBm is physically way too strong for 5.5km!
         ts = datetime.now(timezone.utc)
         measurements = [
-            Measurement(measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-50.0, timing_advance=10),
+            Measurement(
+                measurement_id="M001",
+                tower_id="T001",
+                timestamp=ts,
+                rssi_dbm=-50.0,
+                timing_advance=10,
+            ),
         ]
         s = Scenario(
             scenario_id="SCN-001",
@@ -274,7 +309,8 @@ class TestPhysicsTAvsRSSI:
         # Should be valid but raise warning
         assert r.is_valid
         assert any(
-            e.code == "SCENARIO_TA_RSSI_PHYSICS_MISMATCH" and e.severity == Severity.WARNING
+            e.code == "SCENARIO_TA_RSSI_PHYSICS_MISMATCH"
+            and e.severity == Severity.WARNING
             for e in r.errors
         )
 
@@ -286,7 +322,13 @@ class TestPhysicsTAvsRSSI:
         # A measurement with RSSI of -140 dBm is physically way too weak for TA 0!
         ts = datetime.now(timezone.utc)
         measurements = [
-            Measurement(measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-140.0, timing_advance=0),
+            Measurement(
+                measurement_id="M001",
+                tower_id="T001",
+                timestamp=ts,
+                rssi_dbm=-140.0,
+                timing_advance=0,
+            ),
         ]
         s = Scenario(
             scenario_id="SCN-001",
@@ -298,6 +340,7 @@ class TestPhysicsTAvsRSSI:
         r = validate_scenario(s)
         assert r.is_valid
         assert any(
-            e.code == "SCENARIO_TA_RSSI_PHYSICS_MISMATCH" and e.severity == Severity.WARNING
+            e.code == "SCENARIO_TA_RSSI_PHYSICS_MISMATCH"
+            and e.severity == Severity.WARNING
             for e in r.errors
         )
