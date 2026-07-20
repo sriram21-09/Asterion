@@ -27,10 +27,10 @@ from pydantic import ValidationError
 from scientific.models.tower import Tower
 from scientific.validation.validators import TowerValidator, Severity
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 # Fixtures
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 @pytest.fixture
 def minimal_tower() -> Tower:
@@ -195,35 +195,45 @@ class TestTowerFieldConstraints:
     def test_antenna_height_must_be_positive(self):
         with pytest.raises(ValidationError):
             Tower(
-                tower_id="T001", latitude=0.0, longitude=0.0,
+                tower_id="T001",
+                latitude=0.0,
+                longitude=0.0,
                 antenna_height_m=0.0,
             )
 
     def test_antenna_height_negative_raises(self):
         with pytest.raises(ValidationError):
             Tower(
-                tower_id="T001", latitude=0.0, longitude=0.0,
+                tower_id="T001",
+                latitude=0.0,
+                longitude=0.0,
                 antenna_height_m=-5.0,
             )
 
     def test_frequency_must_be_positive(self):
         with pytest.raises(ValidationError):
             Tower(
-                tower_id="T001", latitude=0.0, longitude=0.0,
+                tower_id="T001",
+                latitude=0.0,
+                longitude=0.0,
                 frequency_mhz=0.0,
             )
 
     def test_coverage_radius_must_be_positive(self):
         with pytest.raises(ValidationError):
             Tower(
-                tower_id="T001", latitude=0.0, longitude=0.0,
+                tower_id="T001",
+                latitude=0.0,
+                longitude=0.0,
                 coverage_radius_m=0.0,
             )
 
     def test_very_small_positive_values_accepted(self):
         """Positive epsilon values should be accepted for gt=0 fields."""
         t = Tower(
-            tower_id="T001", latitude=0.0, longitude=0.0,
+            tower_id="T001",
+            latitude=0.0,
+            longitude=0.0,
             antenna_height_m=0.01,
             frequency_mhz=0.01,
             coverage_radius_m=0.01,
@@ -233,7 +243,9 @@ class TestTowerFieldConstraints:
     def test_transmit_power_accepts_negative(self):
         """transmit_power_dbm has no lower bound in the model."""
         t = Tower(
-            tower_id="T001", latitude=0.0, longitude=0.0,
+            tower_id="T001",
+            latitude=0.0,
+            longitude=0.0,
             transmit_power_dbm=-10.0,
         )
         assert t.transmit_power_dbm == -10.0
@@ -250,8 +262,13 @@ class TestTowerSerialization:
     def test_model_dump_contains_all_fields(self, full_tower):
         data = full_tower.model_dump()
         expected_keys = {
-            "tower_id", "latitude", "longitude", "antenna_height_m",
-            "frequency_mhz", "transmit_power_dbm", "sector",
+            "tower_id",
+            "latitude",
+            "longitude",
+            "antenna_height_m",
+            "frequency_mhz",
+            "transmit_power_dbm",
+            "sector",
             "coverage_radius_m",
         }
         assert set(data.keys()) == expected_keys
@@ -292,14 +309,14 @@ class TestTowerValidatorIntegration:
 
     def test_standard_tower_no_errors(self, full_tower, tower_validator):
         result = tower_validator.validate(full_tower)
-        errors_only = [
-            e for e in result.errors if e.severity == Severity.ERROR
-        ]
+        errors_only = [e for e in result.errors if e.severity == Severity.ERROR]
         assert len(errors_only) == 0
 
     def test_unusual_frequency_triggers_warning(self, tower_validator):
         t = Tower(
-            tower_id="T001", latitude=0.0, longitude=0.0,
+            tower_id="T001",
+            latitude=0.0,
+            longitude=0.0,
             frequency_mhz=999.0,  # Not near any standard band
         )
         result = tower_validator.validate(t)
@@ -310,7 +327,9 @@ class TestTowerValidatorIntegration:
 
     def test_extreme_transmit_power_triggers_warning(self, tower_validator):
         t = Tower(
-            tower_id="T001", latitude=0.0, longitude=0.0,
+            tower_id="T001",
+            latitude=0.0,
+            longitude=0.0,
             transmit_power_dbm=70.0,  # Outside [10, 60] range
         )
         result = tower_validator.validate(t)
@@ -320,7 +339,9 @@ class TestTowerValidatorIntegration:
 
     def test_extreme_coverage_radius_triggers_warning(self, tower_validator):
         t = Tower(
-            tower_id="T001", latitude=0.0, longitude=0.0,
+            tower_id="T001",
+            latitude=0.0,
+            longitude=0.0,
             coverage_radius_m=51_000.0,  # Above 50,000 m
         )
         result = tower_validator.validate(t)
@@ -341,7 +362,9 @@ class TestTowerFromDataset:
     def dataset_towers(self) -> list[Tower]:
         dataset_path = (
             Path(__file__).resolve().parent.parent
-            / "datasets" / "sample" / "sample_dataset.json"
+            / "datasets"
+            / "sample"
+            / "sample_dataset.json"
         )
         with open(dataset_path, "r", encoding="utf-8") as f:
             data = json.load(f)

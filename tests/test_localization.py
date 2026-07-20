@@ -21,10 +21,8 @@ from app.models.case import Case
 from app.models.scenario import Scenario
 from app.models.measurement import Measurement
 from app.models.localization_result import LocalizationResult
-from app.models.tracking_result import TrackingResult  # noqa: F401 - needed for mapper resolution
 from app.database.session import get_db
 from app.repositories.localization_repository import LocalizationRepository
-
 
 # ---------------------------------------------------------------------------
 # Test database fixture
@@ -101,9 +99,7 @@ def sample_measurements(db: Session, sample_case):
     lats = [12.9720, 12.9725, 12.9718]
     lons = [77.5948, 77.5945, 77.5952]
 
-    for i, (tid, rssi, lat, lon) in enumerate(
-        zip(tower_ids, rssi_values, lats, lons)
-    ):
+    for i, (tid, rssi, lat, lon) in enumerate(zip(tower_ids, rssi_values, lats, lons)):
         m = Measurement(
             case_id=sample_case.id,
             scenario_id=sample_case.scenario_id,

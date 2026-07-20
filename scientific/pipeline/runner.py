@@ -66,7 +66,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         errors_str = "; ".join(f"{err.field}: {err.message}" for err in val_res.errors)
         logger.error(f"Scenario configuration validation failed: {errors_str}")
         raise ValueError(f"Invalid ScenarioConfig: {errors_str}")
-
     time_breakdown["validation"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 1 complete: Config validated in {time_breakdown['validation']:.2f} ms"
@@ -77,7 +76,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     # -------------------------------------------------------------------------
     stage_start = time.perf_counter()
     measurements = generate_scenario_measurements(config)
-
     # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
     from datetime import timedelta, timezone, datetime
 
@@ -106,7 +104,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         measurements=measurements,
         thresholds=validator.thresholds,
     )
-
     accepted_ids = set(evidence.get("accepted_measurement_ids", []))
     accepted_measurements = [
         m for m in measurements if m.measurement_id in accepted_ids
@@ -117,7 +114,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         raise ValueError(
             "All measurements were rejected by validation, cannot locate device."
         )
-
     time_breakdown["evidence"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 3 complete: Filtered {len(accepted_measurements)}/{len(measurements)} "
@@ -141,7 +137,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
 
     for ts in sorted_timestamps:
         epoch_meas = meas_by_timestamp[ts]
-
         if algorithm == "weighted_centroid":
             loc_res = solve_weighted_centroid(
                 scenario_id=config.scenario_id,
@@ -188,7 +183,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         final_history = raw_localization_results
 
     final_loc_res = final_history[-1]
-
     time_breakdown["tracking"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 5 complete: Tracker smoothing in {time_breakdown['tracking']:.2f} ms"
@@ -207,7 +201,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         measurements=accepted_measurements,
         thresholds=validator.thresholds,
     )
-
     time_breakdown["confidence"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 6 complete: Calculated confidence in {time_breakdown['confidence']:.2f} ms"

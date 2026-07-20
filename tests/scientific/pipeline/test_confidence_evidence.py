@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-
 from scientific.models.measurement import Measurement
 from scientific.models.tower import Tower
 from scientific.pipeline.confidence import compute_confidence
@@ -20,9 +19,27 @@ def test_confidence_equilateral_layout():
     ]
 
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
-        Measurement(measurement_id="M003", tower_id="T003", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
+        Measurement(
+            measurement_id="M003",
+            tower_id="T003",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
     ]
 
     result = compute_confidence(
@@ -42,7 +59,9 @@ def test_confidence_equilateral_layout():
     # The error ellipse should be close to a circle (semi-major ≈ semi-minor)
     assert result.error_ellipse_semi_major_m is not None
     assert result.error_ellipse_semi_minor_m is not None
-    assert abs(result.error_ellipse_semi_major_m - result.error_ellipse_semi_minor_m) < 1.0
+    assert (
+        abs(result.error_ellipse_semi_major_m - result.error_ellipse_semi_minor_m) < 1.0
+    )
 
 
 def test_confidence_collinear_layout():
@@ -55,9 +74,27 @@ def test_confidence_collinear_layout():
     ]
 
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
-        Measurement(measurement_id="M003", tower_id="T003", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
+        Measurement(
+            measurement_id="M003",
+            tower_id="T003",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
     ]
 
     result = compute_confidence(
@@ -81,7 +118,12 @@ def test_confidence_insufficient_towers():
         Tower(tower_id="T001", latitude=10.010, longitude=10.0),
     ]
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+        ),
     ]
 
     result = compute_confidence(
@@ -109,13 +151,31 @@ def test_ellipse_orientation_alignment():
     towers = [
         Tower(tower_id="T001", latitude=10.0, longitude=10.005),
         Tower(tower_id="T002", latitude=10.0, longitude=9.995),
-        Tower(tower_id="T003", latitude=10.0001, longitude=10.0), # small offset
+        Tower(tower_id="T003", latitude=10.0001, longitude=10.0),  # small offset
     ]
 
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
-        Measurement(measurement_id="M003", tower_id="T003", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0, uncertainty_m=30.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
+        Measurement(
+            measurement_id="M003",
+            tower_id="T003",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+            uncertainty_m=30.0,
+        ),
     ]
 
     result = compute_confidence(
@@ -143,11 +203,28 @@ def test_evidence_synthesis_audit():
 
     measurements = [
         # Valid measurement 1
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
         # Valid measurement 2
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+        ),
         # Invalid measurement (partial coordinates: latitude without longitude)
-        Measurement(measurement_id="M003", tower_id="T003", timestamp=datetime.now(timezone.utc), rssi_dbm=-80.0, latitude=10.0, longitude=None),
+        Measurement(
+            measurement_id="M003",
+            tower_id="T003",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-80.0,
+            latitude=10.0,
+            longitude=None,
+        ),
     ]
 
     report = synthesize_evidence(
@@ -161,7 +238,9 @@ def test_evidence_synthesis_audit():
     assert report["summary"]["accepted_measurements"] == 2
     assert report["summary"]["rejected_measurements"] == 1
     assert report["summary"]["towers_total"] == 3
-    assert report["summary"]["towers_used_count"] == 2 # T001 and T002 have accepted measurements, T003 does not
+    assert (
+        report["summary"]["towers_used_count"] == 2
+    )  # T001 and T002 have accepted measurements, T003 does not
 
     # Check towers list
     towers_map = {t["tower_id"]: t for t in report["towers"]}

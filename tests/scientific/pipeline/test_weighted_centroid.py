@@ -18,9 +18,24 @@ def test_weighted_centroid_symmetric_geometry():
     expected_lon = (20.0 + 20.0 + 22.0) / 3.0
 
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
-        Measurement(measurement_id="M003", tower_id="T003", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
+        Measurement(
+            measurement_id="M003",
+            tower_id="T003",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
     ]
 
     result = solve_weighted_centroid(
@@ -49,8 +64,18 @@ def test_weighted_centroid_dominant_tower():
 
     # Strong signal from T001, very weak signal from T002
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-30.0),
-        Measurement(measurement_id="M002", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-120.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-30.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-120.0,
+        ),
     ]
 
     result = solve_weighted_centroid(
@@ -75,9 +100,24 @@ def test_weighted_centroid_measurement_averaging():
     # T001 has two measurements that average to -70.0 dBm
     # T002 has one measurement of -70.0 dBm
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-60.0),
-        Measurement(measurement_id="M002", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-80.0),
-        Measurement(measurement_id="M003", tower_id="T002", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-60.0,
+        ),
+        Measurement(
+            measurement_id="M002",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-80.0,
+        ),
+        Measurement(
+            measurement_id="M003",
+            tower_id="T002",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
     ]
 
     result = solve_weighted_centroid(
@@ -96,7 +136,12 @@ def test_weighted_centroid_measurement_averaging():
 def test_weighted_centroid_empty_towers():
     """Verify that an error is raised if no towers are provided."""
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T001", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T001",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
     ]
     with pytest.raises(ValueError, match="No towers available"):
         solve_weighted_centroid(
@@ -114,7 +159,12 @@ def test_weighted_centroid_unweighted_fallback():
     ]
     # Measurement for non-existent tower
     measurements = [
-        Measurement(measurement_id="M001", tower_id="T999", timestamp=datetime.now(timezone.utc), rssi_dbm=-70.0),
+        Measurement(
+            measurement_id="M001",
+            tower_id="T999",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=-70.0,
+        ),
     ]
 
     result = solve_weighted_centroid(
