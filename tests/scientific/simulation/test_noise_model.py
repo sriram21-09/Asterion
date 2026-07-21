@@ -32,13 +32,15 @@ def test_awgn_model_seed_reproducibility():
 def test_awgn_model_shadow_fading_zero_std_dev():
     model = AWGNModel()
     assert model.apply_shadow_fading(-70.0, 0.0) == -70.0
-    assert model.apply_shadow_fading(-70.0, -5.0) == -70.0  # Should handle negative std dev safely
+    assert (
+        model.apply_shadow_fading(-70.0, -5.0) == -70.0
+    )  # Should handle negative std dev safely
 
 
 def test_awgn_model_shadow_fading_distribution():
     model = AWGNModel(seed=123)
     samples = [model.apply_shadow_fading(-70.0, 8.0) for _ in range(10000)]
-    
+
     # Calculate empirical mean and std dev
     mean = sum(samples) / len(samples)
     variance = sum((x - mean) ** 2 for x in samples) / len(samples)
@@ -51,7 +53,7 @@ def test_awgn_model_shadow_fading_distribution():
 
 def test_awgn_model_thermal_noise():
     model = AWGNModel()
-    
+
     # If signal is much stronger than noise, it should be mostly unaffected
     strong_signal = -50.0
     noise_floor = -100.0

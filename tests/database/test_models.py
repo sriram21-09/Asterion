@@ -35,7 +35,6 @@ from app.models.case import Case
 from app.models.scenario import Scenario
 from app.models.tower import Tower
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -98,14 +97,14 @@ class TestCaseModel:
 
     def test_case_timestamps_auto_set(self, db_session: Session):
         """Verify that created_at and updated_at are automatically populated."""
-        before = datetime.now(timezone.utc)
+        datetime.now(timezone.utc)
 
         case = Case(title="Timestamp Test Case")
         db_session.add(case)
         db_session.commit()
         db_session.refresh(case)
 
-        after = datetime.now(timezone.utc)
+        datetime.now(timezone.utc)
 
         # created_at should be between before and after
         assert case.created_at is not None
@@ -258,5 +257,3 @@ class TestTowerModel:
             db_session.commit()
 
         db_session.rollback()
-
-

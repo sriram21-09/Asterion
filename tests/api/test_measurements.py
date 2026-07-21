@@ -42,7 +42,7 @@ class TestMeasurementsValidationAPI:
                     # Optional coordinates left as None
                     "timing_advance": None,
                     "uncertainty_m": None,
-                }
+                },
             ]
         }
 
@@ -50,7 +50,7 @@ class TestMeasurementsValidationAPI:
         assert response.status_code == 200
         res_data = response.json()
         assert res_data["success"] is True
-        
+
         data = res_data["data"]
         assert data["is_valid"] is True
         assert data["valid_count"] == 2
@@ -76,7 +76,7 @@ class TestMeasurementsValidationAPI:
         res_data = response.json()
         assert res_data["success"] is False
         assert res_data["error"]["code"] == "VALIDATION_ERROR"
-        
+
         data = res_data["data"]
         assert data["is_valid"] is False
         assert data["valid_count"] == 0
@@ -104,7 +104,7 @@ class TestMeasurementsValidationAPI:
         assert response.status_code == 422
         res_data = response.json()
         assert res_data["success"] is False
-        
+
         data = res_data["data"]
         assert data["is_valid"] is False
         assert data["rejected_count"] == 1
@@ -114,7 +114,11 @@ class TestMeasurementsValidationAPI:
 
     def test_validate_measurements_future_timestamp_fails(self, client):
         # Timestamp is in the future (flagged as ERROR by scientific validator)
-        future_ts = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat().replace("+00:00", "Z")
+        future_ts = (
+            (datetime.now(timezone.utc) + timedelta(days=2))
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
         payload = {
             "measurements": [
                 {
@@ -130,7 +134,7 @@ class TestMeasurementsValidationAPI:
         assert response.status_code == 422
         res_data = response.json()
         assert res_data["success"] is False
-        
+
         data = res_data["data"]
         assert data["is_valid"] is False
         assert data["rejected_count"] == 1
@@ -154,7 +158,7 @@ class TestMeasurementsValidationAPI:
         assert response.status_code == 422
         res_data = response.json()
         assert res_data["success"] is False
-        
+
         data = res_data["data"]
         assert data["is_valid"] is False
         assert data["rejected_count"] == 1
@@ -177,7 +181,7 @@ class TestMeasurementsValidationAPI:
         assert response.status_code == 200
         res_data = response.json()
         assert res_data["success"] is True
-        
+
         data = res_data["data"]
         assert data["is_valid"] is True
         assert data["valid_count"] == 1

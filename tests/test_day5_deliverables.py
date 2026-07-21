@@ -79,7 +79,6 @@ from scientific.logger import (
     silence,
 )
 
-
 # ══════════════════════════════════════════════════════════════════════════
 # Tests for scientific/config.py
 # ══════════════════════════════════════════════════════════════════════════
@@ -512,12 +511,14 @@ class TestLogLevelEnvVar:
     def test_env_var_override(self, monkeypatch):
         monkeypatch.setenv(LOG_LEVEL_ENV_VAR, "DEBUG")
         # Use a unique name so it starts fresh
-        log = get_logger("test.env_override")
+        get_logger("test.env_override")
         # Force re-resolution by creating a new logger
         from scientific.logger import _resolve_level
+
         assert _resolve_level() == logging.DEBUG
 
     def test_env_var_not_set_uses_fallback(self, monkeypatch):
         monkeypatch.delenv(LOG_LEVEL_ENV_VAR, raising=False)
         from scientific.logger import _resolve_level
+
         assert _resolve_level() == FALLBACK_LEVEL

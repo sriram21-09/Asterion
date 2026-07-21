@@ -20,7 +20,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.models.base import Base
+from app.database.base import Base
 from app.models.case import Case
 from app.models.scenario import Scenario
 from app.models.tower import Tower
@@ -41,11 +41,11 @@ def run_demo():
 
     # 2. Insert valid models
     print("\n[Step 2] Inserting valid database records...")
-    
+
     # Create a scenario
     scenario = Scenario(
         name="Urban 3-Tower Test",
-        description="Standard multilateration scenario in Bangalore core."
+        description="Standard multilateration scenario in Bangalore core.",
     )
     session.add(scenario)
     session.commit()
@@ -55,17 +55,23 @@ def run_demo():
     case = Case(
         title="Missing Person Investigation #41",
         description="Locating device signals last seen near MG Road.",
-        scenario_id=scenario.id
+        scenario_id=scenario.id,
     )
     session.add(case)
     session.commit()
-    print(f"[OK] Case created: '{case.title}' (ID: {case.id}, Scenario ID: {case.scenario_id})")
+    print(
+        f"[OK] Case created: '{case.title}' (ID: {case.id}, Scenario ID: {case.scenario_id})"
+    )
 
     # Create cell towers
     towers = [
-        Tower(tower_name="Tower Alpha", latitude=12.9716, longitude=77.5946, sector="A"),
+        Tower(
+            tower_name="Tower Alpha", latitude=12.9716, longitude=77.5946, sector="A"
+        ),
         Tower(tower_name="Tower Beta", latitude=12.9753, longitude=77.5910, sector="B"),
-        Tower(tower_name="Tower Gamma", latitude=12.9680, longitude=77.5992, sector="C")
+        Tower(
+            tower_name="Tower Gamma", latitude=12.9680, longitude=77.5992, sector="C"
+        ),
     ]
     session.add_all(towers)
     session.commit()
@@ -75,7 +81,7 @@ def run_demo():
 
     # 3. Validate database constraints (IntegrityError)
     print("\n[Step 3] Validating database integrity constraints...")
-    
+
     # Try inserting case without a title
     invalid_case = Case(title=None, description="This should fail.")
     session.add(invalid_case)
@@ -99,15 +105,17 @@ def run_demo():
     # 4. Validate cascade/SET NULL relationships
     print("\n[Step 4] Validating relationships (SET NULL on delete)...")
     print(f"Before Scenario deletion: Case scenario_id = {case.scenario_id}")
-    
+
     # Delete the scenario
     session.delete(scenario)
     session.commit()
     session.refresh(case)
-    
+
     print(f"After Scenario deletion: Case scenario_id = {case.scenario_id}")
     if case.scenario_id is None:
-        print("[OK] SUCCESS: Deleting a Scenario set Case scenario_id to NULL (as configured).")
+        print(
+            "[OK] SUCCESS: Deleting a Scenario set Case scenario_id to NULL (as configured)."
+        )
     else:
         print("[FAIL] ERROR: Deleting a Scenario failed to nullify Case scenario_id.")
 

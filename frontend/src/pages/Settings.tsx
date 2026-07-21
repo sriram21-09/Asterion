@@ -143,7 +143,8 @@ export default function Settings() {
               />
             </div>
             <div className="pt-2">
-              <Button onClick={handleSaveSystemSettings} icon={<Save className="w-4 h-4" />}>
+              <Button onClick={handleSaveSystemSettings}>
+                <Save className="w-4 h-4 mr-2 inline" />
                 Save Connection Settings
               </Button>
             </div>
@@ -217,7 +218,8 @@ export default function Settings() {
           </div>
           
           <div className="pt-4 border-t border-border-primary">
-            <Button onClick={handleSaveMapSettings} icon={<Save className="w-4 h-4" />}>
+            <Button onClick={handleSaveMapSettings}>
+              <Save className="w-4 h-4 mr-2 inline" />
               Save Map Preferences
             </Button>
           </div>
