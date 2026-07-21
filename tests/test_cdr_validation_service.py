@@ -21,6 +21,7 @@ Verifies the CDR Validation Service layer (Week 3, Day 2):
 """
 
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import pytest
 
@@ -43,17 +44,27 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+_record_seq = 0
+_DEFAULT = object()
+
+
 def _valid_record(
     *,
     operator: str = "airtel",
-    target_number: str = "9714499703",
+    target_number: Any = _DEFAULT,
     timestamp: datetime | None = None,
-    first_cgi: str = "404-98-8331-230711555",
+    first_cgi: Any = _DEFAULT,
     latitude: float | None = 21.293,
     longitude: float | None = 72.889,
     record_id: int | None = None,
 ) -> CDRRecord:
     """Factory for a minimal valid CDR record."""
+    global _record_seq
+    _record_seq += 1
+    if target_number is _DEFAULT:
+        target_number = f"9714499{_record_seq:04d}"
+    if first_cgi is _DEFAULT:
+        first_cgi = f"404-98-8331-{_record_seq:05d}"
     ts = timestamp or (_now() - timedelta(hours=1))
     return CDRRecord(
         id=record_id,
@@ -64,6 +75,8 @@ def _valid_record(
         latitude=latitude,
         longitude=longitude,
     )
+
+
 
 
 # ---------------------------------------------------------------------------
