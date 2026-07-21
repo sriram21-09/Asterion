@@ -9,6 +9,8 @@ from app.models.cdr_record import CDRRecord
 from app.services.import_service import (
     AirtelCDRParser,
     BSNLCDRParser,
+    JioCDRParser,
+    ViCDRParser,
     CDRImportService,
 )
 
@@ -48,6 +50,45 @@ Target/A-Party Number,Call Type,Type of Connection,Other/B-party Number,LRN of B
 9477523061,OUT,,9875651858,3104,Reliance Jio - Kolkata,19/06/2026,12:15:04,760,Mallickpur II C; Kolkata; Lat-22.39711; Long-88.43938,404-81-724-24723,Mallickpur II C; Kolkata; Lat-22.39711; Long-88.43938,404-81-724-24723,,Voice Call,353832116804840,404819000158900,,BSNL - Kolkata,919433599995,BSZJDV1,RJILKO_C
 *** END OF REPORT ***
 CDR COUNT : 2
+"""
+
+
+SAMPLE_JIO_CONTENT = """RELIANCE JIO INFOCOMM LIMITED
+Metadata Line 2
+Metadata Line 3
+Metadata Line 4
+Metadata Line 5
+Metadata Line 6
+Metadata Line 7
+Metadata Line 8
+Metadata Line 9
+Metadata Line 10
+Metadata Line 11
+Metadata Line 12
+Metadata Line 13
+Metadata Line 14
+Metadata Line 15
+Metadata Line 16
+Metadata Line 17
+Metadata Line 18
+Calling Party Telephone Number,Called Party Telephone Number,Call Forwarding,LRN Called No,Call Date,Call Time,Call Termination Time,Call Duration,First Cell ID,Last Cell ID,Call Type,SMS Center Number,IMEI,IMSI,Roaming Circle Name
+'JP-JioPay-S','919877535365','-','-','01/01/2026','01:11:49','01:11:49','0','40585703AD319','40585703AD319','A2P_SMSIN','917019075010','866205068991200','405857032190100','JIO-PB'
+'919877535365','918264264964','-','4106','01/01/2026','10:15:30','10:16:15','45','40585703AD319','40585703AD323','a_out','-','866205068991200','405857032190100','JIO-PB'
+"""
+
+
+SAMPLE_VI_CONTENT = """--------------------------------------------------------------------------------
+VODAFONE IDEA CALL DATA RECORDS
+--------------------------------------------------------------------------------
+MSISDN : - 8980261614
+Report Type :- ALLINDIA Report
+From Date :- 01/01/2026 00:00:00
+Till Date :- 23/03/2026 13:27:50
+--------------------------------------------------------------------------------
+Target /A PARTY NUMBER,CALL_TYPE,Type of Connection,B PARTY NUMBER,LRN- B Party Number,Translation of LRN,Call date,Call Initiation Time,Call Duration,First BTS Location,First Cell Global Id,Last BTS Location,Last Cell Global Id,SMS Centre Number,Service Type,IMEI,IMSI,Call Forwarding Number,Roaming Network/Circle,MSC ID,In TG ,Out TG ,IP Address ,Port No
+--------------------------------------------------------------------------------
+08980261614,Incoming,POSTPAID,06352663530,4106,Vodafone - Mobile-Gujarat,01-01-2026,10:08:37,26,OPEN PLOT OF MR AMITBHAI,404056205320221,BUILDING OF NALINBHAI,404056205528433,-,Voice,869236064978130,404051650035282,-,Guj-Vodafone - GUJARAT - INDIA,GMSGZ20_R17A,MTB,BSCRJ8O,-,-
+08980261614,Outgoing,PREPAID,09772303390,3099,Reliance Jio - Mobile-Rajasthan,01-01-2026,10:32:38,13,BUILDING OF MUNICIPALITY,404056205520773,BUILDING OF MUNICIPALITY,404056205520773,-,Voice,869236064978130,404051650035282,-,Guj-Vodafone - GUJARAT - INDIA,GMSGZ20_R17A,BSCRJ9I,TRACO,-,-
 """
 
 
@@ -129,11 +170,77 @@ class TestBSNLCDRParser:
         assert rec1["last_longitude"] == pytest.approx(88.43938)
 
 
+class TestJioCDRParser:
+    def test_detect_jio(self):
+        parser = JioCDRParser()
+        assert parser.detect(SAMPLE_JIO_CONTENT) is True
+        assert parser.detect("random content") is False
+
+    def test_parse_jio_records(self):
+        parser = JioCDRParser()
+        records, failed = parser.parse(SAMPLE_JIO_CONTENT)
+        assert failed == 0
+        assert len(records) == 2
+
+        rec0 = records[0]
+        assert rec0["operator"] == "jio"
+        assert rec0["target_number"] == "JP-JioPay-S"
+        assert rec0["b_party_number"] == "919877535365"
+        assert rec0["call_type"] == "A2P_SMSIN"
+        assert rec0["service_type"] == "SMS"
+        assert rec0["duration"] == 0
+        assert rec0["latitude"] is None
+        assert rec0["longitude"] is None
+        assert rec0["first_cgi"] == "40585703AD319"
+        assert rec0["imei"] == "866205068991200"
+
+        rec1 = records[1]
+        assert rec1["target_number"] == "919877535365"
+        assert rec1["b_party_number"] == "918264264964"
+        assert rec1["call_type"] == "a_out"
+        assert rec1["duration"] == 45
+        assert rec1["first_cgi"] == "40585703AD319"
+        assert rec1["last_cgi"] == "40585703AD323"
+
+
+class TestViCDRParser:
+    def test_detect_vi(self):
+        parser = ViCDRParser()
+        assert parser.detect(SAMPLE_VI_CONTENT) is True
+        assert parser.detect("random content") is False
+
+    def test_parse_vi_records(self):
+        parser = ViCDRParser()
+        records, failed = parser.parse(SAMPLE_VI_CONTENT)
+        assert failed == 0
+        assert len(records) == 2
+
+        rec0 = records[0]
+        assert rec0["operator"] == "vi"
+        assert rec0["target_number"] == "08980261614"
+        assert rec0["call_type"] == "Incoming"
+        assert rec0["b_party_number"] == "06352663530"
+        assert rec0["service_type"] == "Voice"
+        assert rec0["duration"] == 26
+        assert rec0["latitude"] is None
+        assert rec0["longitude"] is None
+        assert rec0["first_cgi"] == "404056205320221"
+        assert rec0["last_cgi"] == "404056205528433"
+        assert rec0["first_bts_location"] == "OPEN PLOT OF MR AMITBHAI"
+        assert rec0["last_bts_location"] == "BUILDING OF NALINBHAI"
+
+        rec1 = records[1]
+        assert rec1["call_type"] == "Outgoing"
+        assert rec1["duration"] == 13
+
+
 class TestCDRImportService:
     def test_detect_operator(self):
         service = CDRImportService()
         assert service.detect_operator(SAMPLE_AIRTEL_CONTENT) == "airtel"
         assert service.detect_operator(SAMPLE_BSNL_CONTENT) == "bsnl"
+        assert service.detect_operator(SAMPLE_JIO_CONTENT) == "jio"
+        assert service.detect_operator(SAMPLE_VI_CONTENT) == "vi"
         assert service.detect_operator("random content") == "unknown"
 
     def test_process_upload_airtel(self, db_session):
@@ -182,3 +289,46 @@ class TestCDRImportService:
         assert len(db_records) == 2
         assert db_records[0].latitude == pytest.approx(22.39711)
         assert db_records[0].longitude == pytest.approx(88.43938)
+
+    def test_process_upload_jio(self, db_session):
+        service = CDRImportService()
+        res = service.process_upload(
+            file_name="test_jio.csv",
+            file_bytes=SAMPLE_JIO_CONTENT.encode("utf-8"),
+            db=db_session,
+        )
+        assert res["summary"]["status"] == "completed"
+        assert res["summary"]["parsed_records"] == 2
+
+        job_id = res["job"].id
+        db_records = (
+            db_session.query(CDRRecord)
+            .filter(CDRRecord.import_job_id == job_id)
+            .all()
+        )
+        assert len(db_records) == 2
+        assert db_records[0].operator == "jio"
+        assert db_records[0].latitude is None
+        assert db_records[0].first_cgi == "40585703AD319"
+
+    def test_process_upload_vi(self, db_session):
+        service = CDRImportService()
+        res = service.process_upload(
+            file_name="test_vi.csv",
+            file_bytes=SAMPLE_VI_CONTENT.encode("utf-8"),
+            db=db_session,
+        )
+        assert res["summary"]["status"] == "completed"
+        assert res["summary"]["parsed_records"] == 2
+
+        job_id = res["job"].id
+        db_records = (
+            db_session.query(CDRRecord)
+            .filter(CDRRecord.import_job_id == job_id)
+            .all()
+        )
+        assert len(db_records) == 2
+        assert db_records[0].operator == "vi"
+        assert db_records[0].latitude is None
+        assert db_records[0].first_cgi == "404056205320221"
+
