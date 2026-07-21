@@ -81,6 +81,7 @@ export default function Scenarios() {
   const handleManualEvidence = (caseCode: string) => {
     useEvidenceStore.getState().fetchEvidence(caseCode)
   }
+
   const handleCreateScenario = (data: CreateScenarioDTO) => {
     createScenario.mutate(data, {
       onSuccess: () => setIsFormOpen(false),

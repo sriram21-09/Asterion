@@ -170,6 +170,7 @@ class LocalizationService:
 
         # Group measurements by timestamp
         from collections import defaultdict
+
         measurements_by_time = defaultdict(list)
         for m in scientific_measurements:
             measurements_by_time[m.timestamp].append(m)
@@ -179,6 +180,7 @@ class LocalizationService:
             LocalizationResultORM.case_id == case_id
         ).delete()
         db.commit()
+
         # Run multilateration solver for each timestamp group
         results: List[ScientificResult] = []
         sorted_times = sorted(measurements_by_time.keys())
@@ -196,7 +198,6 @@ class LocalizationService:
             # Sync timestamp to the group timestamp
             result.timestamp = t
             results.append(result)
-
             db_result = LocalizationResultORM(
                 case_id=case_id,
                 scenario_id=case.scenario_id,
