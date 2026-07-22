@@ -58,7 +58,7 @@ def test_measurement_generator_no_ground_truth(base_config: ScenarioConfig):
     base_config.expected_device_lat = None
     base_config.expected_device_lon = None
     generator = MeasurementGenerator(base_config)
-    
+
     with pytest.raises(ValueError, match="expected_device_lat"):
         generator.generate()
 
@@ -67,7 +67,7 @@ def test_measurement_generator_no_noise(base_config: ScenarioConfig):
     # With 3 towers and measurement_count=2, we should get 6 measurements
     generator = MeasurementGenerator(base_config)
     measurements = generator.generate()
-    
+
     assert len(measurements) == 6
     assert all(m.latitude == base_config.expected_device_lat for m in measurements)
     assert all(m.longitude == base_config.expected_device_lon for m in measurements)
@@ -82,7 +82,7 @@ def test_measurement_generator_no_noise(base_config: ScenarioConfig):
 
 def test_measurement_generator_with_noise(base_config: ScenarioConfig):
     base_config.simulation.enable_noise = True
-    
+
     gen1 = MeasurementGenerator(base_config)
     measurements1 = gen1.generate()
 
@@ -97,7 +97,7 @@ def test_measurement_generator_with_noise(base_config: ScenarioConfig):
 
 def test_measurement_generator_different_seeds(base_config: ScenarioConfig):
     base_config.simulation.enable_noise = True
-    
+
     gen1 = MeasurementGenerator(base_config)
     measurements1 = gen1.generate()
 
@@ -107,5 +107,7 @@ def test_measurement_generator_different_seeds(base_config: ScenarioConfig):
 
     # The generated values should be different due to different seeds
     # (Technically there's an infinitesimal chance they're identical, but practically zero)
-    diff_found = any(m1.rssi_dbm != m2.rssi_dbm for m1, m2 in zip(measurements1, measurements2))
+    diff_found = any(
+        m1.rssi_dbm != m2.rssi_dbm for m1, m2 in zip(measurements1, measurements2)
+    )
     assert diff_found, "Measurements with different seeds were identical"

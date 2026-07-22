@@ -51,25 +51,25 @@ class TestValidationResultTypes:
         assert r.warnings == []
 
     def test_result_with_error_is_invalid(self):
-        r = ValidationResult(errors=[
-            SciValidationError(field="x", message="bad", severity=Severity.ERROR)
-        ])
+        r = ValidationResult(
+            errors=[
+                SciValidationError(field="x", message="bad", severity=Severity.ERROR)
+            ]
+        )
         assert r.is_valid is False
 
     def test_result_with_only_warnings_is_valid(self):
-        r = ValidationResult(errors=[
-            SciValidationError(field="x", message="warn", severity=Severity.WARNING)
-        ])
+        r = ValidationResult(
+            errors=[
+                SciValidationError(field="x", message="warn", severity=Severity.WARNING)
+            ]
+        )
         assert r.is_valid is True
         assert len(r.warnings) == 1
 
     def test_merge_combines_results(self):
-        r1 = ValidationResult(errors=[
-            SciValidationError(field="a", message="err1")
-        ])
-        r2 = ValidationResult(errors=[
-            SciValidationError(field="b", message="err2")
-        ])
+        r1 = ValidationResult(errors=[SciValidationError(field="a", message="err1")])
+        r2 = ValidationResult(errors=[SciValidationError(field="b", message="err2")])
         r1.merge(r2)
         assert len(r1.errors) == 2
 
@@ -171,8 +171,9 @@ class TestTowerValidator:
         for freq in [700, 900, 1800, 2100, 2600, 3500]:
             t = self._make(frequency_mhz=float(freq))
             r = self.validator.validate(t)
-            assert not any("TOWER_UNUSUAL_FREQ" == e.code for e in r.errors), \
-                f"Frequency {freq} MHz incorrectly flagged"
+            assert not any(
+                "TOWER_UNUSUAL_FREQ" == e.code for e in r.errors
+            ), f"Frequency {freq} MHz incorrectly flagged"
 
     def test_extreme_tx_power_warns(self):
         t = self._make(transmit_power_dbm=5.0)  # below MIN_TX_POWER_DBM
@@ -194,22 +195,26 @@ class TestScenarioValidator:
     def _make_towers(self, count=3):
         towers = []
         for i in range(count):
-            towers.append(Tower(
-                tower_id=f"T{i+1:03d}",
-                latitude=12.97 + i * 0.003,
-                longitude=77.59 - i * 0.005,
-            ))
+            towers.append(
+                Tower(
+                    tower_id=f"T{i+1:03d}",
+                    latitude=12.97 + i * 0.003,
+                    longitude=77.59 - i * 0.005,
+                )
+            )
         return towers
 
     def _make_measurements(self, tower_ids):
         meas = []
         for i, tid in enumerate(tower_ids):
-            meas.append(Measurement(
-                measurement_id=f"M{i+1:03d}",
-                tower_id=tid,
-                timestamp=datetime(2026, 7, 7, 10, 30, i, tzinfo=timezone.utc),
-                rssi_dbm=-70.0 - i * 5,
-            ))
+            meas.append(
+                Measurement(
+                    measurement_id=f"M{i+1:03d}",
+                    tower_id=tid,
+                    timestamp=datetime(2026, 7, 7, 10, 30, i, tzinfo=timezone.utc),
+                    rssi_dbm=-70.0 - i * 5,
+                )
+            )
         return meas
 
     def test_valid_scenario_passes(self):
@@ -239,15 +244,19 @@ class TestScenarioValidator:
 
     def test_orphan_measurement_fails(self):
         towers = self._make_towers(3)
-        meas = [Measurement(
-            measurement_id="M001",
-            tower_id="T999",  # doesn't exist
-            timestamp=datetime(2026, 7, 7, 10, 30, tzinfo=timezone.utc),
-            rssi_dbm=-72.0,
-        )]
+        meas = [
+            Measurement(
+                measurement_id="M001",
+                tower_id="T999",  # doesn't exist
+                timestamp=datetime(2026, 7, 7, 10, 30, tzinfo=timezone.utc),
+                rssi_dbm=-72.0,
+            )
+        ]
         scn = Scenario(
-            scenario_id="SCN-001", name="Orphan Test",
-            towers=towers, measurements=meas,
+            scenario_id="SCN-001",
+            name="Orphan Test",
+            towers=towers,
+            measurements=meas,
         )
         r = self.validator.validate(scn)
         assert r.is_valid is False
@@ -256,7 +265,8 @@ class TestScenarioValidator:
     def test_partial_ground_truth_fails(self):
         towers = self._make_towers(3)
         scn = Scenario(
-            scenario_id="SCN-001", name="GT Test",
+            scenario_id="SCN-001",
+            name="GT Test",
             towers=towers,
             expected_device_lat=12.97,
             # expected_device_lon is None
@@ -270,8 +280,10 @@ class TestScenarioValidator:
         # Only measurement for T001, T002 missing T003
         meas = self._make_measurements(["T001", "T002"])
         scn = Scenario(
-            scenario_id="SCN-001", name="Coverage Test",
-            towers=towers, measurements=meas,
+            scenario_id="SCN-001",
+            name="Coverage Test",
+            towers=towers,
+            measurements=meas,
         )
         r = self.validator.validate(scn)
         assert any("SCENARIO_UNCOVERED_TOWER" == e.code for e in r.errors)
@@ -295,6 +307,7 @@ class TestScenarioValidator:
 # =====================================================================
 # DELIVERABLE 2: datasets/sample/sample_dataset.json
 # =====================================================================
+
 
 class TestSampleDataset:
     """Validate the sample dataset's structure and data integrity."""
@@ -331,16 +344,19 @@ class TestSampleDataset:
         valid_ids = {t["tower_id"] for t in self.data["towers"]}
         for sc in self.data["scenarios"]:
             for tid in sc["tower_ids"]:
-                assert tid in valid_ids, f"Scenario {sc['scenario_id']} refs unknown tower {tid}"
+                assert (
+                    tid in valid_ids
+                ), f"Scenario {sc['scenario_id']} refs unknown tower {tid}"
 
     def test_measurement_tower_refs_valid(self):
         """Every measurement must reference a tower from its scenario."""
         for sc in self.data["scenarios"]:
             scenario_tower_ids = set(sc["tower_ids"])
             for m in sc["measurements"]:
-                assert m["tower_id"] in scenario_tower_ids, \
-                    f"Measurement {m['measurement_id']} refs tower {m['tower_id']} " \
+                assert m["tower_id"] in scenario_tower_ids, (
+                    f"Measurement {m['measurement_id']} refs tower {m['tower_id']} "
                     f"not in scenario {sc['scenario_id']}"
+                )
 
     def test_measurements_load_as_pydantic(self):
         for sc in self.data["scenarios"]:
@@ -378,9 +394,10 @@ class TestSampleDataset:
                 expected_device_lon=sc.get("expected_device_lon"),
             )
             r = sv.validate(scenario)
-            assert r.is_valid, \
-                f"Scenario {sc['scenario_id']} has validation errors: " \
+            assert r.is_valid, (
+                f"Scenario {sc['scenario_id']} has validation errors: "
                 f"{[(e.field, e.message) for e in r.errors if e.severity == Severity.ERROR]}"
+            )
 
     def test_has_expected_results(self):
         er = self.data["expected_results"]
@@ -396,8 +413,9 @@ class TestSampleDataset:
         """All RSSI values should be within [-150, 0] dBm."""
         for sc in self.data["scenarios"]:
             for m in sc["measurements"]:
-                assert -150.0 <= m["rssi_dbm"] <= 0.0, \
-                    f"RSSI {m['rssi_dbm']} out of range in {m['measurement_id']}"
+                assert (
+                    -150.0 <= m["rssi_dbm"] <= 0.0
+                ), f"RSSI {m['rssi_dbm']} out of range in {m['measurement_id']}"
 
 
 # =====================================================================
@@ -626,6 +644,7 @@ class TestValidationErrorConversion:
 # =====================================================================
 # CROSS-CUTTING: Verify all files exist
 # =====================================================================
+
 
 class TestFileExistence:
     """Verify all Day 3 deliverable files exist."""
