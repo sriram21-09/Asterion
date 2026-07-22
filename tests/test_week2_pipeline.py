@@ -95,9 +95,6 @@ class TestResultValidator:
         custom_thresholds = ValidationThresholds(latitude_range=(10.0, 20.0))
         validator = ResultValidator(thresholds=custom_thresholds)
         val_res = validator.validate(res, scenario)
-        custom_thresholds = ValidationThresholds(latitude_range=(10.0, 20.0))
-        validator = ResultValidator(thresholds=custom_thresholds)
-        val_res = validator.validate(res, scenario)
         assert not val_res.is_valid
         assert any(e.code == "RESULT_OUT_OF_BOUNDS" for e in val_res.errors)
 
@@ -176,13 +173,13 @@ class TestResultValidator:
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
         assert val_res.is_valid
-        assert val_res.is_valid
         assert len(val_res.errors) == 0
 
 
 # ---------------------------------------------------------------------------
 # 2. cross_validate Tests
 # ---------------------------------------------------------------------------
+
 
 class TestCrossValidate:
     """Verify cross_validate flags mismatch between error and confidence."""
@@ -357,7 +354,6 @@ class TestE2EPipelineRunner:
         result = run_pipeline(config)
         assert isinstance(result, PipelineResult)
         assert result.metadata["algorithm_selected"] == algorithm
-
         # Verify history trace
         history = result.metadata["history"]
         if algorithm in ("kalman", "hybrid"):
