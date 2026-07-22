@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { MapPin, Search, Filter, Shield, AlertCircle, Signal } from 'lucide-react'
-import { LeafletMap, MapTower, ConfidenceTier } from '@/components/map/LeafletMap'
+import { LeafletMap, type MapTower, type ConfidenceTier } from '@/components/map/LeafletMap'
 import { cn } from '@/lib/cn'
 
 // Mock Data for the Tower Registry
