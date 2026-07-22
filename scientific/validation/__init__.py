@@ -9,13 +9,16 @@ Input validation and data quality components for the scientific engine:
 - Measurement consistency checks (timestamps, tower IDs)
 - Scenario completeness validation (minimum tower count)
 - Data format validators for pipeline inputs
-- CDR record validation and duplicate detection
+- CDR record validation, duplicate detection, and batch quality scoring
 
 Exports:
     MeasurementValidator: Single-measurement domain validation.
     TowerValidator: Single-tower physics-aware validation.
     ScenarioValidator: Full-scenario structural + deep validation.
     CDRRecordValidator: Single CDR record domain validation.
+    CDRValidationService: Batch CDR orchestration + quality scoring.
+    CDRValidationReport: Structured report from a batch validation run.
+    CDRDataQualityScore: Quantitative quality score (0‒1) with grade.
     ValidationResult: Aggregated validation findings.
     ValidationError: A single validation finding.
     Severity: Error / Warning / Info classification.
@@ -40,6 +43,9 @@ from scientific.validation.validators import (
     validate_batch,
     CDRRecordValidator,
     validate_cdr_batch,
+    CDRValidationService,
+    CDRValidationReport,
+    CDRDataQualityScore,
 )
 
 __all__ = [
@@ -57,5 +63,8 @@ __all__ = [
     "validate_batch",
     "CDRRecordValidator",
     "validate_cdr_batch",
+    "CDRValidationService",
+    "CDRValidationReport",
+    "CDRDataQualityScore",
 ]
 

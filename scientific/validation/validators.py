@@ -1303,3 +1303,341 @@ def validate_cdr_batch(
 
     return result
 
+
+# ---------------------------------------------------------------------------
+# CDR Validation Service — Report & Quality Score types
+# ---------------------------------------------------------------------------
+
+
+
+@dataclass
+class CDRDataQualityScore:
+    """Quantitative quality assessment for a CDR import batch.
+
+    Attributes:
+        overall_score: Weighted composite score in ``[0.0, 1.0]``.
+        validity_score: Proportion of records with zero ERROR findings.
+        completeness_score: Average proportion of key fields present per record.
+        consistency_score: Inverse duplicate / anomaly rate.
+        timeliness_score: Proportion of non-stale, non-future timestamps.
+        grade: Human-readable tier — one of Excellent / Good / Fair / Poor / Critical.
+    """
+
+    overall_score: float
+    validity_score: float
+    completeness_score: float
+    consistency_score: float
+    timeliness_score: float
+    grade: str
+
+    # Weight constants (class-level, easy to override in tests)
+    _W_VALIDITY: float = field(default=0.40, init=False, repr=False, compare=False)
+    _W_COMPLETENESS: float = field(default=0.25, init=False, repr=False, compare=False)
+    _W_CONSISTENCY: float = field(default=0.20, init=False, repr=False, compare=False)
+    _W_TIMELINESS: float = field(default=0.15, init=False, repr=False, compare=False)
+
+    @staticmethod
+    def grade_from_score(score: float) -> str:
+        """Return the human-readable grade for a given overall score."""
+        if score >= 0.95:
+            return "Excellent"
+        if score >= 0.80:
+            return "Good"
+        if score >= 0.60:
+            return "Fair"
+        if score >= 0.40:
+            return "Poor"
+        return "Critical"
+
+
+@dataclass
+class CDRValidationReport:
+    """Structured report produced by :class:`CDRValidationService` for a batch.
+
+    Attributes:
+        total_records: Number of records in the batch.
+        valid_count: Records with zero ERROR-severity findings.
+        rejected_count: Records with at least one ERROR-severity finding.
+        warning_count: Total WARNING-severity findings across all records.
+        failure_categories: Mapping of error code → occurrence count.
+        warning_categories: Mapping of warning code → occurrence count.
+        per_record_results: Individual :class:`ValidationResult` per record.
+        quality_score: Computed :class:`CDRDataQualityScore` for the batch.
+    """
+
+    total_records: int
+    valid_count: int
+    rejected_count: int
+    warning_count: int
+    failure_categories: Dict[str, int]
+    warning_categories: Dict[str, int]
+    per_record_results: List[ValidationResult]
+    quality_score: CDRDataQualityScore
+
+    @property
+    def is_valid(self) -> bool:
+        """Return ``True`` if no records were rejected."""
+        return self.rejected_count == 0
+
+    def summary(self) -> str:
+        """Return a concise one-line human-readable summary."""
+        return (
+            f"CDRValidationReport | total={self.total_records} "
+            f"valid={self.valid_count} rejected={self.rejected_count} "
+            f"warnings={self.warning_count} "
+            f"quality={self.quality_score.overall_score:.2f} "
+            f"grade={self.quality_score.grade}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# CDR Validation Service
+# ---------------------------------------------------------------------------
+
+#: Key CDRRecord fields evaluated for completeness scoring.
+_CDR_COMPLETENESS_FIELDS = (
+    "operator",
+    "target_number",
+    "timestamp",
+    "latitude",
+    "longitude",
+    "first_cgi",
+)
+
+
+class CDRValidationService:
+    """Orchestrates CDR validation across import batches.
+
+    This service wraps :class:`CDRRecordValidator` and :func:`validate_cdr_batch`
+    to produce:
+
+    1. A :class:`CDRValidationReport` that logs exact failure categories with
+       occurrence counts.
+    2. A :class:`CDRDataQualityScore` that measures the overall data quality
+       of the batch on four dimensions:
+
+       * **Validity** — proportion of records with no ERROR findings.
+       * **Completeness** — average proportion of key fields populated per
+         record (fields: operator, target_number, timestamp, latitude,
+         longitude, first_cgi).
+       * **Consistency** — inverse duplicate / anomaly rate within the batch.
+       * **Timeliness** — proportion of records with non-stale, non-future
+         timestamps.
+
+    The weighted overall score is:
+    ``0.40 × validity + 0.25 × completeness + 0.20 × consistency + 0.15 × timeliness``
+
+    Usage::
+
+        >>> from scientific.validation.validators import CDRValidationService
+        >>> from scientific.models.cdr_record import CDRRecord
+        >>> svc = CDRValidationService()
+        >>> report = svc.validate_batch(records)
+        >>> print(report.summary())
+        >>> print(f"Grade: {report.quality_score.grade}")
+
+    Parameters:
+        thresholds: Validation thresholds; defaults to
+            :data:`DEFAULT_VALIDATION_THRESHOLDS`.
+    """
+
+    def __init__(
+        self,
+        thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
+    ) -> None:
+        self.thresholds = thresholds
+        self._record_validator = CDRRecordValidator(thresholds=thresholds)
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def validate_batch(self, records: List[CDRRecord]) -> CDRValidationReport:
+        """Validate a full batch of :class:`CDRRecord` instances.
+
+        Runs individual record validation followed by batch-level duplicate
+        checks, then computes failure/warning category tallies and the
+        overall data quality score.
+
+        Args:
+            records: The list of CDR records to validate.
+
+        Returns:
+            A fully-populated :class:`CDRValidationReport`.
+        """
+        if not records:
+            empty_score = CDRDataQualityScore(
+                overall_score=1.0,
+                validity_score=1.0,
+                completeness_score=1.0,
+                consistency_score=1.0,
+                timeliness_score=1.0,
+                grade="Excellent",
+            )
+            return CDRValidationReport(
+                total_records=0,
+                valid_count=0,
+                rejected_count=0,
+                warning_count=0,
+                failure_categories={},
+                warning_categories={},
+                per_record_results=[],
+                quality_score=empty_score,
+            )
+
+        # --- 1. Per-record validation ------------------------------------------
+        per_record_results: List[ValidationResult] = []
+        for record in records:
+            per_record_results.append(self._record_validator.validate(record))
+
+        # --- 2. Batch-level duplicate checks -----------------------------------
+        # Re-use validate_cdr_batch duplicate logic; merge its errors into the
+        # appropriate per-record result by tracking seen IDs / content keys.
+        duplicate_id_indices: set[int] = set()
+        duplicate_record_indices: set[int] = set()
+
+        seen_ids: Dict[int, int] = {}            # id → first occurrence index
+        seen_keys: Dict[tuple, int] = {}          # content key → first idx
+
+        for idx, record in enumerate(records):
+            if record.id is not None:
+                if record.id in seen_ids:
+                    dup_err = ValidationError(
+                        field="id",
+                        message=f"Duplicate record ID found: {record.id}",
+                        severity=Severity.ERROR,
+                        code="CDR_DUPLICATE_ID",
+                    )
+                    per_record_results[idx].errors.append(dup_err)
+                    duplicate_id_indices.add(idx)
+                else:
+                    seen_ids[record.id] = idx
+
+            if record.target_number and record.timestamp:
+                key = (record.target_number, record.timestamp, record.first_cgi)
+                if key in seen_keys:
+                    dup_err = ValidationError(
+                        field="target_number/timestamp/first_cgi",
+                        message=(
+                            f"Duplicate record detected. Same target_number, timestamp, "
+                            f"and first_cgi as records[{seen_keys[key]}]."
+                        ),
+                        severity=Severity.ERROR,
+                        code="CDR_DUPLICATE_RECORD",
+                    )
+                    per_record_results[idx].errors.append(dup_err)
+                    duplicate_record_indices.add(idx)
+                else:
+                    seen_keys[key] = idx
+
+        # --- 3. Aggregate counts and category tallies --------------------------
+        valid_count = 0
+        rejected_count = 0
+        warning_count = 0
+        failure_categories: Dict[str, int] = {}
+        warning_categories: Dict[str, int] = {}
+
+        for res in per_record_results:
+            has_error = not res.is_valid
+            if has_error:
+                rejected_count += 1
+            else:
+                valid_count += 1
+
+            for err in res.errors:
+                code = err.code or "UNKNOWN"
+                if err.severity == Severity.ERROR:
+                    failure_categories[code] = failure_categories.get(code, 0) + 1
+                elif err.severity == Severity.WARNING:
+                    warning_categories[code] = warning_categories.get(code, 0) + 1
+                    warning_count += 1
+
+        # --- 4. Compute quality score ------------------------------------------
+        total_duplicates = len(duplicate_id_indices | duplicate_record_indices)
+        quality_score = self._calculate_quality_score(
+            records=records,
+            per_record_results=per_record_results,
+            valid_count=valid_count,
+            total_duplicates=total_duplicates,
+        )
+
+        return CDRValidationReport(
+            total_records=len(records),
+            valid_count=valid_count,
+            rejected_count=rejected_count,
+            warning_count=warning_count,
+            failure_categories=failure_categories,
+            warning_categories=warning_categories,
+            per_record_results=per_record_results,
+            quality_score=quality_score,
+        )
+
+    # ------------------------------------------------------------------
+    # Quality score helpers
+    # ------------------------------------------------------------------
+
+    def _calculate_quality_score(
+        self,
+        records: List[CDRRecord],
+        per_record_results: List[ValidationResult],
+        valid_count: int,
+        total_duplicates: int,
+    ) -> CDRDataQualityScore:
+        """Compute the four sub-scores and the weighted overall score."""
+        n = len(records)
+
+        validity_score = valid_count / n
+        completeness_score = self._compute_completeness(records)
+        consistency_score = max(0.0, 1.0 - (total_duplicates / n))
+        timeliness_score = self._compute_timeliness(records)
+
+        overall = (
+            0.40 * validity_score
+            + 0.25 * completeness_score
+            + 0.20 * consistency_score
+            + 0.15 * timeliness_score
+        )
+        overall = max(0.0, min(1.0, overall))
+
+        return CDRDataQualityScore(
+            overall_score=round(overall, 4),
+            validity_score=round(validity_score, 4),
+            completeness_score=round(completeness_score, 4),
+            consistency_score=round(consistency_score, 4),
+            timeliness_score=round(timeliness_score, 4),
+            grade=CDRDataQualityScore.grade_from_score(overall),
+        )
+
+    def _compute_completeness(self, records: List[CDRRecord]) -> float:
+        """Return the average fraction of key fields present across all records."""
+        if not records:
+            return 1.0
+        total_ratio = 0.0
+        n_fields = len(_CDR_COMPLETENESS_FIELDS)
+        for record in records:
+            present = sum(
+                1
+                for f in _CDR_COMPLETENESS_FIELDS
+                if getattr(record, f, None) not in (None, "")
+            )
+            total_ratio += present / n_fields
+        return total_ratio / len(records)
+
+    def _compute_timeliness(self, records: List[CDRRecord]) -> float:
+        """Return the fraction of records with valid, current timestamps."""
+        if not records:
+            return 1.0
+        now_utc = datetime.now(timezone.utc)
+        max_age_days = self.thresholds.max_measurement_age_days
+        timely_count = 0
+        for record in records:
+            ts = record.timestamp
+            if ts is None:
+                continue
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            # Must not be in the future and not excessively stale
+            if ts <= now_utc and (now_utc - ts).days <= max_age_days:
+                timely_count += 1
+        return timely_count / len(records)
+
