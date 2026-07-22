@@ -9,7 +9,7 @@ Input validation and data quality components for the scientific engine:
 - Measurement consistency checks (timestamps, tower IDs)
 - Scenario completeness validation (minimum tower count)
 - Data format validators for pipeline inputs
-- CDR record validation and batch quality scoring
+- CDR record validation, duplicate detection, and batch quality scoring
 
 Exports:
     MeasurementValidator: Single-measurement domain validation.
