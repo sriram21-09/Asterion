@@ -37,17 +37,15 @@ Usage::
 """
 
 from __future__ import annotations
-
+ 
 import math
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-<<<<<<< HEAD
 from typing import List, Optional, Protocol, TypeVar, Dict, Any
-=======
-from typing import List, Optional, Protocol, TypeVar, Dict
->>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
 
+from scientific.models.cdr_record import CDRRecord
 from scientific.models.measurement import Measurement
 from scientific.models.scenario import Scenario
 from scientific.models.scenario_config import ScenarioConfig
@@ -925,19 +923,12 @@ class ResultValidator:
         tower_lons = [t.longitude for t in towers]
         min_tower_lat, max_tower_lat = min(tower_lats), max(tower_lats)
         min_tower_lon, max_tower_lon = min(tower_lons), max(tower_lons)
-
         # Buffer distance in degrees (based on max coverage radius of the towers, or default 5000m)
-        max_coverage = max((t.coverage_radius_m for t in towers), default=5000.0)
+        max_coverage = max(
+            (t.coverage_radius_m for t in towers if getattr(t, "coverage_radius_m", None) is not None),
+            default=5000.0,
+        )
         from scientific.constants import METERS_PER_DEGREE_LAT
-<<<<<<< HEAD
-        buffer_deg_lat = (max_coverage * 1.5) / METERS_PER_DEGREE_LAT
-        lat_rad = math.radians((min_tower_lat + max_tower_lat) / 2.0)
-        buffer_deg_lon = (max_coverage * 1.5) / (METERS_PER_DEGREE_LAT * max(0.1, math.cos(lat_rad)))
-
-        if not (min_tower_lat - buffer_deg_lat <= lat <= max_tower_lat + buffer_deg_lat) or \
-           not (min_tower_lon - buffer_deg_lon <= lon <= max_tower_lon + buffer_deg_lon):
-=======
-
         buffer_deg_lat = (max_coverage * 1.5) / METERS_PER_DEGREE_LAT
         lat_rad = math.radians((min_tower_lat + max_tower_lat) / 2.0)
         buffer_deg_lon = (max_coverage * 1.5) / (
@@ -949,7 +940,6 @@ class ResultValidator:
         ) or not (
             min_tower_lon - buffer_deg_lon <= lon <= max_tower_lon + buffer_deg_lon
         ):
->>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
             validation_res.errors.append(
                 ValidationError(
                     field="estimated_latitude/estimated_longitude",
@@ -1045,7 +1035,271 @@ def validate_batch(
     """Validate a batch of Scenario objects, returning a mapping of scenario_id to ValidationResult."""
     validator = ScenarioValidator(deep=deep, thresholds=thresholds)
     return {s.scenario_id: validator.validate(s) for s in scenarios}
-<<<<<<< HEAD
 
-=======
->>>>>>> d0b6016e53016adb4d85079422f6340c9f0ad007
+
+class CDRRecordValidator:
+    """Validates a single :class:`CDRRecord` instance.
+
+    Checks:
+        1. Required fields presence (operator, target_number, timestamp).
+        2. Valid operator (must be case-insensitively one of airtel, bsnl, jio, vi).
+        3. Coordinates operational bounds check (for latitude/longitude and last_latitude/last_longitude).
+        4. Coordinate parity (both lat/lon must be provided or both must be omitted).
+        5. Future timestamp check.
+        6. Stale timestamp check (older than thresholds.max_measurement_age_days).
+        7. Timestamp format (missing seconds warning, e.g. HH:MM instead of HH:MM:SS).
+    """
+
+    def __init__(
+        self, thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS
+    ) -> None:
+        self.thresholds = thresholds
+
+    def validate(self, record: CDRRecord) -> ValidationResult:
+        result = ValidationResult()
+
+        # 1. Presence checks
+        if not getattr(record, "operator", None):
+            result.errors.append(
+                ValidationError(
+                    field="operator",
+                    message="Operator must be provided.",
+                    severity=Severity.ERROR,
+                    code="CDR_INVALID_OPERATOR",
+                )
+            )
+
+        if not getattr(record, "target_number", None) or not str(record.target_number).strip():
+            result.errors.append(
+                ValidationError(
+                    field="target_number",
+                    message="Target number must be provided and non-empty.",
+                    severity=Severity.ERROR,
+                    code="CDR_MISSING_TARGET_NUMBER",
+                )
+            )
+
+        if getattr(record, "timestamp", None) is None:
+            result.errors.append(
+                ValidationError(
+                    field="timestamp",
+                    message="Timestamp must be provided.",
+                    severity=Severity.ERROR,
+                    code="CDR_MISSING_TIMESTAMP",
+                )
+            )
+
+        # Stop early if required fields are missing/invalid to prevent secondary validation errors
+        if not result.is_valid:
+            return result
+
+        # 2. Operator validation
+        valid_operators = {"airtel", "bsnl", "jio", "vi"}
+        op_lower = record.operator.lower()
+        if op_lower not in valid_operators:
+            result.errors.append(
+                ValidationError(
+                    field="operator",
+                    message=f"Operator '{record.operator}' is not supported. Must be one of: airtel, bsnl, jio, vi.",
+                    severity=Severity.ERROR,
+                    code="CDR_INVALID_OPERATOR",
+                )
+            )
+
+        # 3 & 4. Coordinate checks for start location
+        lat = record.latitude
+        lon = record.longitude
+        has_lat = lat is not None
+        has_lon = lon is not None
+
+        if has_lat != has_lon:
+            result.errors.append(
+                ValidationError(
+                    field="latitude/longitude",
+                    message="Latitude and longitude must both be provided or both be omitted.",
+                    severity=Severity.ERROR,
+                    code="CDR_PARTIAL_COORDS",
+                )
+            )
+        elif has_lat and has_lon:
+            # Operational bounds checks
+            lat_min, lat_max = self.thresholds.latitude_range
+            lon_min, lon_max = self.thresholds.longitude_range
+            if not (-90.0 <= lat <= 90.0) or not (-180.0 <= lon <= 180.0):
+                result.errors.append(
+                    ValidationError(
+                        field="latitude/longitude",
+                        message=f"Coordinates ({lat}, {lon}) are outside valid WGS84 bounds.",
+                        severity=Severity.ERROR,
+                        code="CDR_COORDS_OUT_OF_BOUNDS",
+                    )
+                )
+            elif not (lat_min <= lat <= lat_max) or not (lon_min <= lon <= lon_max):
+                result.errors.append(
+                    ValidationError(
+                        field="latitude/longitude",
+                        message=f"Coordinates ({lat}, {lon}) are outside operational ranges.",
+                        severity=Severity.ERROR,
+                        code="CDR_COORDS_OUT_OF_BOUNDS",
+                    )
+                )
+
+        # 3 & 4. Coordinate checks for end location (last_latitude / last_longitude)
+        last_lat = record.last_latitude
+        last_lon = record.last_longitude
+        has_last_lat = last_lat is not None
+        has_last_lon = last_lon is not None
+
+        if has_last_lat != has_last_lon:
+            result.errors.append(
+                ValidationError(
+                    field="last_latitude/last_longitude",
+                    message="Last latitude and last longitude must both be provided or both be omitted.",
+                    severity=Severity.ERROR,
+                    code="CDR_PARTIAL_LAST_COORDS",
+                )
+            )
+        elif has_last_lat and has_last_lon:
+            # Operational bounds checks
+            lat_min, lat_max = self.thresholds.latitude_range
+            lon_min, lon_max = self.thresholds.longitude_range
+            if not (-90.0 <= last_lat <= 90.0) or not (-180.0 <= last_lon <= 180.0):
+                result.errors.append(
+                    ValidationError(
+                        field="last_latitude/last_longitude",
+                        message=f"Last coordinates ({last_lat}, {last_lon}) are outside valid WGS84 bounds.",
+                        severity=Severity.ERROR,
+                        code="CDR_LAST_COORDS_OUT_OF_BOUNDS",
+                    )
+                )
+            elif not (lat_min <= last_lat <= lat_max) or not (lon_min <= last_lon <= lon_max):
+                result.errors.append(
+                    ValidationError(
+                        field="last_latitude/last_longitude",
+                        message=f"Last coordinates ({last_lat}, {last_lon}) are outside operational ranges.",
+                        severity=Severity.ERROR,
+                        code="CDR_LAST_COORDS_OUT_OF_BOUNDS",
+                    )
+                )
+
+        # 5, 6, & 7. Timestamp validation
+        if record.timestamp is not None:
+            # Check for timezone-aware datetime. If naive, assume UTC.
+            dt = record.timestamp
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            
+            now_utc = datetime.now(timezone.utc)
+            if dt > now_utc:
+                result.errors.append(
+                    ValidationError(
+                        field="timestamp",
+                        message=f"Timestamp {dt} is in the future relative to current time {now_utc}.",
+                        severity=Severity.ERROR,
+                        code="CDR_FUTURE_TIMESTAMP",
+                    )
+                )
+            
+            # Stale check
+            age_days = (now_utc - dt).days
+            if age_days > self.thresholds.max_measurement_age_days:
+                result.errors.append(
+                    ValidationError(
+                        field="timestamp",
+                        message=f"Timestamp age ({age_days} days) exceeds maximum age threshold ({self.thresholds.max_measurement_age_days} days).",
+                        severity=Severity.WARNING,
+                        code="CDR_STALE_TIMESTAMP",
+                    )
+                )
+
+            # Missing seconds check
+            missing_seconds = False
+            if record.raw_data and isinstance(record.raw_data, dict):
+                row = record.raw_data.get("row")
+                if isinstance(row, list) and len(row) > 7:
+                    time_val = str(row[7]).strip().strip("'").strip('"')
+                    # Match HH:MM (one colon, no second colon)
+                    if time_val and ":" in time_val and time_val.count(":") == 1:
+                        # Ensure it matches HH:MM format
+                        if re.match(r"^\d{1,2}:\d{2}$", time_val) or re.match(r"^\d{1,2}:\d{2}\s*(?:AM|PM)?$", time_val, re.IGNORECASE):
+                            missing_seconds = True
+            
+            if missing_seconds:
+                result.errors.append(
+                    ValidationError(
+                        field="timestamp",
+                        message="Timestamp is missing seconds component.",
+                        severity=Severity.WARNING,
+                        code="CDR_TIMESTAMP_MISSING_SECONDS",
+                    )
+                )
+
+        return result
+
+
+def validate_cdr_batch(
+    records: List[CDRRecord],
+    *,
+    thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
+) -> ValidationResult:
+    """Validate a batch of CDR records, including checking for duplicates.
+
+    Checks:
+        - Individual CDR record rules using CDRRecordValidator.
+        - Duplicate database ID checks. Code: CDR_DUPLICATE_ID (severity: ERROR).
+        - Duplicate record detection (same target_number, timestamp, first_cgi). Code: CDR_DUPLICATE_RECORD (severity: ERROR).
+    """
+    result = ValidationResult()
+    validator = CDRRecordValidator(thresholds=thresholds)
+
+    # Validate individual records
+    for idx, record in enumerate(records):
+        sub_res = validator.validate(record)
+        for err in sub_res.errors:
+            result.errors.append(
+                ValidationError(
+                    field=f"records[{idx}].{err.field}",
+                    message=err.message,
+                    severity=err.severity,
+                    code=err.code,
+                )
+            )
+
+    # Check for duplicate IDs
+    seen_ids = set()
+    for idx, record in enumerate(records):
+        if record.id is not None:
+            if record.id in seen_ids:
+                result.errors.append(
+                    ValidationError(
+                        field=f"records[{idx}].id",
+                        message=f"Duplicate record ID found: {record.id}",
+                        severity=Severity.ERROR,
+                        code="CDR_DUPLICATE_ID",
+                    )
+                )
+            seen_ids.add(record.id)
+
+    # Check for duplicate records based on target_number, timestamp, first_cgi
+    seen_records = {}
+    for idx, record in enumerate(records):
+        if record.target_number and record.timestamp:
+            key = (record.target_number, record.timestamp, record.first_cgi)
+            if key in seen_records:
+                orig_idx = seen_records[key]
+                result.errors.append(
+                    ValidationError(
+                        field=f"records[{idx}]",
+                        message=(
+                            f"Duplicate record detected. Same target_number, timestamp, "
+                            f"and first_cgi as records[{orig_idx}]."
+                        ),
+                        severity=Severity.ERROR,
+                        code="CDR_DUPLICATE_RECORD",
+                    )
+                )
+            else:
+                seen_records[key] = idx
+
+    return result
+

@@ -16,8 +16,11 @@ from app.models.base import Base
 
 # Setup in-memory database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 @pytest.fixture(scope="function")
 def db_session():
@@ -31,6 +34,7 @@ def db_session():
         Base.metadata.drop_all(bind=connection)
         connection.close()
 
+
 @pytest.fixture(scope="function")
 def client(db_session):
     def override_get_db():
@@ -38,6 +42,7 @@ def client(db_session):
             yield db_session
         finally:
             pass
+
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -56,7 +61,10 @@ class TestCaseAPI:
     def test_create_case_success(self, client):
         response = client.post(
             "/api/v1/cases/",
-            json={"title": "Abducted Device Track", "description": "Tracking stolen phone location"}
+            json={
+                "title": "Abducted Device Track",
+                "description": "Tracking stolen phone location",
+            },
         )
         assert response.status_code == 201
         data = response.json()["data"]
@@ -70,8 +78,7 @@ class TestCaseAPI:
 
     def test_create_case_missing_title_fails(self, client):
         response = client.post(
-            "/api/v1/cases/",
-            json={"description": "No title provided"}
+            "/api/v1/cases/", json={"description": "No title provided"}
         )
         # Pydantic validation error or empty string check
         assert response.status_code in (400, 422)
@@ -81,8 +88,7 @@ class TestCaseAPI:
 
     def test_create_case_empty_title_fails(self, client):
         response = client.post(
-            "/api/v1/cases/",
-            json={"title": "   ", "description": "Whitespace only"}
+            "/api/v1/cases/", json={"title": "   ", "description": "Whitespace only"}
         )
         assert response.status_code == 422
         data = response.json()
@@ -91,8 +97,7 @@ class TestCaseAPI:
 
     def test_create_case_with_nonexistent_scenario_id_fails(self, client):
         response = client.post(
-            "/api/v1/cases/",
-            json={"title": "Orphan Case", "scenario_id": 9999}
+            "/api/v1/cases/", json={"title": "Orphan Case", "scenario_id": 9999}
         )
         assert response.status_code == 400
         data = response.json()
@@ -102,15 +107,13 @@ class TestCaseAPI:
     def test_create_case_with_valid_scenario_id_success(self, client):
         # Create scenario first
         scenario_res = client.post(
-            "/api/v1/scenarios/",
-            json={"name": "Reference Scenario"}
+            "/api/v1/scenarios/", json={"name": "Reference Scenario"}
         )
         scenario_id = scenario_res.json()["data"]["id"]
 
         # Create case referencing that scenario
         response = client.post(
-            "/api/v1/cases/",
-            json={"title": "Linked Case", "scenario_id": scenario_id}
+            "/api/v1/cases/", json={"title": "Linked Case", "scenario_id": scenario_id}
         )
         assert response.status_code == 201
         data = response.json()["data"]
