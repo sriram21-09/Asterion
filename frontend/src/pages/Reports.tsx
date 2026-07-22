@@ -59,13 +59,13 @@ export default function Reports() {
           <Button 
             variant="secondary"
             onClick={() => handleExport('PDF')}
-            icon={<Download className="w-4 h-4" />}
+            leftIcon={<Download className="w-4 h-4" />}
           >
             Export PDF
           </Button>
           <Button 
             onClick={() => handleExport('CSV')}
-            icon={<Database className="w-4 h-4" />}
+            leftIcon={<Database className="w-4 h-4" />}
           >
             Export Raw CSV
           </Button>
@@ -171,7 +171,7 @@ function ReportTemplate({ title, description, tag, onExport }: { title: string, 
         </div>
         <p className="text-xs text-content-tertiary line-clamp-1">{description}</p>
       </div>
-      <Button variant="secondary" onClick={onExport} icon={<Download className="w-4 h-4" />}>
+      <Button variant="secondary" onClick={onExport} leftIcon={<Download className="w-4 h-4" />}>
         Export
       </Button>
     </div>

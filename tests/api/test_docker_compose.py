@@ -20,8 +20,6 @@ import pytest
 COMPOSE_PATH = ROOT / "docker-compose.yml"
 
 
-
-
 @pytest.fixture(scope="module")
 def compose_config():
     """Parse and return the docker-compose.yml as a dict."""
