@@ -27,7 +27,7 @@ interface AppSettingsState {
 export const useAppSettingsStore = create<AppSettingsState>()(
   persist(
     (set) => ({
-      apiBaseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:8000',
+      apiBaseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:8001',
       mapTileProvider: 'carto-dark',
       defaultMapCenter: [20.5937, 78.9629], // Center of India
       defaultMapZoom: 5,
