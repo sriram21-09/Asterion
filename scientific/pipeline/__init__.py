@@ -23,6 +23,17 @@ from scientific.pipeline.benchmarks import (
     calculate_grid_density,
     normalize_densities,
 )
+from scientific.pipeline.movement import (
+    calculate_distance_m,
+    calculate_speed_kmh,
+    calculate_bearing_deg,
+    detect_handover,
+    classify_velocity,
+    flag_impossible_velocity,
+    reconstruct_movement_events,
+    MovementEvent,
+    MovementSummary,
+)
 
 __all__ = [
     "solve_weighted_centroid",
@@ -38,5 +49,14 @@ __all__ = [
     "calculate_neighbor_density",
     "calculate_grid_density",
     "normalize_densities",
+    "calculate_distance_m",
+    "calculate_speed_kmh",
+    "calculate_bearing_deg",
+    "detect_handover",
+    "classify_velocity",
+    "flag_impossible_velocity",
+    "reconstruct_movement_events",
+    "MovementEvent",
+    "MovementSummary",
 ]
 
