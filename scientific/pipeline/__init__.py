@@ -15,6 +15,25 @@ from scientific.pipeline.kalman_tracker import KalmanTracker, track_positions
 from scientific.pipeline.multilateration import solve_multilateration
 from scientific.pipeline.weighted_centroid import solve_weighted_centroid
 from scientific.pipeline.runner import run_pipeline
+from scientific.pipeline.benchmarks import (
+    parse_cgi,
+    CGIResolver,
+    calculate_radius_density,
+    calculate_neighbor_density,
+    calculate_grid_density,
+    normalize_densities,
+)
+from scientific.pipeline.movement import (
+    calculate_distance_m,
+    calculate_speed_kmh,
+    calculate_bearing_deg,
+    detect_handover,
+    classify_velocity,
+    flag_impossible_velocity,
+    reconstruct_movement_events,
+    MovementEvent,
+    MovementSummary,
+)
 
 __all__ = [
     "solve_weighted_centroid",
@@ -24,4 +43,20 @@ __all__ = [
     "compute_confidence",
     "synthesize_evidence",
     "run_pipeline",
+    "parse_cgi",
+    "CGIResolver",
+    "calculate_radius_density",
+    "calculate_neighbor_density",
+    "calculate_grid_density",
+    "normalize_densities",
+    "calculate_distance_m",
+    "calculate_speed_kmh",
+    "calculate_bearing_deg",
+    "detect_handover",
+    "classify_velocity",
+    "flag_impossible_velocity",
+    "reconstruct_movement_events",
+    "MovementEvent",
+    "MovementSummary",
 ]
+

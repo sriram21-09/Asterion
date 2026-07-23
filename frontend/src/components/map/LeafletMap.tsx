@@ -86,3 +86,5 @@ export function LeafletMap({ towers, center = [12.9716, 77.5946], zoom = 13 }: L
     </div>
   )
 }
+
+export default LeafletMap
