@@ -9,7 +9,7 @@ import type {
 // prefix used by the shared `api` instance), so we create a thin wrapper
 // that targets the API root directly.
 
-const API_ROOT = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api/v1')
+const API_ROOT = (import.meta.env.VITE_API_URL ?? 'http://localhost:8001/api/v1')
   .replace(/\/api\/v1\/?$/, '');
 
 const localizeClient = axios.create({
