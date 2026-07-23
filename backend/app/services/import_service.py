@@ -175,7 +175,7 @@ class BSNLCDRParser(BaseCDRParser):
 
     def detect(self, content_sample: str) -> bool:
         content_upper = content_sample.upper()
-        return "BSNL" in content_upper or "SEARCH CRITERIA" in content_upper
+        return "BSNL" in content_upper or "FIRST BTS LOCATION" in content_upper or "SEARCH CRITERIA" in content_upper
 
     def _clean_val(self, val: str) -> str:
         if not val:
@@ -570,9 +570,9 @@ class CDRImportService:
 
     PARSERS: List[BaseCDRParser] = [
         AirtelCDRParser(),
-        BSNLCDRParser(),
         JioCDRParser(),
         ViCDRParser(),
+        BSNLCDRParser(),
     ]
 
     @classmethod

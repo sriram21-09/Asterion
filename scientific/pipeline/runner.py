@@ -7,14 +7,16 @@ ScenarioConfig → Validation → Simulation → Evidence Synthesis → Localiza
 """
 
 import time
-from typing import List, Dict
+from typing import List, Dict, Any, Optional
 from collections import defaultdict
+from datetime import timedelta, timezone, datetime
 
 from scientific.logger import get_logger
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
-from scientific.models.result import LocalizationResult, PipelineResult
+from scientific.models.measurement import Measurement
+from scientific.models.result import LocalizationResult, ConfidenceResult, PipelineResult
 from scientific.validation.validators import ScenarioValidator, ResultValidator
 from scientific.simulation.measurement_generator import generate_scenario_measurements
 from scientific.pipeline.evidence import synthesize_evidence
@@ -79,8 +81,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     measurements = generate_scenario_measurements(config)
 
     # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
-    from datetime import timedelta, timezone, datetime
-
     now_utc = datetime.now(timezone.utc)
     for m in measurements:
         if m.timestamp:
@@ -106,7 +106,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         measurements=measurements,
         thresholds=validator.thresholds,
     )
-
     accepted_ids = set(evidence.get("accepted_measurement_ids", []))
     accepted_measurements = [
         m for m in measurements if m.measurement_id in accepted_ids
@@ -117,7 +116,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         raise ValueError(
             "All measurements were rejected by validation, cannot locate device."
         )
-
     time_breakdown["evidence"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 3 complete: Filtered {len(accepted_measurements)}/{len(measurements)} "
@@ -133,7 +131,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     meas_by_timestamp = defaultdict(list)
     for m in accepted_measurements:
         meas_by_timestamp[m.timestamp].append(m)
-
     sorted_timestamps = sorted(meas_by_timestamp.keys())
     raw_localization_results: List[LocalizationResult] = []
 
@@ -187,7 +184,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         final_history = raw_localization_results
 
     final_loc_res = final_history[-1]
-
     time_breakdown["tracking"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 5 complete: Tracker smoothing in {time_breakdown['tracking']:.2f} ms"
@@ -206,7 +202,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         measurements=accepted_measurements,
         thresholds=validator.thresholds,
     )
-
     time_breakdown["confidence"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 6 complete: Calculated confidence in {time_breakdown['confidence']:.2f} ms"

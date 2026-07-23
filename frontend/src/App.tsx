@@ -6,6 +6,8 @@ import CaseDetails from './pages/CaseDetails'
 import Scenarios from './pages/Scenarios'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
+import ImportPage from './pages/ImportPage'
+import InvestigationDashboard from './pages/InvestigationDashboard'
 import NotFound from './pages/NotFound'
 import ErrorPage from './pages/ErrorPage'
 
@@ -19,6 +21,8 @@ export default function App() {
           <Route path="cases/:caseId" element={<CaseDetails />} />
           <Route path="scenarios" element={<Scenarios />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="import" element={<ImportPage />} />
+          <Route path="investigation" element={<InvestigationDashboard />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>

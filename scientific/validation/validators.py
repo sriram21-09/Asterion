@@ -51,6 +51,7 @@ from scientific.models.scenario import Scenario
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.tower import Tower
 from scientific.models.result import LocalizationResult, ConfidenceResult
+
 from scientific.config import (
     ValidationThresholds,
     DEFAULT_VALIDATION_THRESHOLDS,
@@ -1309,6 +1310,7 @@ def validate_cdr_batch(
 # ---------------------------------------------------------------------------
 
 
+
 @dataclass
 class CDRDataQualityScore:
     """Quantitative quality assessment for a CDR import batch.
@@ -1639,4 +1641,3 @@ class CDRValidationService:
             if ts <= now_utc and (now_utc - ts).days <= max_age_days:
                 timely_count += 1
         return timely_count / len(records)
-

@@ -232,8 +232,6 @@ class TestViCDRParser:
         rec1 = records[1]
         assert rec1["call_type"] == "Outgoing"
         assert rec1["duration"] == 13
-
-
 class TestCDRImportService:
     def test_detect_operator(self):
         service = CDRImportService()
@@ -331,4 +329,3 @@ class TestCDRImportService:
         assert db_records[0].operator == "vi"
         assert db_records[0].latitude is None
         assert db_records[0].first_cgi == "404056205320221"
-

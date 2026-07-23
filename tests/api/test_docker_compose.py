@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 import yaml
 import pytest
 
+
 COMPOSE_PATH = ROOT / "docker-compose.yml"
 
 

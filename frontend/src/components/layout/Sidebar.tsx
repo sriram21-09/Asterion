@@ -8,6 +8,8 @@ import {
   Radio,
   User,
   X,
+  UploadCloud,
+  MapPin,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useNavigationStore } from '@/stores/useNavigationStore'
@@ -20,7 +22,9 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { name: 'Import', path: '/import', icon: UploadCloud },
   { name: 'Cases', path: '/cases', icon: Briefcase },
+  { name: 'Investigation', path: '/investigation', icon: MapPin },
   { name: 'Scenarios', path: '/scenarios', icon: Layers },
   { name: 'Reports', path: '/reports', icon: FileText },
   { name: 'Settings', path: '/settings', icon: Settings },

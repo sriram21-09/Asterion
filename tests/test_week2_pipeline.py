@@ -56,7 +56,6 @@ def sample_scenarios_data():
 # 1. ResultValidator Tests
 # ---------------------------------------------------------------------------
 
-
 class TestResultValidator:
     """Verify ResultValidator checks bounds and coverage requirements."""
 
@@ -84,7 +83,6 @@ class TestResultValidator:
         scenario = Scenario(
             scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
         )
-
         # Out of bounds result relative to custom thresholds (30.0 is outside 10.0-20.0 range)
         res = LocalizationResult(
             scenario_id="S001",
@@ -97,7 +95,6 @@ class TestResultValidator:
         custom_thresholds = ValidationThresholds(latitude_range=(10.0, 20.0))
         validator = ResultValidator(thresholds=custom_thresholds)
         val_res = validator.validate(res, scenario)
-
         assert not val_res.is_valid
         assert any(e.code == "RESULT_OUT_OF_BOUNDS" for e in val_res.errors)
 
@@ -124,7 +121,6 @@ class TestResultValidator:
         scenario = Scenario(
             scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
         )
-
         # Lat is far away (~0.5 degrees lat is ~55km away, well outside 1000m * 1.5 buffer)
         res = LocalizationResult(
             scenario_id="S001",
@@ -136,7 +132,6 @@ class TestResultValidator:
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
-
         # It's a warning, so is_valid remains True (warnings are not blocking errors)
         assert val_res.is_valid
         warnings = [e for e in val_res.errors if e.severity == Severity.WARNING]
@@ -166,7 +161,6 @@ class TestResultValidator:
         scenario = Scenario(
             scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
         )
-
         # Position is 50m away from the tower
         res = LocalizationResult(
             scenario_id="S001",
@@ -178,7 +172,6 @@ class TestResultValidator:
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
-
         assert val_res.is_valid
         assert len(val_res.errors) == 0
 
@@ -361,7 +354,6 @@ class TestE2EPipelineRunner:
         result = run_pipeline(config)
         assert isinstance(result, PipelineResult)
         assert result.metadata["algorithm_selected"] == algorithm
-
         # Verify history trace
         history = result.metadata["history"]
         if algorithm in ("kalman", "hybrid"):
