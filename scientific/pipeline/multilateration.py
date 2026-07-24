@@ -95,7 +95,7 @@ def solve_multilateration(
     # 5. Project geodetic coordinates to local flat Cartesian plane (meters)
     lat_ref_rad = math.radians(lat_ref)
     meters_per_deg_lat = METERS_PER_DEGREE_LAT
-    meters_per_deg_lon = METERS_PER_DEGREE_LAT * math.cos(lat_ref_rad)
+    meters_per_deg_lon = max(METERS_PER_DEGREE_LAT * math.cos(lat_ref_rad), 1e-6)
 
     # 6. Convert RSSI to estimated distances (meters) using inverse path-loss model
     # d = d0 * 10^((tx_power - RSSI - L0) / (10 * n))

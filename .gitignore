@@ -239,10 +239,14 @@ E-Rakshak CDR & Location Data Sets/
 *.sqlite3
 data/
 
-# Get-Shit-Done (GSD) Runtime & State
-.gsd/STATE.md
-.gsd/journal/
-.gsd/snapshots/
+# Get-Shit-Done (GSD) Framework - Local Environment Only
+.agent/
+.agents/
+.gsd/
+adapters/
+PROJECT_RULES.md
+GSD-STYLE.md
+model_capabilities.yaml
 *.gsd.log
 
 
