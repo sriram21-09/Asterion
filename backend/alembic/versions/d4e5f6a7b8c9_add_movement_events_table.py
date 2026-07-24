@@ -51,7 +51,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["case_id"], ["cases.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["cdr_record_id"], ["cdr_records.id"], ondelete="SET NULL"),
+        sa.ForeignKeyConstraint(
+            ["cdr_record_id"], ["cdr_records.id"], ondelete="SET NULL"
+        ),
         sa.ForeignKeyConstraint(
             ["tracking_result_id"], ["tracking_results.id"], ondelete="SET NULL"
         ),
@@ -64,7 +66,10 @@ def upgrade() -> None:
         op.f("ix_movement_events_case_id"), "movement_events", ["case_id"], unique=False
     )
     op.create_index(
-        op.f("ix_movement_events_timestamp"), "movement_events", ["timestamp"], unique=False
+        op.f("ix_movement_events_timestamp"),
+        "movement_events",
+        ["timestamp"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_movement_events_case_seq"),

@@ -120,7 +120,9 @@ class MovementReconstructionResponse(BaseModel):
         ..., description="Total number of handover events detected", ge=0
     )
     total_distance_km: float = Field(
-        ..., description="Total distance traversed across all events in kilometers", ge=0.0
+        ...,
+        description="Total distance traversed across all events in kilometers",
+        ge=0.0,
     )
     time_span_hours: float = Field(
         ..., description="Time duration between first and last event in hours", ge=0.0

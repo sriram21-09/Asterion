@@ -47,7 +47,10 @@ class CDRRecordValidator:
                 )
             )
 
-        if not getattr(record, "target_number", None) or not str(record.target_number).strip():
+        if (
+            not getattr(record, "target_number", None)
+            or not str(record.target_number).strip()
+        ):
             result.errors.append(
                 ValidationError(
                     field="target_number",
@@ -148,7 +151,9 @@ class CDRRecordValidator:
                         code="CDR_LAST_COORDS_OUT_OF_BOUNDS",
                     )
                 )
-            elif not (lat_min <= last_lat <= lat_max) or not (lon_min <= last_lon <= lon_max):
+            elif not (lat_min <= last_lat <= lat_max) or not (
+                lon_min <= last_lon <= lon_max
+            ):
                 result.errors.append(
                     ValidationError(
                         field="last_latitude/last_longitude",
@@ -163,7 +168,7 @@ class CDRRecordValidator:
             dt = record.timestamp
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
-            
+
             now_utc = datetime.now(timezone.utc)
             if dt > now_utc:
                 result.errors.append(
@@ -174,7 +179,7 @@ class CDRRecordValidator:
                         code="CDR_FUTURE_TIMESTAMP",
                     )
                 )
-            
+
             age_days = (now_utc - dt).days
             if age_days > self.thresholds.max_measurement_age_days:
                 result.errors.append(
@@ -192,9 +197,11 @@ class CDRRecordValidator:
                 if isinstance(row, list) and len(row) > 7:
                     time_val = str(row[7]).strip().strip("'").strip('"')
                     if time_val and ":" in time_val and time_val.count(":") == 1:
-                        if re.match(r"^\d{1,2}:\d{2}$", time_val) or re.match(r"^\d{1,2}:\d{2}\s*(?:AM|PM)?$", time_val, re.IGNORECASE):
+                        if re.match(r"^\d{1,2}:\d{2}$", time_val) or re.match(
+                            r"^\d{1,2}:\d{2}\s*(?:AM|PM)?$", time_val, re.IGNORECASE
+                        ):
                             missing_seconds = True
-            
+
             if missing_seconds:
                 result.errors.append(
                     ValidationError(

@@ -63,7 +63,6 @@ class CDRImportService:
         operator: Optional[str] = None,
         db: Session = None,  # type: ignore[assignment]
     ) -> Dict[str, Any]:
-
         content = file_bytes.decode("utf-8", errors="replace")
 
         detected_op = operator

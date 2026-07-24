@@ -494,6 +494,6 @@ class TestTrackingAPIConformance:
             "heading_deg",
         ]
         for field in expected_step_fields:
-            assert (
-                field in step_fields
-            ), f"Missing field in TrackingStepResponse: {field}"
+            assert field in step_fields, (
+                f"Missing field in TrackingStepResponse: {field}"
+            )

@@ -20,12 +20,16 @@ class CDRRecord(BaseModel):
     )
 
     operator: Mapped[str] = mapped_column(String(50), nullable=False)
-    target_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    target_number: Mapped[Optional[str]] = mapped_column(
+        String(50), nullable=True, index=True
+    )
     b_party_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     call_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     service_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
-    timestamp: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    timestamp: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
     duration: Mapped[Optional[int]] = mapped_column(Integer, default=0, nullable=True)
 
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -45,5 +49,7 @@ class CDRRecord(BaseModel):
 
     raw_data: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
-    import_job: Mapped["ImportJob"] = relationship("ImportJob", back_populates="cdr_records")
+    import_job: Mapped["ImportJob"] = relationship(
+        "ImportJob", back_populates="cdr_records"
+    )
     case: Mapped[Optional["Case"]] = relationship("Case", backref="cdr_records")

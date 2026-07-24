@@ -188,9 +188,7 @@ class CGIResolver:
 
         # 4. Try MCC Prefix Fallback (MCC)
         if q_mcc:
-            mcc_matches = [
-                t for t in self._parsed_towers if t["mcc"] == q_mcc
-            ]
+            mcc_matches = [t for t in self._parsed_towers if t["mcc"] == q_mcc]
             lat, lon = compute_mean_coords(mcc_matches)
             if lat is not None and lon is not None:
                 return {
@@ -287,9 +285,7 @@ def calculate_neighbor_density(
             continue
 
         # Count other towers
-        count = calculate_radius_density(
-            float(t_lat), float(t_lon), towers, radius_m
-        )
+        count = calculate_radius_density(float(t_lat), float(t_lon), towers, radius_m)
         densities[str(t_id)] = count
 
     return densities

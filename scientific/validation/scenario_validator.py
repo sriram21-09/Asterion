@@ -335,4 +335,3 @@ def validate_batch(
     """Validate a batch of Scenario objects, returning a mapping of scenario_id to ValidationResult."""
     validator = ScenarioValidator(deep=deep, thresholds=thresholds)
     return {s.scenario_id: validator.validate(s) for s in scenarios}
-

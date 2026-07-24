@@ -20,14 +20,20 @@ class BSNLCDRParser(BaseCDRParser):
 
     def detect(self, content_sample: str) -> bool:
         content_upper = content_sample.upper()
-        return "BSNL" in content_upper or "FIRST BTS LOCATION" in content_upper or "SEARCH CRITERIA" in content_upper
+        return (
+            "BSNL" in content_upper
+            or "FIRST BTS LOCATION" in content_upper
+            or "SEARCH CRITERIA" in content_upper
+        )
 
     def _clean_val(self, val: str) -> str:
         if not val:
             return ""
         return val.strip().strip("'").strip('"').strip()
 
-    def _extract_coords(self, location_str: str) -> Tuple[Optional[float], Optional[float]]:
+    def _extract_coords(
+        self, location_str: str
+    ) -> Tuple[Optional[float], Optional[float]]:
         if not location_str:
             return None, None
         match = self.COORD_PATTERN.search(location_str)
@@ -69,7 +75,11 @@ class BSNLCDRParser(BaseCDRParser):
 
         for i, line in enumerate(lines):
             line_upper = line.upper()
-            if "TARGET/A-PARTY NUMBER" in line_upper or "FIRST BTS LOCATION" in line_upper or "CALL DATE" in line_upper:
+            if (
+                "TARGET/A-PARTY NUMBER" in line_upper
+                or "FIRST BTS LOCATION" in line_upper
+                or "CALL DATE" in line_upper
+            ):
                 header_idx = i
                 break
 

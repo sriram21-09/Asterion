@@ -24,8 +24,12 @@ def upgrade() -> None:
         "import_jobs",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("filename", sa.String(length=255), nullable=False),
-        sa.Column("operator", sa.String(length=50), nullable=False, server_default="unknown"),
-        sa.Column("status", sa.String(length=50), nullable=False, server_default="pending"),
+        sa.Column(
+            "operator", sa.String(length=50), nullable=False, server_default="unknown"
+        ),
+        sa.Column(
+            "status", sa.String(length=50), nullable=False, server_default="pending"
+        ),
         sa.Column("total_records", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("parsed_records", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("failed_records", sa.Integer(), nullable=False, server_default="0"),
@@ -85,17 +89,27 @@ def upgrade() -> None:
             server_default=sa.text("(CURRENT_TIMESTAMP)"),
             nullable=False,
         ),
-        sa.ForeignKeyConstraint(["import_job_id"], ["import_jobs.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["import_job_id"], ["import_jobs.id"], ondelete="CASCADE"
+        ),
         sa.ForeignKeyConstraint(["case_id"], ["cases.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_cdr_records_id"), "cdr_records", ["id"], unique=False)
     op.create_index(
-        op.f("ix_cdr_records_import_job_id"), "cdr_records", ["import_job_id"], unique=False
+        op.f("ix_cdr_records_import_job_id"),
+        "cdr_records",
+        ["import_job_id"],
+        unique=False,
     )
-    op.create_index(op.f("ix_cdr_records_case_id"), "cdr_records", ["case_id"], unique=False)
     op.create_index(
-        op.f("ix_cdr_records_target_number"), "cdr_records", ["target_number"], unique=False
+        op.f("ix_cdr_records_case_id"), "cdr_records", ["case_id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_cdr_records_target_number"),
+        "cdr_records",
+        ["target_number"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_cdr_records_timestamp"), "cdr_records", ["timestamp"], unique=False

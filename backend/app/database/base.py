@@ -11,4 +11,3 @@ from app.models.confidence_result import ConfidenceResult  # noqa: F401
 from app.models.import_job import ImportJob  # noqa: F401
 from app.models.cdr_record import CDRRecord  # noqa: F401
 from app.models.movement_event import MovementEvent  # noqa: F401
-

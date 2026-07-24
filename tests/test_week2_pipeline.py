@@ -55,6 +55,7 @@ def sample_scenarios_data():
 # 1. ResultValidator Tests
 # ---------------------------------------------------------------------------
 
+
 class TestResultValidator:
     """Verify ResultValidator checks bounds and coverage requirements."""
 
@@ -317,23 +318,23 @@ class TestE2EPipelineRunner:
             assert result.confidence.scenario_id == scenario_id
 
             # Print execution duration breakdown
-            print(f"\nScenario {scenario_id} processed in {duration*1000.0:.2f} ms")
+            print(f"\nScenario {scenario_id} processed in {duration * 1000.0:.2f} ms")
             print(f"Time Breakdown: {result.metadata['time_breakdown_ms']}")
 
             # Validate localization accuracy
             actual_error = result.localization.error_m
-            assert (
-                actual_error is not None
-            ), "Pipeline must compute error relative to ground truth"
-            assert (
-                actual_error <= expected["max_error_m"] * 1.6
-            ), f"Scenario {scenario_id} error {actual_error:.2f}m exceeds threshold of {expected['max_error_m']}m"
+            assert actual_error is not None, (
+                "Pipeline must compute error relative to ground truth"
+            )
+            assert actual_error <= expected["max_error_m"] * 1.6, (
+                f"Scenario {scenario_id} error {actual_error:.2f}m exceeds threshold of {expected['max_error_m']}m"
+            )
 
             # Validate confidence score bounds
             actual_confidence = result.confidence.confidence_score
-            assert (
-                actual_confidence >= expected["min_confidence_score"] - 0.05
-            ), f"Scenario {scenario_id} confidence {actual_confidence:.2f} is below limit of {expected['min_confidence_score']}"
+            assert actual_confidence >= expected["min_confidence_score"] - 0.05, (
+                f"Scenario {scenario_id} confidence {actual_confidence:.2f} is below limit of {expected['min_confidence_score']}"
+            )
 
             # Check validation findings in metadata
             assert "validation_findings" in result.metadata
@@ -381,9 +382,9 @@ class TestE2EPipelineRunner:
                 runs_count += 1
 
                 # Check that no individual run takes more than 500ms
-                assert (
-                    elapsed < 0.5
-                ), f"Individual run took excessively long: {elapsed*1000.0:.1f}ms"
+                assert elapsed < 0.5, (
+                    f"Individual run took excessively long: {elapsed * 1000.0:.1f}ms"
+                )
 
         avg_time_ms = (total_time / runs_count) * 1000.0
         print(
@@ -391,6 +392,6 @@ class TestE2EPipelineRunner:
         )
 
         # Target E2E execution benchmark is under 2.0 seconds (2000 ms) in total
-        assert (
-            total_time < 2.0
-        ), f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        assert total_time < 2.0, (
+            f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        )

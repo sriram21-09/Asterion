@@ -18,7 +18,10 @@ class JioCDRParser(BaseCDRParser):
         return (
             "RELIANCE JIO INFOCOMM" in content_upper
             or "CALLING PARTY TELEPHONE NUMBER" in content_upper
-            or ("FIRST CELL ID" in content_upper and "FIRST CELL GLOBAL ID" not in content_upper)
+            or (
+                "FIRST CELL ID" in content_upper
+                and "FIRST CELL GLOBAL ID" not in content_upper
+            )
         )
 
     def _clean_val(self, val: str) -> str:
@@ -63,7 +66,10 @@ class JioCDRParser(BaseCDRParser):
 
         for i, line in enumerate(lines):
             line_upper = line.upper()
-            if "CALLING PARTY TELEPHONE NUMBER" in line_upper or "FIRST CELL ID" in line_upper:
+            if (
+                "CALLING PARTY TELEPHONE NUMBER" in line_upper
+                or "FIRST CELL ID" in line_upper
+            ):
                 header_idx = i
                 break
 
@@ -105,7 +111,9 @@ class JioCDRParser(BaseCDRParser):
                 imsi = self._clean_val(row[13]) if len(row) > 13 else None
                 roaming_nw = self._clean_val(row[14]) if len(row) > 14 else None
 
-                service_type = "SMS" if call_type and "SMS" in call_type.upper() else "Voice"
+                service_type = (
+                    "SMS" if call_type and "SMS" in call_type.upper() else "Voice"
+                )
                 timestamp = self._parse_dt(date_str, time_str)
 
                 record = {

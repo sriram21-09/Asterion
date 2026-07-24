@@ -45,10 +45,13 @@ def client():
     app.dependency_overrides.clear()
 
 
-
 def test_upload_airtel_file(client):
     files = {
-        "file": ("9714499703_Airtel.csv", SAMPLE_AIRTEL_CONTENT.encode("utf-8"), "text/csv")
+        "file": (
+            "9714499703_Airtel.csv",
+            SAMPLE_AIRTEL_CONTENT.encode("utf-8"),
+            "text/csv",
+        )
     }
     response = client.post("/api/v1/import/upload", files=files)
     assert response.status_code == 201
@@ -95,8 +98,6 @@ def test_upload_bsnl_file(client):
 
 
 def test_upload_invalid_extension(client):
-    files = {
-        "file": ("test.pdf", b"fake pdf content", "application/pdf")
-    }
+    files = {"file": ("test.pdf", b"fake pdf content", "application/pdf")}
     response = client.post("/api/v1/import/upload", files=files)
     assert response.status_code == 400

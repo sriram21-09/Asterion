@@ -44,18 +44,12 @@ class MovementEvent(BaseModel):
 
     speed_kmh: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     heading_deg: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    distance_from_prev_m: Mapped[Optional[float]] = mapped_column(
-        Float, nullable=True
-    )
+    distance_from_prev_m: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     dwell_time_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
-    metadata_json: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSON, nullable=True
-    )
+    metadata_json: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     case: Mapped["Case"] = relationship("Case", back_populates="movement_events")
     cdr_record: Mapped[Optional["CDRRecord"]] = relationship("CDRRecord")
-    tracking_result: Mapped[Optional["TrackingResult"]] = relationship(
-        "TrackingResult"
-    )
+    tracking_result: Mapped[Optional["TrackingResult"]] = relationship("TrackingResult")

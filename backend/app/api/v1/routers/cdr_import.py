@@ -5,7 +5,11 @@ from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.models.import_job import ImportJob
 from app.models.cdr_record import CDRRecord
-from app.schemas.import_job import CDRRecordResponse, CDRUploadResponse, ImportJobResponse
+from app.schemas.import_job import (
+    CDRRecordResponse,
+    CDRUploadResponse,
+    ImportJobResponse,
+)
 from app.schemas.response import APIResponse
 from app.services.import_service import CDRImportService
 
@@ -47,7 +51,6 @@ async def upload_cdr_file(
         operator=operator,
         db=db,
     )
-
 
     upload_resp = CDRUploadResponse(
         job=ImportJobResponse.model_validate(result["job"]),

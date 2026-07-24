@@ -146,10 +146,9 @@ def calculate_bearing_deg(
     dlon = math.radians(lon2 - lon1)
 
     x = math.sin(dlon) * math.cos(rlat2)
-    y = (
-        math.cos(rlat1) * math.sin(rlat2)
-        - math.sin(rlat1) * math.cos(rlat2) * math.cos(dlon)
-    )
+    y = math.cos(rlat1) * math.sin(rlat2) - math.sin(rlat1) * math.cos(
+        rlat2
+    ) * math.cos(dlon)
 
     # atan2(0, 0) is 0.0 in Python — same-point returns 0°
     bearing = math.degrees(math.atan2(x, y))
@@ -408,8 +407,15 @@ def reconstruct_movement_events(
 
         # Build metadata from extra fields
         meta: Dict[str, Any] = {}
-        for key in ("operator", "target_number", "b_party_number",
-                     "duration", "imei", "imsi", "service_type"):
+        for key in (
+            "operator",
+            "target_number",
+            "b_party_number",
+            "duration",
+            "imei",
+            "imsi",
+            "service_type",
+        ):
             val = _get_field(rec, key)
             if val is not None:
                 meta[key] = val
@@ -419,22 +425,24 @@ def reconstruct_movement_events(
             v_class = classify_velocity(0.0, max_plausible_kmh)
             velocity_dist[v_class] = velocity_dist.get(v_class, 0) + 1
 
-            events.append(MovementEvent(
-                sequence=1,
-                timestamp=ts,
-                latitude=lat,
-                longitude=lon,
-                cgi=cgi,
-                distance_m=0.0,
-                time_delta_s=0.0,
-                speed_kmh=0.0,
-                bearing_deg=None,
-                is_handover=False,
-                is_anomalous=False,
-                velocity_class=v_class,
-                event_type=evt_type,
-                metadata=meta if meta else None,
-            ))
+            events.append(
+                MovementEvent(
+                    sequence=1,
+                    timestamp=ts,
+                    latitude=lat,
+                    longitude=lon,
+                    cgi=cgi,
+                    distance_m=0.0,
+                    time_delta_s=0.0,
+                    speed_kmh=0.0,
+                    bearing_deg=None,
+                    is_handover=False,
+                    is_anomalous=False,
+                    velocity_class=v_class,
+                    event_type=evt_type,
+                    metadata=meta if meta else None,
+                )
+            )
             continue
 
         # Previous event data
@@ -454,9 +462,12 @@ def reconstruct_movement_events(
 
         # --- Handover detection ---
         is_ho = detect_handover(
-            prev_cgi, cgi,
-            prev_lat, prev_lon,
-            lat, lon,
+            prev_cgi,
+            cgi,
+            prev_lat,
+            prev_lon,
+            lat,
+            lon,
             coord_tolerance_m,
         )
 
@@ -494,22 +505,24 @@ def reconstruct_movement_events(
             anomaly_count += 1
         velocity_dist[v_class] = velocity_dist.get(v_class, 0) + 1
 
-        events.append(MovementEvent(
-            sequence=i + 1,
-            timestamp=ts,
-            latitude=lat,
-            longitude=lon,
-            cgi=cgi,
-            distance_m=round(dist, 2) if dist is not None else None,
-            time_delta_s=round(dt_s, 2) if dt_s is not None else None,
-            speed_kmh=round(speed, 4) if speed is not None else None,
-            bearing_deg=round(bearing, 2) if bearing is not None else None,
-            is_handover=is_ho,
-            is_anomalous=is_anom,
-            velocity_class=v_class,
-            event_type=evt_type,
-            metadata=meta if meta else None,
-        ))
+        events.append(
+            MovementEvent(
+                sequence=i + 1,
+                timestamp=ts,
+                latitude=lat,
+                longitude=lon,
+                cgi=cgi,
+                distance_m=round(dist, 2) if dist is not None else None,
+                time_delta_s=round(dt_s, 2) if dt_s is not None else None,
+                speed_kmh=round(speed, 4) if speed is not None else None,
+                bearing_deg=round(bearing, 2) if bearing is not None else None,
+                is_handover=is_ho,
+                is_anomalous=is_anom,
+                velocity_class=v_class,
+                event_type=evt_type,
+                metadata=meta if meta else None,
+            )
+        )
 
     # --- Build summary ---
     time_span = 0.0

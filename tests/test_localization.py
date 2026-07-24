@@ -104,7 +104,7 @@ def sample_measurements(db: Session, sample_case):
         m = Measurement(
             case_id=sample_case.id,
             scenario_id=sample_case.scenario_id,
-            measurement_code=f"MEAS-SCN001-{tid}-{i+1:04d}",
+            measurement_code=f"MEAS-SCN001-{tid}-{i + 1:04d}",
             timestamp=datetime(2026, 7, 15, 10, 30, tzinfo=timezone.utc),
             rssi_dbm=rssi,
             latitude=lat,

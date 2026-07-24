@@ -232,6 +232,8 @@ class TestViCDRParser:
         rec1 = records[1]
         assert rec1["call_type"] == "Outgoing"
         assert rec1["duration"] == 13
+
+
 class TestCDRImportService:
     def test_detect_operator(self):
         service = CDRImportService()
@@ -260,9 +262,7 @@ class TestCDRImportService:
         assert job.parsed_records == 2
 
         db_records = (
-            db_session.query(CDRRecord)
-            .filter(CDRRecord.import_job_id == job_id)
-            .all()
+            db_session.query(CDRRecord).filter(CDRRecord.import_job_id == job_id).all()
         )
         assert len(db_records) == 2
         assert isinstance(db_records[0].latitude, float)
@@ -280,9 +280,7 @@ class TestCDRImportService:
 
         job_id = res["job"].id
         db_records = (
-            db_session.query(CDRRecord)
-            .filter(CDRRecord.import_job_id == job_id)
-            .all()
+            db_session.query(CDRRecord).filter(CDRRecord.import_job_id == job_id).all()
         )
         assert len(db_records) == 2
         assert db_records[0].latitude == pytest.approx(22.39711)
@@ -300,9 +298,7 @@ class TestCDRImportService:
 
         job_id = res["job"].id
         db_records = (
-            db_session.query(CDRRecord)
-            .filter(CDRRecord.import_job_id == job_id)
-            .all()
+            db_session.query(CDRRecord).filter(CDRRecord.import_job_id == job_id).all()
         )
         assert len(db_records) == 2
         assert db_records[0].operator == "jio"
@@ -321,9 +317,7 @@ class TestCDRImportService:
 
         job_id = res["job"].id
         db_records = (
-            db_session.query(CDRRecord)
-            .filter(CDRRecord.import_job_id == job_id)
-            .all()
+            db_session.query(CDRRecord).filter(CDRRecord.import_job_id == job_id).all()
         )
         assert len(db_records) == 2
         assert db_records[0].operator == "vi"

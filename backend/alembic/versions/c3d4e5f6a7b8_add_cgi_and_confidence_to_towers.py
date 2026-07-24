@@ -29,9 +29,7 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column("ci", sa.String(length=50), nullable=True))
         batch_op.add_column(sa.Column("operator", sa.String(length=50), nullable=True))
         batch_op.add_column(
-            sa.Column(
-                "confidence", sa.Float(), nullable=False, server_default="1.0"
-            )
+            sa.Column("confidence", sa.Float(), nullable=False, server_default="1.0")
         )
         batch_op.add_column(
             sa.Column(

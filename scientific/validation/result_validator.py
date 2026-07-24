@@ -74,7 +74,11 @@ class ResultValidator:
         min_tower_lon, max_tower_lon = min(tower_lons), max(tower_lons)
         # Buffer distance in degrees (based on max coverage radius of the towers, or default 5000m)
         max_coverage = max(
-            (t.coverage_radius_m for t in towers if getattr(t, "coverage_radius_m", None) is not None),
+            (
+                t.coverage_radius_m
+                for t in towers
+                if getattr(t, "coverage_radius_m", None) is not None
+            ),
             default=5000.0,
         )
         buffer_deg_lat = (max_coverage * 1.5) / METERS_PER_DEGREE_LAT

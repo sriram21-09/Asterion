@@ -16,7 +16,8 @@ class Settings(BaseModel):
     )
     log_level: str = Field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
     debug: bool = Field(
-        default_factory=lambda: os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+        default_factory=lambda: os.getenv("DEBUG", "False").lower()
+        in ("true", "1", "yes")
     )
 
     @property

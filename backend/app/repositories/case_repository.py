@@ -23,7 +23,7 @@ class CaseRepository:
         *,
         title: str,
         description: Optional[str] = None,
-        scenario_id: Optional[int] = None
+        scenario_id: Optional[int] = None,
     ) -> Case:
         db_obj = Case(title=title, description=description, scenario_id=scenario_id)
         db.add(db_obj)

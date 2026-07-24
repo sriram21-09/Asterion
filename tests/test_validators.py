@@ -121,18 +121,42 @@ class TestCDRRecordValidatorTimestamp:
             operator="airtel",
             target_number="9714499703",
             timestamp=base_time,
-            raw_data={"row": ["9714499703", "SMT", "Post", "BParty", "", "", "15/04/2026", "14:30:45"]},
+            raw_data={
+                "row": [
+                    "9714499703",
+                    "SMT",
+                    "Post",
+                    "BParty",
+                    "",
+                    "",
+                    "15/04/2026",
+                    "14:30:45",
+                ]
+            },
         )
         res_sec = validator.validate(r_with_seconds)
         assert res_sec.is_valid
-        assert not any(e.code == "CDR_TIMESTAMP_MISSING_SECONDS" for e in res_sec.errors)
+        assert not any(
+            e.code == "CDR_TIMESTAMP_MISSING_SECONDS" for e in res_sec.errors
+        )
 
         # Missing seconds in raw row
         r_missing_seconds = CDRRecord(
             operator="airtel",
             target_number="9714499703",
             timestamp=base_time.replace(second=0, microsecond=0),
-            raw_data={"row": ["9714499703", "SMT", "Post", "BParty", "", "", "15/04/2026", "14:30"]},
+            raw_data={
+                "row": [
+                    "9714499703",
+                    "SMT",
+                    "Post",
+                    "BParty",
+                    "",
+                    "",
+                    "15/04/2026",
+                    "14:30",
+                ]
+            },
         )
         res_missing = validator.validate(r_missing_seconds)
         assert res_missing.is_valid
@@ -227,8 +251,12 @@ class TestCDRBatchValidator:
     def test_duplicate_record_ids(self):
         ts = datetime.now(timezone.utc) - timedelta(minutes=5)
         records = [
-            CDRRecord(id=101, operator="airtel", target_number="9714499703", timestamp=ts),
-            CDRRecord(id=101, operator="bsnl", target_number="9477523061", timestamp=ts),  # duplicate ID
+            CDRRecord(
+                id=101, operator="airtel", target_number="9714499703", timestamp=ts
+            ),
+            CDRRecord(
+                id=101, operator="bsnl", target_number="9477523061", timestamp=ts
+            ),  # duplicate ID
         ]
         res = validate_cdr_batch(records)
         assert not res.is_valid

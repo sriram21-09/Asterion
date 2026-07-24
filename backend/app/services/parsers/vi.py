@@ -65,7 +65,11 @@ class ViCDRParser(BaseCDRParser):
 
         for i, line in enumerate(lines):
             line_upper = line.upper()
-            if "TARGET /A PARTY NUMBER" in line_upper or "TARGET / A PARTY NUMBER" in line_upper or "FIRST CELL GLOBAL ID" in line_upper:
+            if (
+                "TARGET /A PARTY NUMBER" in line_upper
+                or "TARGET / A PARTY NUMBER" in line_upper
+                or "FIRST CELL GLOBAL ID" in line_upper
+            ):
                 header_idx = i
                 break
 

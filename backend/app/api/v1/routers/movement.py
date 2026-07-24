@@ -51,7 +51,9 @@ def reconstruct_movement(
     ),
     db: Session = Depends(get_db),
 ):
-    result = MovementReconstructionService.reconstruct_movements(db=db, case_code=case_code)
+    result = MovementReconstructionService.reconstruct_movements(
+        db=db, case_code=case_code
+    )
 
     events_list = [
         MovementEventResponse(

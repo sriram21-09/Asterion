@@ -85,6 +85,7 @@ def db():
 @pytest.fixture
 def client(db):
     """FastAPI TestClient using the test database session."""
+
     def override_get_db():
         try:
             yield db

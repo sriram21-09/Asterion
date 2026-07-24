@@ -186,14 +186,10 @@ class MovementReconstructionService:
         handover_count = sum(
             1 for r in movement_rows if r.event_type == EVENT_TYPE_HANDOVER
         )
-        total_distance_m = sum(
-            r.distance_from_prev_m or 0.0 for r in movement_rows
-        )
+        total_distance_m = sum(r.distance_from_prev_m or 0.0 for r in movement_rows)
 
         # Time span
-        timestamps = [
-            r.timestamp for r in movement_rows if r.timestamp is not None
-        ]
+        timestamps = [r.timestamp for r in movement_rows if r.timestamp is not None]
         time_span_hours = 0.0
         if len(timestamps) >= 2:
             first_ts = min(timestamps)
@@ -211,17 +207,13 @@ class MovementReconstructionService:
                 {
                     "sequence_number": row.sequence_number,
                     "event_type": row.event_type,
-                    "timestamp": (
-                        row.timestamp.isoformat() if row.timestamp else None
-                    ),
+                    "timestamp": (row.timestamp.isoformat() if row.timestamp else None),
                     "latitude": row.latitude,
                     "longitude": row.longitude,
                     "from_cgi": row.from_cgi,
                     "to_cgi": row.to_cgi,
                     "speed_kmh": (
-                        round(row.speed_kmh, 2)
-                        if row.speed_kmh is not None
-                        else None
+                        round(row.speed_kmh, 2) if row.speed_kmh is not None else None
                     ),
                     "heading_deg": (
                         round(row.heading_deg, 1)
@@ -239,9 +231,7 @@ class MovementReconstructionService:
                         else None
                     ),
                     "confidence": (
-                        round(row.confidence, 3)
-                        if row.confidence is not None
-                        else None
+                        round(row.confidence, 3) if row.confidence is not None else None
                     ),
                 }
             )
@@ -469,9 +459,7 @@ def _bisect_nearest(sorted_ts: List[datetime], target: datetime) -> int:
         return len(sorted_ts) - 1
     before = sorted_ts[pos - 1]
     after = sorted_ts[pos]
-    if abs((target - before).total_seconds()) <= abs(
-        (after - target).total_seconds()
-    ):
+    if abs((target - before).total_seconds()) <= abs((after - target).total_seconds()):
         return pos - 1
     return pos
 

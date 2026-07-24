@@ -171,9 +171,9 @@ class TestTowerValidator:
         for freq in [700, 900, 1800, 2100, 2600, 3500]:
             t = self._make(frequency_mhz=float(freq))
             r = self.validator.validate(t)
-            assert not any(
-                "TOWER_UNUSUAL_FREQ" == e.code for e in r.errors
-            ), f"Frequency {freq} MHz incorrectly flagged"
+            assert not any("TOWER_UNUSUAL_FREQ" == e.code for e in r.errors), (
+                f"Frequency {freq} MHz incorrectly flagged"
+            )
 
     def test_extreme_tx_power_warns(self):
         t = self._make(transmit_power_dbm=5.0)  # below MIN_TX_POWER_DBM
@@ -197,7 +197,7 @@ class TestScenarioValidator:
         for i in range(count):
             towers.append(
                 Tower(
-                    tower_id=f"T{i+1:03d}",
+                    tower_id=f"T{i + 1:03d}",
                     latitude=12.97 + i * 0.003,
                     longitude=77.59 - i * 0.005,
                 )
@@ -209,7 +209,7 @@ class TestScenarioValidator:
         for i, tid in enumerate(tower_ids):
             meas.append(
                 Measurement(
-                    measurement_id=f"M{i+1:03d}",
+                    measurement_id=f"M{i + 1:03d}",
                     tower_id=tid,
                     timestamp=datetime(2026, 7, 7, 10, 30, i, tzinfo=timezone.utc),
                     rssi_dbm=-70.0 - i * 5,
@@ -344,9 +344,9 @@ class TestSampleDataset:
         valid_ids = {t["tower_id"] for t in self.data["towers"]}
         for sc in self.data["scenarios"]:
             for tid in sc["tower_ids"]:
-                assert (
-                    tid in valid_ids
-                ), f"Scenario {sc['scenario_id']} refs unknown tower {tid}"
+                assert tid in valid_ids, (
+                    f"Scenario {sc['scenario_id']} refs unknown tower {tid}"
+                )
 
     def test_measurement_tower_refs_valid(self):
         """Every measurement must reference a tower from its scenario."""
@@ -413,9 +413,9 @@ class TestSampleDataset:
         """All RSSI values should be within [-150, 0] dBm."""
         for sc in self.data["scenarios"]:
             for m in sc["measurements"]:
-                assert (
-                    -150.0 <= m["rssi_dbm"] <= 0.0
-                ), f"RSSI {m['rssi_dbm']} out of range in {m['measurement_id']}"
+                assert -150.0 <= m["rssi_dbm"] <= 0.0, (
+                    f"RSSI {m['rssi_dbm']} out of range in {m['measurement_id']}"
+                )
 
 
 # =====================================================================

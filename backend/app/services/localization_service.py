@@ -170,6 +170,7 @@ class LocalizationService:
 
         # Group measurements by timestamp
         from collections import defaultdict
+
         measurements_by_time = defaultdict(list)
         for m in scientific_measurements:
             measurements_by_time[m.timestamp].append(m)
