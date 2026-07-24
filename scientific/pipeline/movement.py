@@ -374,7 +374,7 @@ def reconstruct_movement_events(
     Optional fields:
         - ``event_type``: ``str``
         - ``call_type``: ``str``
-        - ``operator``, ``duration``, ``imei``, etc.
+        - ``operator``, ``duration``, ``imei``, ``imsi``, etc.
 
     The function computes per-step distance, speed, bearing, handover
     classification, and velocity anomaly flags, then returns a
@@ -545,4 +545,242 @@ def reconstruct_movement_events(
         avg_speed_kmh=round(avg_speed, 4),
         velocity_distribution=velocity_dist,
         events=events,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Kalman-smoothed movement path
+# ---------------------------------------------------------------------------
+
+
+def smooth_movement_path(
+    summary: MovementSummary,
+    process_noise_acc: float = 0.5,
+    measurement_noise_m: float = 200.0,
+) -> MovementSummary:
+    """Apply Kalman smoothing to a reconstructed movement path.
+
+    Uses the existing :class:`~scientific.pipeline.kalman_tracker.KalmanTracker`
+    to filter the position sequence embedded in a :class:`MovementSummary`,
+    producing a new summary with smoothed coordinates and recalculated
+    per-step distances, speeds, and bearings.
+
+    Design decisions:
+
+    - **CDR-appropriate noise** — default ``measurement_noise_m`` is 200 m
+      (vs 50 m for multilateration) because cell-tower positions are coarser.
+    - **Anomaly dampening** — events flagged as anomalous receive 10×
+      inflated measurement noise so the Kalman filter trusts them less,
+      effectively smoothing out impossible-velocity spikes.
+    - **Handover preservation** — handover events retain their original
+      coordinates and zero distance/speed semantics.
+
+    Args:
+        summary: Output of :func:`reconstruct_movement_events`.
+        process_noise_acc: Acceleration process noise std-dev (m/s²).
+        measurement_noise_m: Default measurement noise std-dev (meters).
+
+    Returns:
+        A new :class:`MovementSummary` with smoothed positions and
+        recalculated aggregate statistics.
+    """
+    from scientific.pipeline.kalman_tracker import KalmanTracker
+
+    events = summary.events
+    if len(events) < 2:
+        # Nothing to smooth — return as-is
+        return summary
+
+    # --- Filter to events with valid coordinates for Kalman processing ---
+    # We need at least the first event to have coordinates to initialize
+    first_with_coords = None
+    for evt in events:
+        if evt.latitude is not None and evt.longitude is not None:
+            first_with_coords = evt
+            break
+
+    if first_with_coords is None:
+        # No events have coordinates — cannot smooth
+        return summary
+
+    # --- Initialize the Kalman tracker ---
+    tracker = KalmanTracker(
+        process_noise_acc=process_noise_acc,
+        default_measurement_noise_m=measurement_noise_m,
+    )
+    tracker.initialize(
+        lat=first_with_coords.latitude,
+        lon=first_with_coords.longitude,
+        error_m=measurement_noise_m,
+    )
+
+    # --- Process each event through the tracker ---
+    smoothed_coords: list[tuple[float | None, float | None]] = []
+    prev_ts = first_with_coords.timestamp
+
+    for evt in events:
+        if evt.latitude is None or evt.longitude is None:
+            # No coordinates to smooth — keep original
+            smoothed_coords.append((evt.latitude, evt.longitude))
+            continue
+
+        if evt is first_with_coords:
+            # First valid event — use initial state
+            smoothed_coords.append(
+                (float(tracker.x[0]), float(tracker.x[1]))
+            )
+            prev_ts = evt.timestamp
+            continue
+
+        # Compute time delta
+        dt = 0.0
+        if prev_ts is not None and evt.timestamp is not None:
+            dt = max((evt.timestamp - prev_ts).total_seconds(), 0.0)
+
+        if dt > 0.0:
+            tracker.predict(dt)
+
+        # Anomalous events get inflated noise → Kalman trusts them less
+        noise = measurement_noise_m * 10.0 if evt.is_anomalous else measurement_noise_m
+
+        tracker.update(
+            lat=evt.latitude,
+            lon=evt.longitude,
+            error_m=noise,
+        )
+
+        smoothed_coords.append(
+            (float(tracker.x[0]), float(tracker.x[1]))
+        )
+        prev_ts = evt.timestamp
+
+    # --- Rebuild events with smoothed coordinates and recalculated metrics ---
+    new_events: list[MovementEvent] = []
+    velocity_dist: dict[str, int] = {}
+    total_distance = 0.0
+    max_speed = 0.0
+    speed_sum = 0.0
+    speed_count = 0
+    handover_count = 0
+    anomaly_count = 0
+
+    for i, evt in enumerate(events):
+        s_lat, s_lon = smoothed_coords[i]
+
+        if i == 0:
+            v_class = classify_velocity(0.0)
+            velocity_dist[v_class] = velocity_dist.get(v_class, 0) + 1
+            new_events.append(
+                MovementEvent(
+                    sequence=evt.sequence,
+                    timestamp=evt.timestamp,
+                    latitude=s_lat,
+                    longitude=s_lon,
+                    cgi=evt.cgi,
+                    distance_m=0.0,
+                    time_delta_s=0.0,
+                    speed_kmh=0.0,
+                    bearing_deg=None,
+                    is_handover=evt.is_handover,
+                    is_anomalous=False,
+                    velocity_class=v_class,
+                    event_type=evt.event_type,
+                    metadata=evt.metadata,
+                )
+            )
+            continue
+
+        prev_evt = new_events[i - 1]
+
+        # Handovers: keep original semantics (zero distance)
+        if evt.is_handover:
+            v_class = classify_velocity(0.0)
+            velocity_dist[v_class] = velocity_dist.get(v_class, 0) + 1
+            handover_count += 1
+            new_events.append(
+                MovementEvent(
+                    sequence=evt.sequence,
+                    timestamp=evt.timestamp,
+                    latitude=s_lat,
+                    longitude=s_lon,
+                    cgi=evt.cgi,
+                    distance_m=0.0,
+                    time_delta_s=evt.time_delta_s,
+                    speed_kmh=0.0,
+                    bearing_deg=None,
+                    is_handover=True,
+                    is_anomalous=False,
+                    velocity_class=v_class,
+                    event_type=evt.event_type,
+                    metadata=evt.metadata,
+                )
+            )
+            continue
+
+        # Recalculate distance, speed, bearing from smoothed coords
+        dist = calculate_distance_m(prev_evt.latitude, prev_evt.longitude, s_lat, s_lon)
+        dt_s = evt.time_delta_s
+
+        speed_val = calculate_speed_kmh(dist, dt_s)
+        speed = speed_val if speed_val is not None else 0.0
+
+        if dist is not None and dist > 1.0:
+            bearing = calculate_bearing_deg(prev_evt.latitude, prev_evt.longitude, s_lat, s_lon)
+        else:
+            bearing = None
+
+        is_anom = flag_impossible_velocity(speed)
+        v_class = classify_velocity(speed)
+
+        if dist is not None:
+            total_distance += dist
+        if speed > max_speed:
+            max_speed = speed
+        if speed > 0.0:
+            speed_sum += speed
+            speed_count += 1
+        if is_anom:
+            anomaly_count += 1
+        velocity_dist[v_class] = velocity_dist.get(v_class, 0) + 1
+
+        new_events.append(
+            MovementEvent(
+                sequence=evt.sequence,
+                timestamp=evt.timestamp,
+                latitude=s_lat,
+                longitude=s_lon,
+                cgi=evt.cgi,
+                distance_m=round(dist, 2) if dist is not None else None,
+                time_delta_s=dt_s,
+                speed_kmh=round(speed, 4) if speed is not None else None,
+                bearing_deg=round(bearing, 2) if bearing is not None else None,
+                is_handover=False,
+                is_anomalous=is_anom,
+                velocity_class=v_class,
+                event_type=evt.event_type,
+                metadata=evt.metadata,
+            )
+        )
+
+    # --- Build summary ---
+    time_span = 0.0
+    if len(new_events) >= 2:
+        first_ts = new_events[0].timestamp
+        last_ts = new_events[-1].timestamp
+        if first_ts is not None and last_ts is not None:
+            time_span = max((last_ts - first_ts).total_seconds(), 0.0)
+
+    avg_speed = (speed_sum / speed_count) if speed_count > 0 else 0.0
+
+    return MovementSummary(
+        total_events=len(new_events),
+        total_distance_m=round(total_distance, 2),
+        total_distance_km=round(total_distance / 1000.0, 4),
+        time_span_seconds=round(time_span, 2),
+        handover_count=handover_count,
+        anomaly_count=anomaly_count,
+        max_speed_kmh=round(max_speed, 4),
+        avg_speed_kmh=round(avg_speed, 4),
+        velocity_distribution=velocity_dist,
+        events=new_events,
     )
