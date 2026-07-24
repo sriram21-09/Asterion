@@ -9,6 +9,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 from app.api.v1.routers.cases import router as cases_router
 from app.api.v1.routers.cdr_import import router as import_router
 from app.api.v1.routers.confidence import router as confidence_router
+from app.api.v1.routers.dashboard import router as dashboard_router
 from app.api.v1.routers.evidence import router as evidence_router
 from app.api.v1.routers.localization import router as localization_router
 from app.api.v1.routers.measurements import router as measurements_router
@@ -56,6 +57,7 @@ app.include_router(evidence_router, prefix=settings.api_prefix)
 app.include_router(import_router, prefix=settings.api_prefix)
 app.include_router(towers_router, prefix=settings.api_prefix)
 app.include_router(movement_router, prefix=settings.api_prefix)
+app.include_router(dashboard_router, prefix=settings.api_prefix)
 
 
 @app.get("/")
