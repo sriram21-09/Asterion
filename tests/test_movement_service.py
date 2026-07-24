@@ -41,7 +41,6 @@ from app.services.movement_service import (
     EVENT_TYPE_HANDOVER,
     EVENT_TYPE_CALL_START,
     EVENT_TYPE_SMS,
-    EVENT_TYPE_LOCATION_UPDATE,
 )
 from main import app
 

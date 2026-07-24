@@ -11,7 +11,6 @@ Verifies validation rules for Call Detail Records (CDRs):
 """
 
 from datetime import datetime, timedelta, timezone
-import pytest
 
 from scientific.config import ValidationThresholds
 from scientific.models.cdr_record import CDRRecord

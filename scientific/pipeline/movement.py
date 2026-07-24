@@ -43,9 +43,9 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-from scientific.constants import EARTH_RADIUS_M, haversine_distance_m
+from scientific.constants import haversine_distance_m
 
 # ---------------------------------------------------------------------------
 # Constants

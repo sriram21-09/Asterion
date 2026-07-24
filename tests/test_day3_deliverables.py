@@ -652,7 +652,23 @@ class TestFileExistence:
     def test_validators_py_exists(self):
         path = ROOT / "scientific" / "validation" / "validators.py"
         assert path.exists(), f"Missing: {path}"
-        assert path.stat().st_size > 5000, "validators.py seems too small"
+        # validators.py is now a facade that re-exports from modular sub-modules
+        content = path.read_text()
+        assert "MeasurementValidator" in content, "Facade missing MeasurementValidator"
+        assert "TowerValidator" in content, "Facade missing TowerValidator"
+        assert "ScenarioValidator" in content, "Facade missing ScenarioValidator"
+        # Verify the modular sub-modules exist
+        validation_dir = ROOT / "scientific" / "validation"
+        for module in [
+            "types.py",
+            "measurement_validator.py",
+            "tower_validator.py",
+            "scenario_validator.py",
+            "cdr_validator.py",
+            "result_validator.py",
+        ]:
+            mod_path = validation_dir / module
+            assert mod_path.exists(), f"Missing validator module: {mod_path}"
 
     def test_validation_init_exports(self):
         path = ROOT / "scientific" / "validation" / "__init__.py"

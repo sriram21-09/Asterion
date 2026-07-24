@@ -18,10 +18,6 @@ from scientific.pipeline.movement import (
     classify_velocity,
     flag_impossible_velocity,
     reconstruct_movement_events,
-    MovementEvent,
-    MovementSummary,
-    HANDOVER_COORD_TOLERANCE_M,
-    MAX_PLAUSIBLE_SPEED_KMH,
 )
 
 

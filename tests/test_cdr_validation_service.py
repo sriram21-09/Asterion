@@ -31,7 +31,6 @@ from scientific.validation.validators import (
     CDRDataQualityScore,
     CDRValidationReport,
     CDRValidationService,
-    Severity,
 )
 
 
