@@ -626,9 +626,7 @@ def smooth_movement_path(
 
         if evt is first_with_coords:
             # First valid event — use initial state
-            smoothed_coords.append(
-                (float(tracker.x[0]), float(tracker.x[1]))
-            )
+            smoothed_coords.append((float(tracker.x[0]), float(tracker.x[1])))
             prev_ts = evt.timestamp
             continue
 
@@ -649,9 +647,7 @@ def smooth_movement_path(
             error_m=noise,
         )
 
-        smoothed_coords.append(
-            (float(tracker.x[0]), float(tracker.x[1]))
-        )
+        smoothed_coords.append((float(tracker.x[0]), float(tracker.x[1])))
         prev_ts = evt.timestamp
 
     # --- Rebuild events with smoothed coordinates and recalculated metrics ---
@@ -725,7 +721,9 @@ def smooth_movement_path(
         speed = speed_val if speed_val is not None else 0.0
 
         if dist is not None and dist > 1.0:
-            bearing = calculate_bearing_deg(prev_evt.latitude, prev_evt.longitude, s_lat, s_lon)
+            bearing = calculate_bearing_deg(
+                prev_evt.latitude, prev_evt.longitude, s_lat, s_lon
+            )
         else:
             bearing = None
 

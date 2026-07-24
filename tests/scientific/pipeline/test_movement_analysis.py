@@ -116,13 +116,31 @@ class TestCalculateBearingDeg:
 
 class TestDetectHandover:
     def test_same_cgi_not_handover(self):
-        assert detect_handover("404-98-100-1", "404-98-100-1", 19.0, 72.8, 19.0, 72.8) is False
+        assert (
+            detect_handover("404-98-100-1", "404-98-100-1", 19.0, 72.8, 19.0, 72.8)
+            is False
+        )
 
     def test_different_cgi_same_coords_is_handover(self):
-        assert detect_handover("404-98-100-1", "404-98-100-2", 19.076, 72.878, 19.076, 72.878) is True
+        assert (
+            detect_handover(
+                "404-98-100-1", "404-98-100-2", 19.076, 72.878, 19.076, 72.878
+            )
+            is True
+        )
 
     def test_different_cgi_close_coords_is_handover(self):
-        assert detect_handover("404-98-100-1", "404-98-100-2", 19.076000, 72.878000, 19.076270, 72.878000) is True
+        assert (
+            detect_handover(
+                "404-98-100-1",
+                "404-98-100-2",
+                19.076000,
+                72.878000,
+                19.076270,
+                72.878000,
+            )
+            is True
+        )
 
     def test_different_cgi_far_coords_not_handover(self):
         assert detect_handover("404-98-100-1", "404-98-200-5", *MUMBAI, *PUNE) is False
@@ -134,10 +152,15 @@ class TestDetectHandover:
         assert detect_handover("404-98-100-1", None, 19.0, 72.8, 19.0, 72.8) is False
 
     def test_missing_coords_not_handover(self):
-        assert detect_handover("404-98-100-1", "404-98-100-2", None, None, None, None) is False
+        assert (
+            detect_handover("404-98-100-1", "404-98-100-2", None, None, None, None)
+            is False
+        )
 
     def test_boundary_at_tolerance(self):
-        assert detect_handover("A", "B", 0.0, 0.0, 0.0, 0.0, coord_tolerance_m=0.0) is True
+        assert (
+            detect_handover("A", "B", 0.0, 0.0, 0.0, 0.0, coord_tolerance_m=0.0) is True
+        )
 
 
 class TestClassifyVelocity:
@@ -197,8 +220,11 @@ class TestReconstructMovementEvents:
         base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=UTC)
         return {
             "timestamp": base + timedelta(minutes=ts_offset_min),
-            "latitude": lat, "longitude": lon,
-            "first_cgi": cgi, "event_type": event_type, "operator": "airtel",
+            "latitude": lat,
+            "longitude": lon,
+            "first_cgi": cgi,
+            "event_type": event_type,
+            "operator": "airtel",
         }
 
     def test_empty_records(self):
@@ -308,4 +334,6 @@ class TestReconstructMovementEvents:
         ]
         summary = reconstruct_movement_events(records)
         assert summary.total_events == 2
-        assert summary.events[1].distance_m is None or summary.events[1].distance_m == 0.0
+        assert (
+            summary.events[1].distance_m is None or summary.events[1].distance_m == 0.0
+        )

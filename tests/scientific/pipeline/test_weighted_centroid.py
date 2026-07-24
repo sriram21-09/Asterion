@@ -200,7 +200,9 @@ class TestComputeInputQualityScores:
         ]
 
         densities = {"T001": 0.9, "T002": 0.3, "T003": 0.6}
-        scores = compute_input_quality_scores(towers, measurements, tower_densities=densities)
+        scores = compute_input_quality_scores(
+            towers, measurements, tower_densities=densities
+        )
 
         assert scores["T001"].tower_confidence == 0.9
         assert scores["T002"].tower_confidence == 0.3
@@ -211,7 +213,9 @@ class TestComputeInputQualityScores:
         towers = _make_towers()
         measurements = [_make_measurement("M001", "T001", -70.0)]
 
-        scores = compute_input_quality_scores(towers, measurements, tower_densities=None)
+        scores = compute_input_quality_scores(
+            towers, measurements, tower_densities=None
+        )
 
         assert scores["T001"].tower_confidence == 1.0
 
@@ -226,7 +230,12 @@ class TestComputeInputQualityScores:
         )
 
         qs = scores["T001"]
-        expected = 0.35 * qs.rssi_score + 0.25 * qs.coord_score + 0.20 * qs.timestamp_score + 0.20 * qs.tower_confidence
+        expected = (
+            0.35 * qs.rssi_score
+            + 0.25 * qs.coord_score
+            + 0.20 * qs.timestamp_score
+            + 0.20 * qs.tower_confidence
+        )
         assert qs.composite_score == pytest.approx(expected, abs=1e-5)
 
 

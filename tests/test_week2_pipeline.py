@@ -62,14 +62,34 @@ class TestResultValidator:
 
     def test_out_of_bounds_error(self):
         """Result outside absolute coordinate bounds returns ERROR."""
-        t1 = Tower(tower_id="T001", latitude=12.9716, longitude=77.5946, coverage_radius_m=1000.0)
-        t2 = Tower(tower_id="T002", latitude=12.9720, longitude=77.5950, coverage_radius_m=1000.0)
-        t3 = Tower(tower_id="T003", latitude=12.9710, longitude=77.5940, coverage_radius_m=1000.0)
-        scenario = Scenario(scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[])
+        t1 = Tower(
+            tower_id="T001",
+            latitude=12.9716,
+            longitude=77.5946,
+            coverage_radius_m=1000.0,
+        )
+        t2 = Tower(
+            tower_id="T002",
+            latitude=12.9720,
+            longitude=77.5950,
+            coverage_radius_m=1000.0,
+        )
+        t3 = Tower(
+            tower_id="T003",
+            latitude=12.9710,
+            longitude=77.5940,
+            coverage_radius_m=1000.0,
+        )
+        scenario = Scenario(
+            scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
+        )
         res = LocalizationResult(
-            scenario_id="S001", algorithm="multilateration",
-            estimated_latitude=30.0, estimated_longitude=77.5946,
-            signals_used=1, timestamp=datetime.now(UTC),
+            scenario_id="S001",
+            algorithm="multilateration",
+            estimated_latitude=30.0,
+            estimated_longitude=77.5946,
+            signals_used=1,
+            timestamp=datetime.now(UTC),
         )
         custom_thresholds = ValidationThresholds(latitude_range=(10.0, 20.0))
         validator = ResultValidator(thresholds=custom_thresholds)
@@ -79,14 +99,34 @@ class TestResultValidator:
 
     def test_outside_bbox_warning(self):
         """Result outside tower bounding box (+ 1.5x coverage buffer) returns WARNING."""
-        t1 = Tower(tower_id="T001", latitude=12.9716, longitude=77.5946, coverage_radius_m=1000.0)
-        t2 = Tower(tower_id="T002", latitude=12.9720, longitude=77.5950, coverage_radius_m=1000.0)
-        t3 = Tower(tower_id="T003", latitude=12.9710, longitude=77.5940, coverage_radius_m=1000.0)
-        scenario = Scenario(scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[])
+        t1 = Tower(
+            tower_id="T001",
+            latitude=12.9716,
+            longitude=77.5946,
+            coverage_radius_m=1000.0,
+        )
+        t2 = Tower(
+            tower_id="T002",
+            latitude=12.9720,
+            longitude=77.5950,
+            coverage_radius_m=1000.0,
+        )
+        t3 = Tower(
+            tower_id="T003",
+            latitude=12.9710,
+            longitude=77.5940,
+            coverage_radius_m=1000.0,
+        )
+        scenario = Scenario(
+            scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
+        )
         res = LocalizationResult(
-            scenario_id="S001", algorithm="multilateration",
-            estimated_latitude=13.5000, estimated_longitude=77.5946,
-            signals_used=1, timestamp=datetime.now(UTC),
+            scenario_id="S001",
+            algorithm="multilateration",
+            estimated_latitude=13.5000,
+            estimated_longitude=77.5946,
+            signals_used=1,
+            timestamp=datetime.now(UTC),
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
@@ -97,14 +137,34 @@ class TestResultValidator:
 
     def test_within_bounds_and_coverage(self):
         """Result close to tower is valid and produces no warnings/errors."""
-        t1 = Tower(tower_id="T001", latitude=12.9716, longitude=77.5946, coverage_radius_m=1000.0)
-        t2 = Tower(tower_id="T002", latitude=12.9720, longitude=77.5950, coverage_radius_m=1000.0)
-        t3 = Tower(tower_id="T003", latitude=12.9710, longitude=77.5940, coverage_radius_m=1000.0)
-        scenario = Scenario(scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[])
+        t1 = Tower(
+            tower_id="T001",
+            latitude=12.9716,
+            longitude=77.5946,
+            coverage_radius_m=1000.0,
+        )
+        t2 = Tower(
+            tower_id="T002",
+            latitude=12.9720,
+            longitude=77.5950,
+            coverage_radius_m=1000.0,
+        )
+        t3 = Tower(
+            tower_id="T003",
+            latitude=12.9710,
+            longitude=77.5940,
+            coverage_radius_m=1000.0,
+        )
+        scenario = Scenario(
+            scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
+        )
         res = LocalizationResult(
-            scenario_id="S001", algorithm="multilateration",
-            estimated_latitude=12.9718, estimated_longitude=77.5946,
-            signals_used=1, timestamp=datetime.now(UTC),
+            scenario_id="S001",
+            algorithm="multilateration",
+            estimated_latitude=12.9718,
+            estimated_longitude=77.5946,
+            signals_used=1,
+            timestamp=datetime.now(UTC),
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
@@ -122,13 +182,18 @@ class TestCrossValidate:
 
     def test_no_error_provided(self):
         res = LocalizationResult(
-            scenario_id="S001", algorithm="multilateration",
-            estimated_latitude=12.9716, estimated_longitude=77.5946,
-            signals_used=3, timestamp=datetime.now(UTC),
+            scenario_id="S001",
+            algorithm="multilateration",
+            estimated_latitude=12.9716,
+            estimated_longitude=77.5946,
+            signals_used=3,
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
-            scenario_id="S001", confidence_score=0.9,
-            confidence_level="high", method="gdop",
+            scenario_id="S001",
+            confidence_score=0.9,
+            confidence_level="high",
+            method="gdop",
         )
         val_res = cross_validate(res, conf)
         assert val_res.is_valid
@@ -136,13 +201,19 @@ class TestCrossValidate:
 
     def test_confidence_mismatch_warning(self):
         res = LocalizationResult(
-            scenario_id="S001", algorithm="multilateration",
-            estimated_latitude=12.9716, estimated_longitude=77.5946,
-            error_m=200.0, signals_used=3, timestamp=datetime.now(UTC),
+            scenario_id="S001",
+            algorithm="multilateration",
+            estimated_latitude=12.9716,
+            estimated_longitude=77.5946,
+            error_m=200.0,
+            signals_used=3,
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
-            scenario_id="S001", confidence_score=0.9,
-            confidence_level="high", method="gdop",
+            scenario_id="S001",
+            confidence_score=0.9,
+            confidence_level="high",
+            method="gdop",
         )
         val_res = cross_validate(res, conf)
         assert val_res.is_valid
@@ -151,13 +222,19 @@ class TestCrossValidate:
 
     def test_ellipse_bounds_warning(self):
         res = LocalizationResult(
-            scenario_id="S001", algorithm="multilateration",
-            estimated_latitude=12.9716, estimated_longitude=77.5946,
-            error_m=100.0, signals_used=3, timestamp=datetime.now(UTC),
+            scenario_id="S001",
+            algorithm="multilateration",
+            estimated_latitude=12.9716,
+            estimated_longitude=77.5946,
+            error_m=100.0,
+            signals_used=3,
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
-            scenario_id="S001", confidence_score=0.5,
-            confidence_level="medium", error_ellipse_semi_major_m=20.0,
+            scenario_id="S001",
+            confidence_score=0.5,
+            confidence_level="medium",
+            error_ellipse_semi_major_m=20.0,
             method="gdop",
         )
         val_res = cross_validate(res, conf)
@@ -172,11 +249,30 @@ class TestCrossValidate:
 
 class TestValidateBatch:
     def test_validate_batch_correctness(self):
-        t1 = Tower(tower_id="T001", latitude=12.9716, longitude=77.5946, coverage_radius_m=1000.0)
-        t2 = Tower(tower_id="T002", latitude=12.9720, longitude=77.5950, coverage_radius_m=1000.0)
-        t3 = Tower(tower_id="T003", latitude=12.9710, longitude=77.5940, coverage_radius_m=1000.0)
-        s1 = Scenario(scenario_id="S001", name="Scenario 1", towers=[t1, t2, t3], measurements=[])
-        s2 = Scenario(scenario_id="S002", name="Scenario 2", towers=[t1, t2, t3], measurements=[])
+        t1 = Tower(
+            tower_id="T001",
+            latitude=12.9716,
+            longitude=77.5946,
+            coverage_radius_m=1000.0,
+        )
+        t2 = Tower(
+            tower_id="T002",
+            latitude=12.9720,
+            longitude=77.5950,
+            coverage_radius_m=1000.0,
+        )
+        t3 = Tower(
+            tower_id="T003",
+            latitude=12.9710,
+            longitude=77.5940,
+            coverage_radius_m=1000.0,
+        )
+        s1 = Scenario(
+            scenario_id="S001", name="Scenario 1", towers=[t1, t2, t3], measurements=[]
+        )
+        s2 = Scenario(
+            scenario_id="S002", name="Scenario 2", towers=[t1, t2, t3], measurements=[]
+        )
         batch_results = validate_batch([s1, s2])
         assert len(batch_results) == 2
         assert "S001" in batch_results
@@ -207,7 +303,9 @@ class TestE2EPipelineRunner:
             print(f"\nScenario {scenario_id} processed in {duration * 1000.0:.2f} ms")
             print(f"Time Breakdown: {result.metadata['time_breakdown_ms']}")
             actual_error = result.localization.error_m
-            assert actual_error is not None, "Pipeline must compute error relative to ground truth"
+            assert actual_error is not None, (
+                "Pipeline must compute error relative to ground truth"
+            )
             assert actual_error <= expected["max_error_m"] * 1.6, (
                 f"Scenario {scenario_id} error {actual_error:.2f}m exceeds threshold of {expected['max_error_m']}m"
             )
@@ -248,7 +346,13 @@ class TestE2EPipelineRunner:
                 elapsed = time.perf_counter() - start
                 total_time += elapsed
                 runs_count += 1
-                assert elapsed < 0.5, f"Individual run took excessively long: {elapsed * 1000.0:.1f}ms"
+                assert elapsed < 0.5, (
+                    f"Individual run took excessively long: {elapsed * 1000.0:.1f}ms"
+                )
         avg_time_ms = (total_time / runs_count) * 1000.0
-        print(f"\nAverage E2E Pipeline execution time: {avg_time_ms:.2f} ms across {runs_count} runs")
-        assert total_time < 2.0, f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        print(
+            f"\nAverage E2E Pipeline execution time: {avg_time_ms:.2f} ms across {runs_count} runs"
+        )
+        assert total_time < 2.0, (
+            f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        )
