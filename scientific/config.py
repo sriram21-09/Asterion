@@ -42,7 +42,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from typing import Dict, Literal, Tuple
+from typing import Literal
 
 # ---------------------------------------------------------------------------
 # Type aliases
@@ -100,8 +100,8 @@ class SimulationConfig:
     max_measurements_per_scenario: int = 5_000
 
     # Position clamping (WGS84)
-    position_clamp_lat: Tuple[float, float] = (-90.0, 90.0)
-    position_clamp_lon: Tuple[float, float] = (-180.0, 180.0)
+    position_clamp_lat: tuple[float, float] = (-90.0, 90.0)
+    position_clamp_lon: tuple[float, float] = (-180.0, 180.0)
 
     def override(self, **kwargs) -> SimulationConfig:
         """Return a *new* config with selected fields replaced.
@@ -165,8 +165,8 @@ class ValidationThresholds:
     rssi_plausible_max_dbm: float = -30.0
 
     # Coordinate bounds (WGS84)
-    latitude_range: Tuple[float, float] = (-90.0, 90.0)
-    longitude_range: Tuple[float, float] = (-180.0, 180.0)
+    latitude_range: tuple[float, float] = (-90.0, 90.0)
+    longitude_range: tuple[float, float] = (-180.0, 180.0)
 
     # Tower RF plausibility
     min_tx_power_dbm: float = 10.0
@@ -222,7 +222,7 @@ class EnvironmentConfig:
 
 
 # Pre-built environment presets (immutable registry)
-ENVIRONMENT_PRESETS: Dict[EnvironmentType, EnvironmentConfig] = {
+ENVIRONMENT_PRESETS: dict[EnvironmentType, EnvironmentConfig] = {
     "urban": EnvironmentConfig(
         environment_type="urban",
         path_loss_exponent=3.5,

@@ -62,7 +62,6 @@ Usage:
 """
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -105,26 +104,26 @@ class Measurement(BaseModel):
         description="Received Signal Strength Indicator in dBm",
         examples=[-72.0],
     )
-    latitude: Optional[float] = Field(
+    latitude: float | None = Field(
         default=None,
         ge=-90.0,
         le=90.0,
         description="Measurement point latitude (WGS84), if known",
         examples=[12.9716],
     )
-    longitude: Optional[float] = Field(
+    longitude: float | None = Field(
         default=None,
         ge=-180.0,
         le=180.0,
         description="Measurement point longitude (WGS84), if known",
         examples=[77.5946],
     )
-    timing_advance: Optional[float] = Field(
+    timing_advance: float | None = Field(
         default=None,
         ge=0,
         description="GSM Timing Advance (TA) value for distance estimation",
     )
-    uncertainty_m: Optional[float] = Field(
+    uncertainty_m: float | None = Field(
         default=None,
         ge=0,
         description="Measurement uncertainty in meters",

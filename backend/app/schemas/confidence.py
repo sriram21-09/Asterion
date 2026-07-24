@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -34,16 +33,16 @@ class ConfidenceRunResponse(BaseModel):
     confidence_level: str = Field(
         ..., description="Qualitative confidence rating (low, medium, high)"
     )
-    error_ellipse_semi_major_m: Optional[float] = Field(
+    error_ellipse_semi_major_m: float | None = Field(
         None, description="Semi-major axis of the 95% error ellipse in meters"
     )
-    error_ellipse_semi_minor_m: Optional[float] = Field(
+    error_ellipse_semi_minor_m: float | None = Field(
         None, description="Semi-minor axis of the 95% error ellipse in meters"
     )
-    error_ellipse_orientation_deg: Optional[float] = Field(
+    error_ellipse_orientation_deg: float | None = Field(
         None, description="Orientation angle of the error ellipse in degrees"
     )
-    gdop: Optional[float] = Field(
+    gdop: float | None = Field(
         None, description="Geometric Dilution of Precision (lower is better)"
     )
     method: str = Field(..., description="Method used for confidence evaluation")

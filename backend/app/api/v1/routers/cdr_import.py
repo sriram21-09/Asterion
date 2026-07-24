@@ -1,13 +1,15 @@
-from typing import List, Optional
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
-
 from app.database.session import get_db
-from app.models.import_job import ImportJob
 from app.models.cdr_record import CDRRecord
-from app.schemas.import_job import CDRRecordResponse, CDRUploadResponse, ImportJobResponse
+from app.models.import_job import ImportJob
+from app.schemas.import_job import (
+    CDRRecordResponse,
+    CDRUploadResponse,
+    ImportJobResponse,
+)
 from app.schemas.response import APIResponse
 from app.services.import_service import CDRImportService
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/import", tags=["import"])
 
@@ -21,8 +23,8 @@ router = APIRouter(prefix="/import", tags=["import"])
 )
 async def upload_cdr_file(
     file: UploadFile = File(...),
-    case_id: Optional[int] = Form(None),
-    operator: Optional[str] = Form(None),
+    case_id: int | None = Form(None),
+    operator: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
     filename = file.filename or "unknown.csv"
@@ -47,7 +49,6 @@ async def upload_cdr_file(
         operator=operator,
         db=db,
     )
-
 
     upload_resp = CDRUploadResponse(
         job=ImportJobResponse.model_validate(result["job"]),
@@ -75,7 +76,7 @@ def get_import_job(job_id: int, db: Session = Depends(get_db)):
 
 @router.get(
     "/jobs/{job_id}/records",
-    response_model=APIResponse[List[CDRRecordResponse]],
+    response_model=APIResponse[list[CDRRecordResponse]],
     summary="Get parsed records for an import job",
     description="Retrieve parsed CDR records associated with an import job.",
 )

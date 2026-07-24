@@ -37,7 +37,7 @@ Or construct one directly for quick experimentation:
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -102,7 +102,7 @@ class TowerPlacement(BaseModel):
         gt=0,
         description="Effective coverage radius in meters",
     )
-    sector: Optional[str] = Field(
+    sector: str | None = Field(
         default=None,
         description="Sector identifier (e.g., 'A', 'B', 'C')",
     )
@@ -175,7 +175,7 @@ class PropagationDefaults(BaseModel):
     )
 
     @classmethod
-    def for_environment(cls, env: EnvironmentType) -> "PropagationDefaults":
+    def for_environment(cls, env: EnvironmentType) -> PropagationDefaults:
         """Return preset propagation defaults for a given environment.
 
         Args:
@@ -238,7 +238,7 @@ class SimulationParameters(BaseModel):
         default=True,
         description="Inject Gaussian noise into synthetic RSSI",
     )
-    random_seed: Optional[int] = Field(
+    random_seed: int | None = Field(
         default=None,
         description="Random seed for reproducibility (None = non-deterministic)",
     )
@@ -293,13 +293,13 @@ class ScenarioConfig(BaseModel):
         description="Human-readable scenario name",
         examples=["Urban 3-Tower Test"],
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default=None,
         description="Optional scenario description",
     )
 
     # ── Tower layout ────────────────────────────────────────────────
-    tower_placements: List[TowerPlacement] = Field(
+    tower_placements: list[TowerPlacement] = Field(
         ...,
         min_length=3,
         description="Tower positions (minimum 3 for multilateration)",
@@ -326,13 +326,13 @@ class ScenarioConfig(BaseModel):
     )
 
     # ── Ground truth (optional, for validation) ─────────────────────
-    expected_device_lat: Optional[float] = Field(
+    expected_device_lat: float | None = Field(
         default=None,
         ge=-90.0,
         le=90.0,
         description="Ground-truth device latitude (WGS84)",
     )
-    expected_device_lon: Optional[float] = Field(
+    expected_device_lon: float | None = Field(
         default=None,
         ge=-180.0,
         le=180.0,
@@ -342,7 +342,7 @@ class ScenarioConfig(BaseModel):
     # ── Validators ──────────────────────────────────────────────────
 
     @model_validator(mode="after")
-    def _auto_propagation_defaults(self) -> "ScenarioConfig":
+    def _auto_propagation_defaults(self) -> ScenarioConfig:
         """Set propagation defaults from environment if not overridden."""
         # Only override if the user supplied the factory default (urban/3.5).
         # A simple heuristic: if propagation was left at its default values
@@ -355,7 +355,7 @@ class ScenarioConfig(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def _validate_ground_truth_pair(self) -> "ScenarioConfig":
+    def _validate_ground_truth_pair(self) -> ScenarioConfig:
         """Ensure ground-truth coordinates are either both set or both None."""
         lat_set = self.expected_device_lat is not None
         lon_set = self.expected_device_lon is not None
@@ -369,7 +369,7 @@ class ScenarioConfig(BaseModel):
     # ── Factory helpers ─────────────────────────────────────────────
 
     @classmethod
-    def from_scenario(cls, scenario) -> "ScenarioConfig":
+    def from_scenario(cls, scenario) -> ScenarioConfig:
         """Build a :class:`ScenarioConfig` from a :class:`Scenario`.
 
         Args:

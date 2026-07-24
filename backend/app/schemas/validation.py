@@ -5,8 +5,8 @@ Used by the ``POST /measurements/validate`` endpoint to return structured
 validation results for a batch of measurements.
 """
 
-from typing import List, Optional
 from enum import Enum
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -53,17 +53,17 @@ class MeasurementInput(BaseModel):
         ...,
         description="Received Signal Strength Indicator in dBm (typically negative)",
     )
-    latitude: Optional[float] = Field(
+    latitude: float | None = Field(
         None, description="Optional GPS latitude reported by device"
     )
-    longitude: Optional[float] = Field(
+    longitude: float | None = Field(
         None,
         description="Optional GPS longitude reported by device",
     )
-    timing_advance: Optional[float] = Field(
+    timing_advance: float | None = Field(
         None, description="Optional cellular Timing Advance value"
     )
-    uncertainty_m: Optional[float] = Field(
+    uncertainty_m: float | None = Field(
         None, description="Optional GPS accuracy uncertainty radius in meters"
     )
 
@@ -89,7 +89,7 @@ class ValidateMeasurementsRequest(BaseModel):
             }
         }
     )
-    measurements: List[MeasurementInput] = Field(
+    measurements: list[MeasurementInput] = Field(
         ..., description="Batch list of measurements to validate"
     )
 
@@ -135,6 +135,6 @@ class ValidateMeasurementsResponse(BaseModel):
     warning_count: int = Field(
         ..., description="Total warnings generated across all measurements", ge=0
     )
-    errors: List[ValidationErrorItem] = Field(
+    errors: list[ValidationErrorItem] = Field(
         ..., description="List of structured errors and warnings found"
     )

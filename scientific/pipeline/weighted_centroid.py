@@ -7,8 +7,7 @@ generation and fallback localization.
 """
 
 import time
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
 
 from scientific.constants import haversine_distance_m
 from scientific.models.measurement import Measurement
@@ -18,10 +17,10 @@ from scientific.models.tower import Tower
 
 def solve_weighted_centroid(
     scenario_id: str,
-    towers: List[Tower],
-    measurements: List[Measurement],
-    expected_device_lat: Optional[float] = None,
-    expected_device_lon: Optional[float] = None,
+    towers: list[Tower],
+    measurements: list[Measurement],
+    expected_device_lat: float | None = None,
+    expected_device_lon: float | None = None,
 ) -> LocalizationResult:
     """Calculate the estimated position using the signal-strength weighted centroid.
 
@@ -99,5 +98,5 @@ def solve_weighted_centroid(
         error_m=error_m,
         computation_time_ms=computation_time_ms,
         signals_used=max(1, signals_used),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )

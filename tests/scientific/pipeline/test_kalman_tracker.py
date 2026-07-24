@@ -1,7 +1,8 @@
 import math
-from datetime import datetime, timedelta, timezone
-import pytest
+from datetime import UTC, datetime, timedelta
+
 import numpy as np
+import pytest
 
 from scientific.constants import METERS_PER_DEGREE_LAT
 from scientific.models.result import LocalizationResult
@@ -14,7 +15,7 @@ def test_kalman_empty_and_single_input():
     assert track_positions([]) == []
 
     # 2. Single input
-    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=UTC)
     res = LocalizationResult(
         scenario_id="SCN-001",
         algorithm="multilateration",
@@ -42,7 +43,7 @@ def test_kalman_empty_and_single_input():
 
 def test_constant_velocity_tracking():
     """Verify tracking and velocity estimation for a target moving at constant speed."""
-    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=UTC)
 
     # Ground-truth: starts at (12.97, 77.59) and moves north at 15 m/s (~54 km/h)
     true_lat_start = 12.9700
@@ -112,7 +113,7 @@ def test_constant_velocity_tracking():
 
 def test_noise_smoothing_outlier_rejection():
     """Verify that a sudden huge outlier spike is smoothed and dampened."""
-    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=UTC)
     base_lat = 12.9716
     base_lon = 77.5946
 
@@ -155,7 +156,7 @@ def test_noise_smoothing_outlier_rejection():
 
 def test_zero_time_delta_handling():
     """Verify that the filter handles duplicate/zero-time-delta timestamps cleanly."""
-    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 7, 16, 12, 0, 0, tzinfo=UTC)
 
     results = [
         LocalizationResult(

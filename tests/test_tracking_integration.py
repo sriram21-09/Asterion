@@ -9,22 +9,21 @@ Tests cover:
   - API endpoint response shape and error cases
 """
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
-
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
-
+from app.database.session import get_db
 from app.models.base import Base
 from app.models.case import Case
-from app.models.scenario import Scenario
 from app.models.localization_result import LocalizationResult
+from app.models.scenario import Scenario
 from app.models.tracking_result import TrackingResult
-from app.database.session import get_db
 from app.repositories.tracking_repository import TrackingRepository
 from app.services.tracking_service import TrackingService
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # ---------------------------------------------------------------------------
 # Test database fixture
@@ -138,7 +137,7 @@ class TestTrackingResultModel:
             error_m=45.3,
             computation_time_ms=1.2,
             algorithm="kalman",
-            timestamp=datetime(2026, 7, 16, 10, 30, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 16, 10, 30, tzinfo=UTC),
         )
         db.add(result)
         db.commit()
@@ -494,6 +493,6 @@ class TestTrackingAPIConformance:
             "heading_deg",
         ]
         for field in expected_step_fields:
-            assert (
-                field in step_fields
-            ), f"Missing field in TrackingStepResponse: {field}"
+            assert field in step_fields, (
+                f"Missing field in TrackingStepResponse: {field}"
+            )

@@ -7,20 +7,20 @@ documenting accepted and rejected measurements, active towers, and specific
 rejection reasons.
 """
 
-from typing import List, Dict, Any
+from typing import Any
 
+from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.models.measurement import Measurement
 from scientific.models.tower import Tower
 from scientific.validation.validators import MeasurementValidator, Severity
-from scientific.config import ValidationThresholds, DEFAULT_VALIDATION_THRESHOLDS
 
 
 def synthesize_evidence(
     scenario_id: str,
-    towers: List[Tower],
-    measurements: List[Measurement],
+    towers: list[Tower],
+    measurements: list[Measurement],
     thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Synthesize audit evidence detailing validated, accepted, and rejected measurements.
 
     Args:
@@ -34,11 +34,11 @@ def synthesize_evidence(
     """
     validator = MeasurementValidator(thresholds=thresholds)
 
-    accepted_measurements: List[Measurement] = []
-    rejected_details: List[Dict[str, Any]] = []
+    accepted_measurements: list[Measurement] = []
+    rejected_details: list[dict[str, Any]] = []
 
     # Map for counting measurements per tower
-    tower_stats: Dict[str, Dict[str, int]] = {
+    tower_stats: dict[str, dict[str, int]] = {
         t.tower_id: {
             "total_measurements": 0,
             "accepted_measurements": 0,

@@ -1,9 +1,10 @@
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from fastapi.middleware.cors import CORSMiddleware
-from app.middleware.logging import LoggingMiddleware
-from app.core.config import settings
 from unittest import mock
+
+from app.core.config import settings
+from app.middleware.logging import LoggingMiddleware
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.testclient import TestClient
 
 # Create a test app for isolating middleware behavior
 app = FastAPI()
@@ -53,4 +54,7 @@ def test_logging_middleware_failure():
 
 def test_cors_middleware_headers():
     response = client.get("/ok", headers={"Origin": "http://localhost:3000"})
-    assert response.headers.get("access-control-allow-origin") in ("*", "http://localhost:3000")
+    assert response.headers.get("access-control-allow-origin") in (
+        "*",
+        "http://localhost:3000",
+    )

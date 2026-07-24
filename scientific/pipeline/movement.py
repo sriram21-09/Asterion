@@ -42,10 +42,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import UTC, datetime
+from typing import Any
 
-from scientific.constants import EARTH_RADIUS_M, haversine_distance_m
+from scientific.constants import haversine_distance_m
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -72,11 +72,11 @@ VELOCITY_BAND_HIGHWAY: float = 350.0
 
 
 def calculate_distance_m(
-    lat1: Optional[float],
-    lon1: Optional[float],
-    lat2: Optional[float],
-    lon2: Optional[float],
-) -> Optional[float]:
+    lat1: float | None,
+    lon1: float | None,
+    lat2: float | None,
+    lon2: float | None,
+) -> float | None:
     """Compute great-circle distance between two WGS84 points (meters).
 
     Wraps :func:`scientific.constants.haversine_distance_m` with null-safety
@@ -97,9 +97,9 @@ def calculate_distance_m(
 
 
 def calculate_speed_kmh(
-    distance_m: Optional[float],
-    time_delta_seconds: Optional[float],
-) -> Optional[float]:
+    distance_m: float | None,
+    time_delta_seconds: float | None,
+) -> float | None:
     """Compute travel speed in km/h.
 
     Args:
@@ -119,11 +119,11 @@ def calculate_speed_kmh(
 
 
 def calculate_bearing_deg(
-    lat1: Optional[float],
-    lon1: Optional[float],
-    lat2: Optional[float],
-    lon2: Optional[float],
-) -> Optional[float]:
+    lat1: float | None,
+    lon1: float | None,
+    lat2: float | None,
+    lon2: float | None,
+) -> float | None:
     """Compute the initial bearing (degrees, 0–360) from point 1 to point 2.
 
     Uses the forward azimuth formula on a sphere.
@@ -146,10 +146,9 @@ def calculate_bearing_deg(
     dlon = math.radians(lon2 - lon1)
 
     x = math.sin(dlon) * math.cos(rlat2)
-    y = (
-        math.cos(rlat1) * math.sin(rlat2)
-        - math.sin(rlat1) * math.cos(rlat2) * math.cos(dlon)
-    )
+    y = math.cos(rlat1) * math.sin(rlat2) - math.sin(rlat1) * math.cos(
+        rlat2
+    ) * math.cos(dlon)
 
     # atan2(0, 0) is 0.0 in Python — same-point returns 0°
     bearing = math.degrees(math.atan2(x, y))
@@ -162,12 +161,12 @@ def calculate_bearing_deg(
 
 
 def detect_handover(
-    prev_cgi: Optional[str],
-    curr_cgi: Optional[str],
-    prev_lat: Optional[float],
-    prev_lon: Optional[float],
-    curr_lat: Optional[float],
-    curr_lon: Optional[float],
+    prev_cgi: str | None,
+    curr_cgi: str | None,
+    prev_lat: float | None,
+    prev_lon: float | None,
+    curr_lat: float | None,
+    curr_lon: float | None,
     coord_tolerance_m: float = HANDOVER_COORD_TOLERANCE_M,
 ) -> bool:
     """Determine whether a cell-tower transition is a sector handover.
@@ -212,7 +211,7 @@ def detect_handover(
 
 
 def classify_velocity(
-    speed_kmh: Optional[float],
+    speed_kmh: float | None,
     max_plausible_kmh: float = MAX_PLAUSIBLE_SPEED_KMH,
 ) -> str:
     """Classify a speed value into a human-readable mobility band.
@@ -246,7 +245,7 @@ def classify_velocity(
 
 
 def flag_impossible_velocity(
-    speed_kmh: Optional[float],
+    speed_kmh: float | None,
     threshold_kmh: float = MAX_PLAUSIBLE_SPEED_KMH,
 ) -> bool:
     """Check whether a speed value exceeds the plausible travel threshold.
@@ -294,19 +293,19 @@ class MovementEvent:
     """
 
     sequence: int
-    timestamp: Optional[datetime] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    cgi: Optional[str] = None
-    distance_m: Optional[float] = None
-    time_delta_s: Optional[float] = None
-    speed_kmh: Optional[float] = None
-    bearing_deg: Optional[float] = None
+    timestamp: datetime | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    cgi: str | None = None
+    distance_m: float | None = None
+    time_delta_s: float | None = None
+    speed_kmh: float | None = None
+    bearing_deg: float | None = None
     is_handover: bool = False
     is_anomalous: bool = False
     velocity_class: str = "unknown"
-    event_type: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    event_type: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 @dataclass
@@ -334,8 +333,8 @@ class MovementSummary:
     anomaly_count: int = 0
     max_speed_kmh: float = 0.0
     avg_speed_kmh: float = 0.0
-    velocity_distribution: Dict[str, int] = field(default_factory=dict)
-    events: List[MovementEvent] = field(default_factory=list)
+    velocity_distribution: dict[str, int] = field(default_factory=dict)
+    events: list[MovementEvent] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -350,17 +349,17 @@ def _get_field(obj: Any, key: str, default: Any = None) -> Any:
     return getattr(obj, key, default)
 
 
-def _ensure_tz_aware(ts: Optional[datetime]) -> Optional[datetime]:
+def _ensure_tz_aware(ts: datetime | None) -> datetime | None:
     """Ensure a datetime is timezone-aware (default UTC)."""
     if ts is None:
         return None
     if ts.tzinfo is None:
-        return ts.replace(tzinfo=timezone.utc)
+        return ts.replace(tzinfo=UTC)
     return ts
 
 
 def reconstruct_movement_events(
-    records: List[Any],
+    records: list[Any],
     coord_tolerance_m: float = HANDOVER_COORD_TOLERANCE_M,
     max_plausible_kmh: float = MAX_PLAUSIBLE_SPEED_KMH,
 ) -> MovementSummary:
@@ -375,7 +374,7 @@ def reconstruct_movement_events(
     Optional fields:
         - ``event_type``: ``str``
         - ``call_type``: ``str``
-        - ``operator``, ``duration``, ``imei``, etc.
+        - ``operator``, ``duration``, ``imei``, ``imsi``, etc.
 
     The function computes per-step distance, speed, bearing, handover
     classification, and velocity anomaly flags, then returns a
@@ -390,8 +389,8 @@ def reconstruct_movement_events(
     Returns:
         A :class:`MovementSummary` with the enriched event list and statistics.
     """
-    events: List[MovementEvent] = []
-    velocity_dist: Dict[str, int] = {}
+    events: list[MovementEvent] = []
+    velocity_dist: dict[str, int] = {}
     total_distance = 0.0
     max_speed = 0.0
     speed_sum = 0.0
@@ -407,9 +406,16 @@ def reconstruct_movement_events(
         evt_type = _get_field(rec, "event_type") or _get_field(rec, "call_type")
 
         # Build metadata from extra fields
-        meta: Dict[str, Any] = {}
-        for key in ("operator", "target_number", "b_party_number",
-                     "duration", "imei", "imsi", "service_type"):
+        meta: dict[str, Any] = {}
+        for key in (
+            "operator",
+            "target_number",
+            "b_party_number",
+            "duration",
+            "imei",
+            "imsi",
+            "service_type",
+        ):
             val = _get_field(rec, key)
             if val is not None:
                 meta[key] = val
@@ -419,22 +425,24 @@ def reconstruct_movement_events(
             v_class = classify_velocity(0.0, max_plausible_kmh)
             velocity_dist[v_class] = velocity_dist.get(v_class, 0) + 1
 
-            events.append(MovementEvent(
-                sequence=1,
-                timestamp=ts,
-                latitude=lat,
-                longitude=lon,
-                cgi=cgi,
-                distance_m=0.0,
-                time_delta_s=0.0,
-                speed_kmh=0.0,
-                bearing_deg=None,
-                is_handover=False,
-                is_anomalous=False,
-                velocity_class=v_class,
-                event_type=evt_type,
-                metadata=meta if meta else None,
-            ))
+            events.append(
+                MovementEvent(
+                    sequence=1,
+                    timestamp=ts,
+                    latitude=lat,
+                    longitude=lon,
+                    cgi=cgi,
+                    distance_m=0.0,
+                    time_delta_s=0.0,
+                    speed_kmh=0.0,
+                    bearing_deg=None,
+                    is_handover=False,
+                    is_anomalous=False,
+                    velocity_class=v_class,
+                    event_type=evt_type,
+                    metadata=meta if meta else None,
+                )
+            )
             continue
 
         # Previous event data
@@ -448,15 +456,18 @@ def reconstruct_movement_events(
         dist = calculate_distance_m(prev_lat, prev_lon, lat, lon)
 
         # --- Time delta ---
-        dt_s: Optional[float] = None
+        dt_s: float | None = None
         if prev_ts is not None and ts is not None:
             dt_s = max((ts - prev_ts).total_seconds(), 0.0)
 
         # --- Handover detection ---
         is_ho = detect_handover(
-            prev_cgi, cgi,
-            prev_lat, prev_lon,
-            lat, lon,
+            prev_cgi,
+            cgi,
+            prev_lat,
+            prev_lon,
+            lat,
+            lon,
             coord_tolerance_m,
         )
 
@@ -494,22 +505,24 @@ def reconstruct_movement_events(
             anomaly_count += 1
         velocity_dist[v_class] = velocity_dist.get(v_class, 0) + 1
 
-        events.append(MovementEvent(
-            sequence=i + 1,
-            timestamp=ts,
-            latitude=lat,
-            longitude=lon,
-            cgi=cgi,
-            distance_m=round(dist, 2) if dist is not None else None,
-            time_delta_s=round(dt_s, 2) if dt_s is not None else None,
-            speed_kmh=round(speed, 4) if speed is not None else None,
-            bearing_deg=round(bearing, 2) if bearing is not None else None,
-            is_handover=is_ho,
-            is_anomalous=is_anom,
-            velocity_class=v_class,
-            event_type=evt_type,
-            metadata=meta if meta else None,
-        ))
+        events.append(
+            MovementEvent(
+                sequence=i + 1,
+                timestamp=ts,
+                latitude=lat,
+                longitude=lon,
+                cgi=cgi,
+                distance_m=round(dist, 2) if dist is not None else None,
+                time_delta_s=round(dt_s, 2) if dt_s is not None else None,
+                speed_kmh=round(speed, 4) if speed is not None else None,
+                bearing_deg=round(bearing, 2) if bearing is not None else None,
+                is_handover=is_ho,
+                is_anomalous=is_anom,
+                velocity_class=v_class,
+                event_type=evt_type,
+                metadata=meta if meta else None,
+            )
+        )
 
     # --- Build summary ---
     time_span = 0.0

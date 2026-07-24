@@ -232,3 +232,21 @@ E-Rakshak CDR & Location Data Sets/
 *.xlsx
 *.csv
 
+# SQLite Databases & Local Storage
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+
+# Get-Shit-Done (GSD) Framework - Local Environment Only
+.agent/
+.agents/
+.gsd/
+adapters/
+PROJECT_RULES.md
+GSD-STYLE.md
+model_capabilities.yaml
+*.gsd.log
+
+

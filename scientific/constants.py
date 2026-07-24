@@ -34,7 +34,6 @@ Usage::
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Tuple
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 1. Physical & Mathematical Constants
@@ -140,8 +139,8 @@ WGS84_FLATTENING_INV: float = 298.257223563
 METERS_PER_DEGREE_LAT: float = 111_320.0
 
 #: Coordinate bounds (WGS84).
-LATITUDE_RANGE: Tuple[float, float] = (-90.0, 90.0)
-LONGITUDE_RANGE: Tuple[float, float] = (-180.0, 180.0)
+LATITUDE_RANGE: tuple[float, float] = (-90.0, 90.0)
+LONGITUDE_RANGE: tuple[float, float] = (-180.0, 180.0)
 
 
 def haversine_distance_m(
@@ -199,7 +198,7 @@ TYPICAL_CHANNEL_BW_HZ: float = 10e6  # 10 MHz (LTE)
 # ═══════════════════════════════════════════════════════════════════════════
 
 #: Canonical centre frequencies of common cellular bands (MHz).
-CELLULAR_BANDS_MHZ: List[int] = [
+CELLULAR_BANDS_MHZ: list[int] = [
     # Low-band
     700,
     800,
@@ -228,7 +227,7 @@ CELLULAR_BANDS_MHZ: List[int] = [
 BAND_TOLERANCE_MHZ: float = 50.0
 
 #: Human-readable band grouping for reporting.
-BAND_GROUPS: Dict[str, Tuple[int, ...]] = {
+BAND_GROUPS: dict[str, tuple[int, ...]] = {
     "low": (700, 800, 850, 900),
     "mid": (1700, 1800, 1900, 2100),
     "upper_mid": (2300, 2500, 2600),
@@ -250,7 +249,7 @@ RSSI_PLAUSIBLE_MIN_DBM: float = -120.0
 RSSI_PLAUSIBLE_MAX_DBM: float = -30.0
 
 #: Signal-quality tiers (upper-bound RSSI in dBm for each tier).
-RSSI_QUALITY_TIERS: Dict[str, Tuple[float, float]] = {
+RSSI_QUALITY_TIERS: dict[str, tuple[float, float]] = {
     "excellent": (-50.0, 0.0),
     "good": (-70.0, -50.0),
     "fair": (-90.0, -70.0),

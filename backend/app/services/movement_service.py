@@ -9,21 +9,19 @@ transitions) and computing kinematic properties.
 
 import math
 import time
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
-
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from datetime import UTC, datetime
+from typing import Any
 
 from app.models.cdr_record import CDRRecord
 from app.models.movement_event import MovementEvent
 from app.models.tracking_result import TrackingResult
-from app.repositories.movement_repository import MovementRepository
 from app.repositories.case_repository import CaseRepository
+from app.repositories.movement_repository import MovementRepository
 from app.shared.validation import ValidationError, decode_case_code
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 from scientific.constants import haversine_distance_m
-
 
 # ---------------------------------------------------------------------------
 # Event type constants
@@ -37,7 +35,7 @@ EVENT_TYPE_SMS = "sms"
 EVENT_TYPE_DATA_SESSION = "data_session"
 
 # Mapping from CDR call_type / service_type values to movement event types
-_CALL_TYPE_MAP: Dict[str, str] = {
+_CALL_TYPE_MAP: dict[str, str] = {
     "voice_incoming": EVENT_TYPE_CALL_START,
     "voice_outgoing": EVENT_TYPE_CALL_START,
     "voice": EVENT_TYPE_CALL_START,
@@ -59,7 +57,7 @@ class MovementReconstructionService:
     def reconstruct_movements(
         db: Session,
         case_code: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Reconstruct a chronological movement event sequence for a case.
 
         1. Decode case_code → load case
@@ -85,14 +83,14 @@ class MovementReconstructionService:
             raise HTTPException(status_code=404, detail="Case not found")
 
         # 2. Load CDR records and tracking results
-        cdr_records: List[CDRRecord] = (
+        cdr_records: list[CDRRecord] = (
             db.query(CDRRecord)
             .filter(CDRRecord.case_id == case_id)
             .order_by(CDRRecord.timestamp.asc())
             .all()
         )
 
-        tracking_results: List[TrackingResult] = (
+        tracking_results: list[TrackingResult] = (
             db.query(TrackingResult)
             .filter(TrackingResult.case_id == case_id)
             .order_by(TrackingResult.step_number.asc())
@@ -108,7 +106,7 @@ class MovementReconstructionService:
             )
 
         # 3. Build raw event list from CDR records
-        raw_events: List[Dict[str, Any]] = []
+        raw_events: list[dict[str, Any]] = []
         for cdr in cdr_records:
             event_type = MovementReconstructionService._classify_event_type(cdr)
             raw_events.append(
@@ -136,7 +134,7 @@ class MovementReconstructionService:
 
         # 4. Sort chronologically by timestamp
         raw_events.sort(
-            key=lambda e: e["timestamp"] or datetime.min.replace(tzinfo=timezone.utc)
+            key=lambda e: e["timestamp"] or datetime.min.replace(tzinfo=UTC)
         )
 
         # 5. Detect handover events (CGI transitions between consecutive events)
@@ -155,7 +153,7 @@ class MovementReconstructionService:
         # 8. Delete previous movement events and persist new ones
         MovementRepository.delete_by_case(db, case_id)
 
-        movement_rows: List[MovementEvent] = []
+        movement_rows: list[MovementEvent] = []
         for i, evt in enumerate(events_with_handovers):
             row = MovementEvent(
                 case_id=case_id,
@@ -186,23 +184,19 @@ class MovementReconstructionService:
         handover_count = sum(
             1 for r in movement_rows if r.event_type == EVENT_TYPE_HANDOVER
         )
-        total_distance_m = sum(
-            r.distance_from_prev_m or 0.0 for r in movement_rows
-        )
+        total_distance_m = sum(r.distance_from_prev_m or 0.0 for r in movement_rows)
 
         # Time span
-        timestamps = [
-            r.timestamp for r in movement_rows if r.timestamp is not None
-        ]
+        timestamps = [r.timestamp for r in movement_rows if r.timestamp is not None]
         time_span_hours = 0.0
         if len(timestamps) >= 2:
             first_ts = min(timestamps)
             last_ts = max(timestamps)
             # Ensure both are tz-aware for subtraction
             if first_ts.tzinfo is None:
-                first_ts = first_ts.replace(tzinfo=timezone.utc)
+                first_ts = first_ts.replace(tzinfo=UTC)
             if last_ts.tzinfo is None:
-                last_ts = last_ts.replace(tzinfo=timezone.utc)
+                last_ts = last_ts.replace(tzinfo=UTC)
             time_span_hours = (last_ts - first_ts).total_seconds() / 3600.0
 
         events_response = []
@@ -211,17 +205,13 @@ class MovementReconstructionService:
                 {
                     "sequence_number": row.sequence_number,
                     "event_type": row.event_type,
-                    "timestamp": (
-                        row.timestamp.isoformat() if row.timestamp else None
-                    ),
+                    "timestamp": (row.timestamp.isoformat() if row.timestamp else None),
                     "latitude": row.latitude,
                     "longitude": row.longitude,
                     "from_cgi": row.from_cgi,
                     "to_cgi": row.to_cgi,
                     "speed_kmh": (
-                        round(row.speed_kmh, 2)
-                        if row.speed_kmh is not None
-                        else None
+                        round(row.speed_kmh, 2) if row.speed_kmh is not None else None
                     ),
                     "heading_deg": (
                         round(row.heading_deg, 1)
@@ -239,9 +229,7 @@ class MovementReconstructionService:
                         else None
                     ),
                     "confidence": (
-                        round(row.confidence, 3)
-                        if row.confidence is not None
-                        else None
+                        round(row.confidence, 3) if row.confidence is not None else None
                     ),
                 }
             )
@@ -276,15 +264,15 @@ class MovementReconstructionService:
 
     @staticmethod
     def _detect_handovers(
-        sorted_events: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        sorted_events: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Detect cell tower handovers between consecutive CDR events.
 
         When two consecutive events have different CGI values, a synthetic
         handover event is inserted between them.
         """
-        result: List[Dict[str, Any]] = []
-        prev_cgi: Optional[str] = None
+        result: list[dict[str, Any]] = []
+        prev_cgi: str | None = None
 
         for evt in sorted_events:
             current_cgi = evt.get("cgi")
@@ -296,7 +284,7 @@ class MovementReconstructionService:
                 and prev_cgi != current_cgi
             ):
                 # Insert a synthetic handover event
-                handover_evt: Dict[str, Any] = {
+                handover_evt: dict[str, Any] = {
                     "cdr_record_id": evt.get("cdr_record_id"),
                     "tracking_result_id": None,
                     "event_type": EVENT_TYPE_HANDOVER,
@@ -335,8 +323,8 @@ class MovementReconstructionService:
 
     @staticmethod
     def _merge_tracking_data(
-        events: List[Dict[str, Any]],
-        tracking_results: List[TrackingResult],
+        events: list[dict[str, Any]],
+        tracking_results: list[TrackingResult],
     ) -> None:
         """Enrich movement events with smoothed lat/lon from tracking results.
 
@@ -348,7 +336,7 @@ class MovementReconstructionService:
             return
 
         # Build a list of (timestamp, tracking_result) for binary search
-        tr_with_ts: List[Tuple[datetime, TrackingResult]] = []
+        tr_with_ts: list[tuple[datetime, TrackingResult]] = []
         for tr in tracking_results:
             ts = tr.timestamp
             if ts is not None:
@@ -358,7 +346,7 @@ class MovementReconstructionService:
                     except (ValueError, TypeError):
                         continue
                 if ts.tzinfo is None:
-                    ts = ts.replace(tzinfo=timezone.utc)
+                    ts = ts.replace(tzinfo=UTC)
                 tr_with_ts.append((ts, tr))
 
         if not tr_with_ts:
@@ -372,7 +360,7 @@ class MovementReconstructionService:
             if evt_ts is None:
                 continue
             if evt_ts.tzinfo is None:
-                evt_ts = evt_ts.replace(tzinfo=timezone.utc)
+                evt_ts = evt_ts.replace(tzinfo=UTC)
 
             # Find the nearest tracking result by binary search
             idx = _bisect_nearest(tr_timestamps, evt_ts)
@@ -396,7 +384,7 @@ class MovementReconstructionService:
                     evt["confidence"] = math.exp(-error_m / 1000.0)
 
     @staticmethod
-    def _compute_kinematics(events: List[Dict[str, Any]]) -> None:
+    def _compute_kinematics(events: list[dict[str, Any]]) -> None:
         """Compute speed, heading, distance, and dwell time between consecutive events."""
         for i, evt in enumerate(events):
             if i == 0:
@@ -425,9 +413,9 @@ class MovementReconstructionService:
             dt_seconds = 0.0
             if ts1 is not None and ts2 is not None:
                 if ts1.tzinfo is None:
-                    ts1 = ts1.replace(tzinfo=timezone.utc)
+                    ts1 = ts1.replace(tzinfo=UTC)
                 if ts2.tzinfo is None:
-                    ts2 = ts2.replace(tzinfo=timezone.utc)
+                    ts2 = ts2.replace(tzinfo=UTC)
                 dt_seconds = max((ts2 - ts1).total_seconds(), 0.0)
 
             # Speed (km/h)
@@ -458,7 +446,7 @@ class MovementReconstructionService:
 # ---------------------------------------------------------------------------
 
 
-def _bisect_nearest(sorted_ts: List[datetime], target: datetime) -> int:
+def _bisect_nearest(sorted_ts: list[datetime], target: datetime) -> int:
     """Find the index of the nearest timestamp in a sorted list."""
     import bisect
 
@@ -469,9 +457,7 @@ def _bisect_nearest(sorted_ts: List[datetime], target: datetime) -> int:
         return len(sorted_ts) - 1
     before = sorted_ts[pos - 1]
     after = sorted_ts[pos]
-    if abs((target - before).total_seconds()) <= abs(
-        (after - target).total_seconds()
-    ):
+    if abs((target - before).total_seconds()) <= abs((after - target).total_seconds()):
         return pos - 1
     return pos
 

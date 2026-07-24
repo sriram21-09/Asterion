@@ -1,31 +1,30 @@
+import datetime
 import sys
 from pathlib import Path
-import datetime
 
 # Setup path for backend imports
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from main import app
 from app.database.session import get_db
 from app.models.base import Base
 from app.models.case import Case
-from app.models.scenario import Scenario
 from app.models.measurement import Measurement
+from app.models.scenario import Scenario
 from app.shared.validation import (
-    decode_case_code,
-    encode_case_code,
-    decode_scenario_code,
-    encode_scenario_code,
-    decode_measurement_code,
-    encode_measurement_code,
     ValidationError,
+    decode_case_code,
+    decode_measurement_code,
+    decode_scenario_code,
+    encode_case_code,
+    encode_measurement_code,
+    encode_scenario_code,
 )
+from fastapi.testclient import TestClient
+from main import app
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # Setup in-memory database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -114,7 +113,7 @@ class TestMeasurementDatabase:
             case_id=case.id,
             scenario_id=scenario.id,
             measurement_code="MEAS-0001",
-            timestamp=datetime.datetime.now(datetime.timezone.utc),
+            timestamp=datetime.datetime.now(datetime.UTC),
             rssi_dbm=-75.5,
             latitude=12.9716,
             longitude=77.5946,
@@ -148,7 +147,7 @@ class TestMeasurementDatabase:
             case_id=case.id,
             scenario_id=scenario.id,
             measurement_code="MEAS-0001",
-            timestamp=datetime.datetime.now(datetime.timezone.utc),
+            timestamp=datetime.datetime.now(datetime.UTC),
             rssi_dbm=-75.5,
         )
         db_session.add(meas)
@@ -178,7 +177,7 @@ class TestMeasurementDatabase:
             case_id=case.id,
             scenario_id=scenario.id,
             measurement_code="MEAS-0001",
-            timestamp=datetime.datetime.now(datetime.timezone.utc),
+            timestamp=datetime.datetime.now(datetime.UTC),
             rssi_dbm=-75.5,
         )
         db_session.add(meas)
@@ -209,7 +208,7 @@ class TestMeasurementDatabase:
             case_id=case.id,
             scenario_id=scenario.id,
             measurement_code="MEAS-0002",
-            timestamp=datetime.datetime.now(datetime.timezone.utc),
+            timestamp=datetime.datetime.now(datetime.UTC),
             rssi_dbm=-85.0,
         )
         db_session.add(meas)

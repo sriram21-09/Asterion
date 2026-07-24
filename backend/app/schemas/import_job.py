@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Optional, List, Any, Dict
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -8,26 +9,26 @@ class CDRRecordResponse(BaseModel):
 
     id: int
     import_job_id: int
-    case_id: Optional[int] = None
+    case_id: int | None = None
     operator: str
-    target_number: Optional[str] = None
-    b_party_number: Optional[str] = None
-    call_type: Optional[str] = None
-    service_type: Optional[str] = None
-    timestamp: Optional[datetime] = None
-    duration: Optional[int] = 0
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    first_cgi: Optional[str] = None
-    first_bts_location: Optional[str] = None
-    last_latitude: Optional[float] = None
-    last_longitude: Optional[float] = None
-    last_cgi: Optional[str] = None
-    last_bts_location: Optional[str] = None
-    imei: Optional[str] = None
-    imsi: Optional[str] = None
-    smsc_number: Optional[str] = None
-    roaming_network: Optional[str] = None
+    target_number: str | None = None
+    b_party_number: str | None = None
+    call_type: str | None = None
+    service_type: str | None = None
+    timestamp: datetime | None = None
+    duration: int | None = 0
+    latitude: float | None = None
+    longitude: float | None = None
+    first_cgi: str | None = None
+    first_bts_location: str | None = None
+    last_latitude: float | None = None
+    last_longitude: float | None = None
+    last_cgi: str | None = None
+    last_bts_location: str | None = None
+    imei: str | None = None
+    imsi: str | None = None
+    smsc_number: str | None = None
+    roaming_network: str | None = None
     created_at: datetime
 
 
@@ -41,12 +42,12 @@ class ImportJobResponse(BaseModel):
     total_records: int
     parsed_records: int
     failed_records: int
-    error_message: Optional[str] = None
-    case_id: Optional[int] = None
+    error_message: str | None = None
+    case_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
 
 class CDRUploadResponse(BaseModel):
     job: ImportJobResponse
-    summary: Dict[str, Any]
+    summary: dict[str, Any]

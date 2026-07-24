@@ -7,11 +7,12 @@ and spatial density metrics for cell towers within the Asterion scientific pipel
 """
 
 import re
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any
+
 from scientific.constants import haversine_distance_m
 
 
-def parse_cgi(cgi_str: str) -> Dict[str, Optional[str]]:
+def parse_cgi(cgi_str: str) -> dict[str, str | None]:
     """Parse a delimited Cell Global Identity (CGI) string into its components.
 
     Standard format: MCC-MNC-LAC-CI (e.g. '404-98-8331-23071').
@@ -46,14 +47,14 @@ class CGIResolver:
       4. MCC Prefix Match (MCC) -> centroid of all matching towers
     """
 
-    def __init__(self, towers: List[Any]) -> None:
+    def __init__(self, towers: list[Any]) -> None:
         """Initialize the resolver with a list/registry of towers.
 
         Towers can be dictionaries, Pydantic objects, or ORM models.
         Must have coordinates (latitude, longitude) and CGI-associated fields (e.g. cgi, tower_id, or mcc/mnc/lac/ci).
         """
         self.towers = towers
-        self._parsed_towers: List[Dict[str, Any]] = []
+        self._parsed_towers: list[dict[str, Any]] = []
         self._initialize_registry()
 
     def _get_val(self, obj: Any, key: str) -> Any:
@@ -104,7 +105,7 @@ class CGIResolver:
                 }
             )
 
-    def resolve_cgi(self, q_cgi: str) -> Dict[str, Any]:
+    def resolve_cgi(self, q_cgi: str) -> dict[str, Any]:
         """Resolve a query Cell Global Identity (CGI) string to coordinates and metadata.
 
         Returns:
@@ -122,8 +123,8 @@ class CGIResolver:
 
         # Helper to compute centroid/mean of list of parsed towers
         def compute_mean_coords(
-            matches: List[dict],
-        ) -> Tuple[Optional[float], Optional[float]]:
+            matches: list[dict],
+        ) -> tuple[float | None, float | None]:
             valid_coords = [
                 (t["latitude"], t["longitude"])
                 for t in matches
@@ -188,9 +189,7 @@ class CGIResolver:
 
         # 4. Try MCC Prefix Fallback (MCC)
         if q_mcc:
-            mcc_matches = [
-                t for t in self._parsed_towers if t["mcc"] == q_mcc
-            ]
+            mcc_matches = [t for t in self._parsed_towers if t["mcc"] == q_mcc]
             lat, lon = compute_mean_coords(mcc_matches)
             if lat is not None and lon is not None:
                 return {
@@ -212,7 +211,7 @@ class CGIResolver:
 def calculate_radius_density(
     lat: float,
     lon: float,
-    towers: List[Any],
+    towers: list[Any],
     radius_m: float = 1000.0,
 ) -> int:
     """Calculate the number of towers located within radius_m of the given coordinates.
@@ -247,9 +246,9 @@ def calculate_radius_density(
 
 
 def calculate_neighbor_density(
-    towers: List[Any],
+    towers: list[Any],
     radius_m: float = 1000.0,
-) -> Dict[str, int]:
+) -> dict[str, int]:
     """Calculate the density of neighboring towers around each tower.
 
     Args:
@@ -287,18 +286,16 @@ def calculate_neighbor_density(
             continue
 
         # Count other towers
-        count = calculate_radius_density(
-            float(t_lat), float(t_lon), towers, radius_m
-        )
+        count = calculate_radius_density(float(t_lat), float(t_lon), towers, radius_m)
         densities[str(t_id)] = count
 
     return densities
 
 
 def calculate_grid_density(
-    towers: List[Any],
+    towers: list[Any],
     grid_size_deg: float = 0.01,
-) -> Dict[Tuple[float, float], int]:
+) -> dict[tuple[float, float], int]:
     """Group towers into spatial grid cells and compute the count per cell.
 
     Args:
@@ -330,7 +327,7 @@ def calculate_grid_density(
     return grid
 
 
-def normalize_densities(densities: Dict[Any, float]) -> Dict[Any, float]:
+def normalize_densities(densities: dict[Any, float]) -> dict[Any, float]:
     """Normalize density scores to the interval [0.0, 1.0] using Min-Max scaling.
 
     If the maximum and minimum densities are equal, returns 1.0 for all entries.
