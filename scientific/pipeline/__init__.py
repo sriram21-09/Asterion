@@ -30,13 +30,19 @@ from scientific.pipeline.movement import (
     detect_handover,
     flag_impossible_velocity,
     reconstruct_movement_events,
+    smooth_movement_path,
 )
 from scientific.pipeline.multilateration import solve_multilateration
 from scientific.pipeline.runner import run_pipeline
-from scientific.pipeline.weighted_centroid import solve_weighted_centroid
+from scientific.pipeline.weighted_centroid import (
+    InputQualityScore,
+    compute_input_quality_scores,
+    solve_weighted_centroid,
+)
 
 __all__ = [
     "CGIResolver",
+    "InputQualityScore",
     "KalmanTracker",
     "MovementEvent",
     "MovementSummary",
@@ -48,12 +54,14 @@ __all__ = [
     "calculate_speed_kmh",
     "classify_velocity",
     "compute_confidence",
+    "compute_input_quality_scores",
     "detect_handover",
     "flag_impossible_velocity",
     "normalize_densities",
     "parse_cgi",
     "reconstruct_movement_events",
     "run_pipeline",
+    "smooth_movement_path",
     "solve_multilateration",
     "solve_weighted_centroid",
     "synthesize_evidence",
