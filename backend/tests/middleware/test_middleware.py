@@ -1,9 +1,10 @@
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from fastapi.middleware.cors import CORSMiddleware
-from app.middleware.logging import LoggingMiddleware
-from app.core.config import settings
 from unittest import mock
+
+from app.core.config import settings
+from app.middleware.logging import LoggingMiddleware
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.testclient import TestClient
 
 # Create a test app for isolating middleware behavior
 app = FastAPI()

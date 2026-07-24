@@ -7,9 +7,9 @@ from __future__ import annotations
 
 import math
 
-from scientific.config import ValidationThresholds, DEFAULT_VALIDATION_THRESHOLDS
-from scientific.constants import haversine_distance_m, METERS_PER_DEGREE_LAT
-from scientific.models.result import LocalizationResult, ConfidenceResult
+from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
+from scientific.constants import METERS_PER_DEGREE_LAT, haversine_distance_m
+from scientific.models.result import ConfidenceResult, LocalizationResult
 from scientific.models.scenario import Scenario
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.validation.types import Severity, ValidationError, ValidationResult

@@ -5,7 +5,7 @@ Airtel CDR Parser
 
 import csv
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from app.services.parsers.base import BaseCDRParser
 
@@ -21,13 +21,16 @@ class AirtelCDRParser(BaseCDRParser):
         if not val:
             return ""
         val = val.strip()
-        if val.startswith("'") and val.endswith("'"):
-            val = val[1:-1]
-        elif val.startswith('"') and val.endswith('"'):
+        if (
+            val.startswith("'")
+            and val.endswith("'")
+            or val.startswith('"')
+            and val.endswith('"')
+        ):
             val = val[1:-1]
         return val.strip()
 
-    def _parse_coords(self, coord_str: str) -> Tuple[Optional[float], Optional[float]]:
+    def _parse_coords(self, coord_str: str) -> tuple[float | None, float | None]:
         clean_str = self._clean_val(coord_str)
         if not clean_str or "/" not in clean_str:
             return None, None
@@ -41,7 +44,7 @@ class AirtelCDRParser(BaseCDRParser):
                 return None, None
         return None, None
 
-    def _parse_dt(self, date_str: str, time_str: str) -> Optional[datetime]:
+    def _parse_dt(self, date_str: str, time_str: str) -> datetime | None:
         d_clean = self._clean_val(date_str)
         t_clean = self._clean_val(time_str)
         if not d_clean:
@@ -61,8 +64,8 @@ class AirtelCDRParser(BaseCDRParser):
                 continue
         return None
 
-    def parse(self, content: str) -> Tuple[List[Dict[str, Any]], int]:
-        records: List[Dict[str, Any]] = []
+    def parse(self, content: str) -> tuple[list[dict[str, Any]], int]:
+        records: list[dict[str, Any]] = []
         failed_count = 0
 
         lines = content.splitlines()

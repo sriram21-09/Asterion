@@ -9,13 +9,12 @@ Endpoints:
   - ``POST /localization/run`` — run localization and return computed coordinates
 """
 
+from app.database.session import get_db
+from app.schemas.localization import LocalizationRunResponse
+from app.schemas.response import APIResponse
+from app.services.localization_service import LocalizationService
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-
-from app.database.session import get_db
-from app.schemas.response import APIResponse
-from app.schemas.localization import LocalizationRunResponse
-from app.services.localization_service import LocalizationService
 
 router = APIRouter(prefix="/localization", tags=["localization"])
 

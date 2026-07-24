@@ -5,10 +5,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend"))
 
+from datetime import UTC, datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime, timezone, timedelta
-
 from main import app
 
 
@@ -115,9 +115,7 @@ class TestMeasurementsValidationAPI:
     def test_validate_measurements_future_timestamp_fails(self, client):
         # Timestamp is in the future (flagged as ERROR by scientific validator)
         future_ts = (
-            (datetime.now(timezone.utc) + timedelta(days=2))
-            .isoformat()
-            .replace("+00:00", "Z")
+            (datetime.now(UTC) + timedelta(days=2)).isoformat().replace("+00:00", "Z")
         )
         payload = {
             "measurements": [

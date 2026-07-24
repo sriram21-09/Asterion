@@ -5,7 +5,7 @@ Jio CDR Parser
 
 import csv
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from app.services.parsers.base import BaseCDRParser
 
@@ -28,14 +28,17 @@ class JioCDRParser(BaseCDRParser):
         if not val:
             return ""
         val = val.strip()
-        if val.startswith("'") and val.endswith("'"):
-            val = val[1:-1]
-        elif val.startswith('"') and val.endswith('"'):
+        if (
+            val.startswith("'")
+            and val.endswith("'")
+            or val.startswith('"')
+            and val.endswith('"')
+        ):
             val = val[1:-1]
         val = val.strip()
         return "" if val == "-" else val
 
-    def _parse_dt(self, date_str: str, time_str: str) -> Optional[datetime]:
+    def _parse_dt(self, date_str: str, time_str: str) -> datetime | None:
         d_clean = self._clean_val(date_str)
         t_clean = self._clean_val(time_str)
         if not d_clean:
@@ -57,8 +60,8 @@ class JioCDRParser(BaseCDRParser):
                 continue
         return None
 
-    def parse(self, content: str) -> Tuple[List[Dict[str, Any]], int]:
-        records: List[Dict[str, Any]] = []
+    def parse(self, content: str) -> tuple[list[dict[str, Any]], int]:
+        records: list[dict[str, Any]] = []
         failed_count = 0
 
         lines = content.splitlines()

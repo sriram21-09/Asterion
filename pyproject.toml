@@ -3,7 +3,8 @@ line-length = 88
 target-version = "py311"
 
 [tool.ruff.lint]
-ignore = ["E402"]
+select = ["E", "F", "W"]
+ignore = ["E402", "E501", "W291"]
 
 [tool.ruff.format]
 line-ending = "lf"

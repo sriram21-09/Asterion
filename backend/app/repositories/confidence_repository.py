@@ -1,6 +1,5 @@
-from typing import List, Optional
-from sqlalchemy.orm import Session
 from app.models.confidence_result import ConfidenceResult
+from sqlalchemy.orm import Session
 
 
 class ConfidenceRepository:
@@ -19,8 +18,8 @@ class ConfidenceRepository:
 
     @staticmethod
     def bulk_create(
-        db: Session, results: List[ConfidenceResult]
-    ) -> List[ConfidenceResult]:
+        db: Session, results: list[ConfidenceResult]
+    ) -> list[ConfidenceResult]:
         """Persist a list of confidence results in one commit."""
         db.add_all(results)
         db.commit()
@@ -29,7 +28,7 @@ class ConfidenceRepository:
         return results
 
     @staticmethod
-    def get_by_case(db: Session, case_id: int) -> List[ConfidenceResult]:
+    def get_by_case(db: Session, case_id: int) -> list[ConfidenceResult]:
         """Retrieve all confidence results for a case, ordered by creation time."""
         return (
             db.query(ConfidenceResult)
@@ -39,7 +38,7 @@ class ConfidenceRepository:
         )
 
     @staticmethod
-    def get_latest_by_case(db: Session, case_id: int) -> Optional[ConfidenceResult]:
+    def get_latest_by_case(db: Session, case_id: int) -> ConfidenceResult | None:
         """Retrieve the most recent confidence result for a case."""
         return (
             db.query(ConfidenceResult)

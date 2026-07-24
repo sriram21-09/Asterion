@@ -1,14 +1,13 @@
 import pytest
+from app.database.base import Base
+from app.database.session import get_db
+from app.models.cdr_record import CDRRecord  # noqa: F401
+from app.models.import_job import ImportJob  # noqa: F401
 from fastapi.testclient import TestClient
+from main import app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
-from app.database.base import Base
-from app.models.import_job import ImportJob  # noqa: F401
-from app.models.cdr_record import CDRRecord  # noqa: F401
-from main import app
-from app.database.session import get_db
 
 SAMPLE_AIRTEL_CONTENT = """BHARTI AIRTEL LIMITED 
 

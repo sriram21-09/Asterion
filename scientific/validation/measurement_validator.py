@@ -5,9 +5,9 @@ Measurement Validator
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from scientific.config import ValidationThresholds, DEFAULT_VALIDATION_THRESHOLDS
+from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.models.measurement import Measurement
 from scientific.validation.types import Severity, ValidationError, ValidationResult
 
@@ -79,9 +79,7 @@ class MeasurementValidator:
                     field="latitude/longitude",
                     message=(
                         "Latitude and longitude must both be provided or both "
-                        "be omitted. Got latitude={}, longitude={}.".format(
-                            measurement.latitude, measurement.longitude
-                        )
+                        f"be omitted. Got latitude={measurement.latitude}, longitude={measurement.longitude}."
                     ),
                     code="MEAS_PARTIAL_COORDS",
                 )
@@ -169,10 +167,10 @@ class MeasurementValidator:
 
         # --- 5. Future timestamp ---
         if measurement.timestamp is not None:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             ts = measurement.timestamp
             if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
+                ts = ts.replace(tzinfo=UTC)
             if ts > now:
                 result.errors.append(
                     ValidationError(

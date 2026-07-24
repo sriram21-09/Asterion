@@ -44,7 +44,6 @@ from __future__ import annotations
 import logging
 import os
 import sys
-from typing import Optional
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -71,7 +70,7 @@ FALLBACK_LEVEL: int = logging.INFO
 # ---------------------------------------------------------------------------
 
 
-def _resolve_level(level: Optional[str | int] = None) -> int:
+def _resolve_level(level: str | int | None = None) -> int:
     """Resolve the effective log level.
 
     Priority order:
@@ -128,9 +127,9 @@ def _make_console_handler(
 
 
 def get_logger(
-    name: Optional[str] = None,
+    name: str | None = None,
     *,
-    level: Optional[str | int] = None,
+    level: str | int | None = None,
     fmt: str = DEFAULT_FORMAT,
     datefmt: str = DEFAULT_DATE_FORMAT,
 ) -> logging.Logger:
@@ -175,7 +174,7 @@ def get_logger(
     return logger
 
 
-def set_level(level: str | int, name: Optional[str] = None) -> None:
+def set_level(level: str | int, name: str | None = None) -> None:
     """Change the log level for an existing scientific logger at runtime.
 
     Useful for temporarily enabling ``DEBUG`` output during an
@@ -191,7 +190,7 @@ def set_level(level: str | int, name: Optional[str] = None) -> None:
     logger.setLevel(level)
 
 
-def silence(name: Optional[str] = None) -> None:
+def silence(name: str | None = None) -> None:
     """Suppress all output from a scientific logger.
 
     Equivalent to ``set_level(logging.CRITICAL + 1, name)``.

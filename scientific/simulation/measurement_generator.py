@@ -6,8 +6,7 @@ Orchestrates the propagation and noise models to output batches of synthetic
 Measurement objects for a given scenario.
 """
 
-from datetime import datetime, timezone, timedelta
-from typing import List
+from datetime import UTC, datetime, timedelta
 
 from scientific.models.measurement import Measurement
 from scientific.models.scenario_config import ScenarioConfig
@@ -31,7 +30,7 @@ class MeasurementGenerator:
         seed = self.config.simulation.random_seed
         self.noise_model = AWGNModel(seed)
 
-    def generate(self) -> List[Measurement]:
+    def generate(self) -> list[Measurement]:
         """Generate a batch of synthetic measurements for the scenario.
 
         Returns:
@@ -50,7 +49,7 @@ class MeasurementGenerator:
             )
 
         measurements = []
-        base_time = datetime.now(timezone.utc)
+        base_time = datetime.now(UTC)
         ms_count = self.config.simulation.measurement_count
         enable_noise = self.config.simulation.enable_noise
 
@@ -106,14 +105,14 @@ class MeasurementGenerator:
 
 def generate_scenario_measurements(
     config: ScenarioConfig,
-) -> List[Measurement]:
+) -> list[Measurement]:
     """Helper function to generate synthetic measurements with timing advance and uncertainty."""
     generator = MeasurementGenerator(config)
     measurements = generator.generate()
 
     # Post-process measurements to calculate timing advance and uncertainty
     # which is expected by Sriram's database models and API.
-    from scientific.constants import TA_RESOLUTION_M, TA_MAX_VALUE
+    from scientific.constants import TA_MAX_VALUE, TA_RESOLUTION_M
 
     for m in measurements:
         # Find the tower placement that corresponds to this measurement's tower_id

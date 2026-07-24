@@ -6,14 +6,15 @@ Verifies CGI parsing, prefix-based lookup fallback systems, and spatial density 
 """
 
 import pytest
+
 from scientific.models.tower import Tower
 from scientific.pipeline.benchmarks import (
-    parse_cgi,
     CGIResolver,
-    calculate_radius_density,
-    calculate_neighbor_density,
     calculate_grid_density,
+    calculate_neighbor_density,
+    calculate_radius_density,
     normalize_densities,
+    parse_cgi,
 )
 
 

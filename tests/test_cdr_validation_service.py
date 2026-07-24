@@ -20,7 +20,7 @@ Verifies the CDR Validation Service layer (Week 3, Day 2):
        j. Failure category aggregation across multiple records.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
@@ -33,14 +33,13 @@ from scientific.validation.validators import (
     CDRValidationService,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 _record_seq = 0

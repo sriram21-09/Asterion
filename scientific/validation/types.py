@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Protocol, TypeVar
+from typing import Protocol, TypeVar
 
 
 class Severity(str, Enum):
@@ -32,7 +32,7 @@ class ValidationError:
     field: str
     message: str
     severity: Severity = Severity.ERROR
-    code: Optional[str] = None
+    code: str | None = None
 
 
 @dataclass
@@ -44,7 +44,7 @@ class ValidationResult:
         is_valid: ``True`` if there are no ``ERROR``-severity findings.
     """
 
-    errors: List[ValidationError] = field(default_factory=list)
+    errors: list[ValidationError] = field(default_factory=list)
 
     @property
     def is_valid(self) -> bool:
@@ -52,7 +52,7 @@ class ValidationResult:
         return not any(e.severity == Severity.ERROR for e in self.errors)
 
     @property
-    def warnings(self) -> List[ValidationError]:
+    def warnings(self) -> list[ValidationError]:
         """Return only WARNING-severity findings."""
         return [e for e in self.errors if e.severity == Severity.WARNING]
 

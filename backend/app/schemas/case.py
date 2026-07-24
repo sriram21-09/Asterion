@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -7,7 +7,7 @@ class CaseBase(BaseModel):
     title: str
     description: str | None = None
     status: str = "open"
-    scenario_id: Optional[int] = None
+    scenario_id: int | None = None
 
 
 class CaseCreate(CaseBase):

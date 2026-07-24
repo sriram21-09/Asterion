@@ -17,8 +17,8 @@ Note:
     The inline definitions below can then be removed.
 """
 
-from datetime import datetime, timezone
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -97,14 +97,14 @@ class TestCaseModel:
 
     def test_case_timestamps_auto_set(self, db_session: Session):
         """Verify that created_at and updated_at are automatically populated."""
-        datetime.now(timezone.utc)
+        datetime.now(UTC)
 
         case = Case(title="Timestamp Test Case")
         db_session.add(case)
         db_session.commit()
         db_session.refresh(case)
 
-        datetime.now(timezone.utc)
+        datetime.now(UTC)
 
         # created_at should be between before and after
         assert case.created_at is not None

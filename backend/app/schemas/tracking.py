@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -38,10 +38,10 @@ class TrackingStepResponse(BaseModel):
     velocity_kmh: float = Field(
         ..., description="Estimated instantaneous device velocity in km/h", ge=0.0
     )
-    timestamp: Optional[datetime] = Field(
+    timestamp: datetime | None = Field(
         None, description="Timestamp of this step on the track"
     )
-    heading_deg: Optional[float] = Field(
+    heading_deg: float | None = Field(
         None,
         description="Estimated movement heading angle in degrees (0-360, North = 0)",
         ge=0.0,
@@ -89,7 +89,7 @@ class TrackingRunResponse(BaseModel):
     total_steps: int = Field(
         ..., description="Total number of discrete steps in the generated track", ge=0
     )
-    path: List[TrackingStepResponse] = Field(
+    path: list[TrackingStepResponse] = Field(
         ..., description="Array of chronologically ordered track points"
     )
     distance_km: float = Field(

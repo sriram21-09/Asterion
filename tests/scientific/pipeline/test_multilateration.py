@@ -1,13 +1,14 @@
-import pytest
+from datetime import UTC, datetime
 from unittest.mock import patch
-from datetime import datetime, timezone
+
+import pytest
 
 from scientific.constants import haversine_distance_m
 from scientific.models.measurement import Measurement
 from scientific.models.scenario_config import PropagationDefaults, SimulationParameters
 from scientific.models.tower import Tower
-from scientific.simulation.rssi_generator import RSSIGenerator
 from scientific.pipeline.multilateration import solve_multilateration
+from scientific.simulation.rssi_generator import RSSIGenerator
 
 
 @pytest.fixture
@@ -73,7 +74,7 @@ def test_multilateration_zero_noise_reconstruction(
             Measurement(
                 measurement_id=f"M{i:03d}",
                 tower_id=tower.tower_id,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 rssi_dbm=rssi,
             )
         )
@@ -145,7 +146,7 @@ def test_multilateration_noisy_convergence(propagation_params, simulation_params
             Measurement(
                 measurement_id=f"M{i:03d}",
                 tower_id=tower.tower_id,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 rssi_dbm=noisy_rssi,
             )
         )
@@ -181,13 +182,13 @@ def test_multilateration_insufficient_towers_fallback(
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
     ]
@@ -236,19 +237,19 @@ def test_multilateration_solver_failure_fallback(propagation_params, simulation_
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
         Measurement(
             measurement_id="M003",
             tower_id="T003",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
     ]

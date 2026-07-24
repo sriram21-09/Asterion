@@ -6,7 +6,7 @@ BSNL CDR Parser
 import csv
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from app.services.parsers.base import BaseCDRParser
 
@@ -31,9 +31,7 @@ class BSNLCDRParser(BaseCDRParser):
             return ""
         return val.strip().strip("'").strip('"').strip()
 
-    def _extract_coords(
-        self, location_str: str
-    ) -> Tuple[Optional[float], Optional[float]]:
+    def _extract_coords(self, location_str: str) -> tuple[float | None, float | None]:
         if not location_str:
             return None, None
         match = self.COORD_PATTERN.search(location_str)
@@ -46,7 +44,7 @@ class BSNLCDRParser(BaseCDRParser):
                 return None, None
         return None, None
 
-    def _parse_dt(self, date_str: str, time_str: str) -> Optional[datetime]:
+    def _parse_dt(self, date_str: str, time_str: str) -> datetime | None:
         d_clean = self._clean_val(date_str)
         t_clean = self._clean_val(time_str)
         if not d_clean:
@@ -66,8 +64,8 @@ class BSNLCDRParser(BaseCDRParser):
                 continue
         return None
 
-    def parse(self, content: str) -> Tuple[List[Dict[str, Any]], int]:
-        records: List[Dict[str, Any]] = []
+    def parse(self, content: str) -> tuple[list[dict[str, Any]], int]:
+        records: list[dict[str, Any]] = []
         failed_count = 0
 
         lines = content.splitlines()

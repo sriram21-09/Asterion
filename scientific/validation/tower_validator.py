@@ -5,7 +5,7 @@ Tower Validator
 
 from __future__ import annotations
 
-from scientific.config import ValidationThresholds, DEFAULT_VALIDATION_THRESHOLDS
+from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.models.tower import Tower
 from scientific.validation.types import (
     CELLULAR_BANDS_MHZ,
@@ -145,24 +145,23 @@ class TowerValidator:
                 )
 
         # --- 5. Antenna height plausibility ---
-        if tower.antenna_height_m is not None:
-            if not (
-                self.thresholds.min_antenna_height_m
-                <= tower.antenna_height_m
-                <= self.thresholds.max_antenna_height_m
-            ):
-                result.errors.append(
-                    ValidationError(
-                        field="antenna_height_m",
-                        message=(
-                            f"Antenna height {tower.antenna_height_m} m is outside "
-                            f"the plausible range [{self.thresholds.min_antenna_height_m}, "
-                            f"{self.thresholds.max_antenna_height_m}] m."
-                        ),
-                        severity=Severity.WARNING,
-                        code="TOWER_HEIGHT_RANGE",
-                    )
+        if tower.antenna_height_m is not None and not (
+            self.thresholds.min_antenna_height_m
+            <= tower.antenna_height_m
+            <= self.thresholds.max_antenna_height_m
+        ):
+            result.errors.append(
+                ValidationError(
+                    field="antenna_height_m",
+                    message=(
+                        f"Antenna height {tower.antenna_height_m} m is outside "
+                        f"the plausible range [{self.thresholds.min_antenna_height_m}, "
+                        f"{self.thresholds.max_antenna_height_m}] m."
+                    ),
+                    severity=Severity.WARNING,
+                    code="TOWER_HEIGHT_RANGE",
                 )
+            )
 
         # --- 6. Coverage radius ---
         if tower.coverage_radius_m is not None:

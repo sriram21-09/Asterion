@@ -6,20 +6,19 @@ Validates distance/speed calculators, handover detection, velocity
 classification, anomaly flagging, and full reconstruction logic.
 """
 
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from scientific.pipeline.movement import (
+    calculate_bearing_deg,
     calculate_distance_m,
     calculate_speed_kmh,
-    calculate_bearing_deg,
-    detect_handover,
     classify_velocity,
+    detect_handover,
     flag_impossible_velocity,
     reconstruct_movement_events,
 )
-
 
 # ── Coordinates used across tests ──────────────────────────────────────────
 
@@ -289,7 +288,7 @@ class TestReconstructMovementEvents:
 
     @staticmethod
     def _make_record(ts_offset_min, lat, lon, cgi, event_type="call_start"):
-        base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=timezone.utc)
+        base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=UTC)
         return {
             "timestamp": base + timedelta(minutes=ts_offset_min),
             "latitude": lat,
@@ -396,7 +395,7 @@ class TestReconstructMovementEvents:
                 self.first_cgi = cgi
                 self.event_type = "sms"
 
-        base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=timezone.utc)
+        base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=UTC)
         records = [
             FakeRecord(base, 19.076, 72.878, "X-1"),
             FakeRecord(base + timedelta(minutes=10), 19.076, 72.878, "X-2"),

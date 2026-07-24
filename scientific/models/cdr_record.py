@@ -7,7 +7,7 @@ CDRs are imported from operator-specific CSV files, normalized, and validated.
 """
 
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -41,15 +41,15 @@ class CDRRecord(BaseModel):
         raw_data: Optional dictionary containing raw CSV parsing information.
     """
 
-    id: Optional[int] = Field(
+    id: int | None = Field(
         default=None,
         description="Unique database identifier",
     )
-    import_job_id: Optional[int] = Field(
+    import_job_id: int | None = Field(
         default=None,
         description="Identifier of the import job",
     )
-    case_id: Optional[int] = Field(
+    case_id: int | None = Field(
         default=None,
         description="Identifier of the associated investigation case",
     )
@@ -59,89 +59,89 @@ class CDRRecord(BaseModel):
         description="Cellular operator name (e.g. airtel, bsnl, jio, vi)",
         examples=["airtel"],
     )
-    target_number: Optional[str] = Field(
+    target_number: str | None = Field(
         default=None,
         description="Phone number of the observed subscriber",
         examples=["9714499703"],
     )
-    b_party_number: Optional[str] = Field(
+    b_party_number: str | None = Field(
         default=None,
         description="Phone number of the second party",
         examples=["8128778750"],
     )
-    call_type: Optional[str] = Field(
+    call_type: str | None = Field(
         default=None,
         description="Type of connection/event (e.g., IN, OUT, SMT)",
     )
-    service_type: Optional[str] = Field(
+    service_type: str | None = Field(
         default=None,
         description="Service type (e.g., Voice, SMS)",
     )
-    timestamp: Optional[datetime] = Field(
+    timestamp: datetime | None = Field(
         default=None,
         description="Event timestamp",
     )
-    duration: Optional[int] = Field(
+    duration: int | None = Field(
         default=0,
         description="Call duration in seconds",
     )
-    latitude: Optional[float] = Field(
+    latitude: float | None = Field(
         default=None,
         ge=-90.0,
         le=90.0,
         description="Start point latitude (WGS84), if known",
     )
-    longitude: Optional[float] = Field(
+    longitude: float | None = Field(
         default=None,
         ge=-180.0,
         le=180.0,
         description="Start point longitude (WGS84), if known",
     )
-    first_cgi: Optional[str] = Field(
+    first_cgi: str | None = Field(
         default=None,
         description="Start Cell Global Identifier",
     )
-    first_bts_location: Optional[str] = Field(
+    first_bts_location: str | None = Field(
         default=None,
         description="Start BTS location description",
     )
-    last_latitude: Optional[float] = Field(
+    last_latitude: float | None = Field(
         default=None,
         ge=-90.0,
         le=90.0,
         description="End point latitude (WGS84), if known",
     )
-    last_longitude: Optional[float] = Field(
+    last_longitude: float | None = Field(
         default=None,
         ge=-180.0,
         le=180.0,
         description="End point longitude (WGS84), if known",
     )
-    last_cgi: Optional[str] = Field(
+    last_cgi: str | None = Field(
         default=None,
         description="End Cell Global Identifier",
     )
-    last_bts_location: Optional[str] = Field(
+    last_bts_location: str | None = Field(
         default=None,
         description="End BTS location description",
     )
-    imei: Optional[str] = Field(
+    imei: str | None = Field(
         default=None,
         description="International Mobile Equipment Identity",
     )
-    imsi: Optional[str] = Field(
+    imsi: str | None = Field(
         default=None,
         description="International Mobile Subscriber Identity",
     )
-    smsc_number: Optional[str] = Field(
+    smsc_number: str | None = Field(
         default=None,
         description="SMS center number",
     )
-    roaming_network: Optional[str] = Field(
+    roaming_network: str | None = Field(
         default=None,
         description="Roaming network identifier",
     )
-    raw_data: Optional[Dict[str, Any]] = Field(
+    raw_data: dict[str, Any] | None = Field(
         default=None,
         description="Raw CSV record data",
     )

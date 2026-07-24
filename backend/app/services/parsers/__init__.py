@@ -10,9 +10,9 @@ from app.services.parsers.jio import JioCDRParser
 from app.services.parsers.vi import ViCDRParser
 
 __all__ = [
-    "BaseCDRParser",
     "AirtelCDRParser",
     "BSNLCDRParser",
+    "BaseCDRParser",
     "JioCDRParser",
     "ViCDRParser",
 ]

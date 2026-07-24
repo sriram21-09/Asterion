@@ -1,4 +1,3 @@
-from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -61,16 +60,16 @@ class EvidenceRejectionError(BaseModel):
 class EvidenceRejection(BaseModel):
     """Details of a rejected measurement."""
 
-    measurement_id: Optional[str] = Field(
+    measurement_id: str | None = Field(
         None, description="Unique measurement identifier", examples=["M001"]
     )
-    tower_id: Optional[str] = Field(
+    tower_id: str | None = Field(
         None, description="Linked tower identifier", examples=["T001"]
     )
-    timestamp: Optional[str] = Field(
+    timestamp: str | None = Field(
         None, description="Timestamp of the rejected measurement"
     )
-    errors: List[EvidenceRejectionError] = Field(
+    errors: list[EvidenceRejectionError] = Field(
         default=[], description="List of reasons for measurement rejection"
     )
 
@@ -78,19 +77,19 @@ class EvidenceRejection(BaseModel):
 class EvidenceConfidence(BaseModel):
     """Confidence data included in evidence packet."""
 
-    confidence_score: Optional[float] = Field(
+    confidence_score: float | None = Field(
         None,
         description="Calculated confidence score between 0.0 and 1.0",
         ge=0.0,
         le=1.0,
     )
-    confidence_level: Optional[str] = Field(
+    confidence_level: str | None = Field(
         None, description="Qualitative confidence rating (low, medium, high)"
     )
-    gdop: Optional[float] = Field(
+    gdop: float | None = Field(
         None, description="Geometric Dilution of Precision value"
     )
-    method: Optional[str] = Field(
+    method: str | None = Field(
         None, description="Method used for confidence evaluation"
     )
 
@@ -151,21 +150,21 @@ class EvidenceResponse(BaseModel):
     case_code: str = Field(
         ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
     )
-    scenario_id: Optional[str] = Field(
+    scenario_id: str | None = Field(
         None, description="The unique Scenario ID if linked", examples=["SCN-001"]
     )
     summary: EvidenceSummary = Field(
         ..., description="Summary statistics of validation results"
     )
-    towers: List[EvidenceTower] = Field(
+    towers: list[EvidenceTower] = Field(
         ..., description="List of per-tower measurement details"
     )
-    accepted_measurement_ids: List[str] = Field(
+    accepted_measurement_ids: list[str] = Field(
         ..., description="List of IDs of measurements that passed validation"
     )
-    rejections: List[EvidenceRejection] = Field(
+    rejections: list[EvidenceRejection] = Field(
         ..., description="List of rejected measurements with error details"
     )
-    confidence: Optional[EvidenceConfidence] = Field(
+    confidence: EvidenceConfidence | None = Field(
         None, description="Confidence evaluation parameters if computed"
     )

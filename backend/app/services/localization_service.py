@@ -1,21 +1,20 @@
 import json
 from pathlib import Path
-from typing import List
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from app.models.localization_result import LocalizationResult as LocalizationResultORM
+from app.repositories.case_repository import CaseRepository
 from app.repositories.localization_repository import LocalizationRepository
 from app.repositories.measurement_repository import MeasurementRepository
-from app.repositories.case_repository import CaseRepository
 from app.shared.validation import ValidationError, decode_case_code
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 from scientific.models.measurement import Measurement as ScientificMeasurement
-from scientific.models.tower import Tower as ScientificTower
 from scientific.models.result import LocalizationResult as ScientificResult
 from scientific.models.scenario_config import (
     ScenarioConfig,
 )
+from scientific.models.tower import Tower as ScientificTower
 from scientific.pipeline.multilateration import solve_multilateration
 
 
@@ -70,7 +69,7 @@ class LocalizationService:
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to read scenario dataset: {str(e)}",
+                detail=f"Failed to read scenario dataset: {e!s}",
             )
 
         # Find matching scenario config
@@ -98,7 +97,7 @@ class LocalizationService:
         except Exception as e:
             raise ValidationError(
                 "scenario_config",
-                f"Failed to parse scenario config: {str(e)}",
+                f"Failed to parse scenario config: {e!s}",
                 status_code=400,
             )
 
@@ -112,7 +111,7 @@ class LocalizationService:
             )
 
         # 4. Convert DB measurements → scientific Measurement models
-        scientific_measurements: List[ScientificMeasurement] = []
+        scientific_measurements: list[ScientificMeasurement] = []
         for m in db_measurements:
             # Map measurement back to tower_id using measurement_code pattern
             # Measurement codes follow: MEAS-SCNXXX-TYYY-ZZZZ
@@ -153,7 +152,7 @@ class LocalizationService:
             )
 
         # 5. Convert tower placements → scientific Tower models
-        scientific_towers: List[ScientificTower] = []
+        scientific_towers: list[ScientificTower] = []
         for tp in config.tower_placements:
             scientific_towers.append(
                 ScientificTower(
@@ -182,7 +181,7 @@ class LocalizationService:
         db.commit()
 
         # Run multilateration solver for each timestamp group
-        results: List[ScientificResult] = []
+        results: list[ScientificResult] = []
         sorted_times = sorted(measurements_by_time.keys())
         for t in sorted_times:
             group = measurements_by_time[t]

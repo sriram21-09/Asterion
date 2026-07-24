@@ -1,18 +1,18 @@
-import pytest
 from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
+import pytest
 from app.models.base import Base
-from app.models.import_job import ImportJob
 from app.models.cdr_record import CDRRecord
+from app.models.import_job import ImportJob
 from app.services.import_service import (
     AirtelCDRParser,
     BSNLCDRParser,
+    CDRImportService,
     JioCDRParser,
     ViCDRParser,
-    CDRImportService,
 )
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture

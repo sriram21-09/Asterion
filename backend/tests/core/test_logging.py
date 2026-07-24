@@ -1,6 +1,7 @@
 import logging
 from unittest import mock
-from app.core.logging import setup_logging, log_execution_time
+
+from app.core.logging import log_execution_time, setup_logging
 
 
 def test_setup_logging():

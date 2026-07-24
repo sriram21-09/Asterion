@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Optional
+
+from app.models.base import BaseModel
 from sqlalchemy import Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.case import Case
@@ -16,14 +17,14 @@ class LocalizationResult(BaseModel):
     case_id: Mapped[int] = mapped_column(
         ForeignKey("cases.id", ondelete="CASCADE"), nullable=False
     )
-    scenario_id: Mapped[Optional[int]] = mapped_column(
+    scenario_id: Mapped[int | None] = mapped_column(
         ForeignKey("scenarios.id", ondelete="SET NULL"), nullable=True
     )
     algorithm: Mapped[str] = mapped_column(String(50), nullable=False)
     estimated_latitude: Mapped[float] = mapped_column(Float, nullable=False)
     estimated_longitude: Mapped[float] = mapped_column(Float, nullable=False)
-    error_m: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    computation_time_ms: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    error_m: Mapped[float | None] = mapped_column(Float, nullable=True)
+    computation_time_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     signals_used: Mapped[int] = mapped_column(Integer, nullable=False)
 
     case: Mapped["Case"] = relationship("Case", back_populates="localization_results")

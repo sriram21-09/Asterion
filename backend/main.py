@@ -6,24 +6,22 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "backend"))
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-from app.api.v1.routers.scenarios import router as scenarios_router
 from app.api.v1.routers.cases import router as cases_router
-from app.api.v1.routers.simulation import router as simulation_router
-from app.api.v1.routers.measurements import router as measurements_router
-from app.api.v1.routers.localization import router as localization_router
-from app.api.v1.routers.tracking import router as tracking_router
+from app.api.v1.routers.cdr_import import router as import_router
 from app.api.v1.routers.confidence import router as confidence_router
 from app.api.v1.routers.evidence import router as evidence_router
-from app.api.v1.routers.cdr_import import router as import_router
-from app.api.v1.routers.towers import router as towers_router
+from app.api.v1.routers.localization import router as localization_router
+from app.api.v1.routers.measurements import router as measurements_router
 from app.api.v1.routers.movement import router as movement_router
-
+from app.api.v1.routers.scenarios import router as scenarios_router
+from app.api.v1.routers.simulation import router as simulation_router
+from app.api.v1.routers.towers import router as towers_router
+from app.api.v1.routers.tracking import router as tracking_router
+from app.core.config import settings
 from app.exceptions.handlers import register_exception_handlers
 from app.middleware.logging import LoggingMiddleware
-from app.core.config import settings
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title=settings.app_name,

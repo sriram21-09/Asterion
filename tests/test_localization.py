@@ -8,22 +8,20 @@ Tests cover:
   - API response model conformance
 """
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
-
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
-
+from app.database.session import get_db
 from app.models.base import Base
 from app.models.case import Case
-from app.models.scenario import Scenario
-from app.models.measurement import Measurement
 from app.models.localization_result import LocalizationResult
-from app.database.session import get_db
+from app.models.measurement import Measurement
+from app.models.scenario import Scenario
 from app.repositories.localization_repository import LocalizationRepository
-
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # ---------------------------------------------------------------------------
 # Test database fixture
@@ -105,7 +103,7 @@ def sample_measurements(db: Session, sample_case):
             case_id=sample_case.id,
             scenario_id=sample_case.scenario_id,
             measurement_code=f"MEAS-SCN001-{tid}-{i + 1:04d}",
-            timestamp=datetime(2026, 7, 15, 10, 30, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 15, 10, 30, tzinfo=UTC),
             rssi_dbm=rssi,
             latitude=lat,
             longitude=lon,

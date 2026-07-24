@@ -9,21 +9,22 @@ Tests the new validation features implemented in scientific/validation/validator
   4. Physics-based Timing Advance vs RSSI decay consistency cross-checks.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 import pytest
 
-from scientific.models.measurement import Measurement
-from scientific.models.tower import Tower
-from scientific.models.scenario import Scenario
 from scientific.config import ValidationThresholds
+from scientific.models.measurement import Measurement
+from scientific.models.scenario import Scenario
+from scientific.models.tower import Tower
 from scientific.validation.validators import (
     MeasurementValidator,
-    TowerValidator,
     ScenarioValidator,
-    validate_measurement,
-    validate_tower,
-    validate_scenario,
     Severity,
+    TowerValidator,
+    validate_measurement,
+    validate_scenario,
+    validate_tower,
 )
 
 
@@ -93,7 +94,7 @@ class TestCoordinateOperationalBounds:
         m = Measurement.construct(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
             latitude=95.0,
             longitude=190.0,
@@ -113,7 +114,7 @@ class TestCoordinateOperationalBounds:
         m_inside = Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
             latitude=12.9716,
             longitude=77.5946,
@@ -125,7 +126,7 @@ class TestCoordinateOperationalBounds:
         m_outside = Measurement(
             measurement_id="M002",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
             latitude=28.6139,
             longitude=77.2090,
@@ -187,7 +188,7 @@ class TestDuplicateRecords:
         ]
 
     def test_duplicate_measurement_ids_rejected(self, valid_towers):
-        ts = datetime.now(timezone.utc)
+        ts = datetime.now(UTC)
         measurements = [
             Measurement(
                 measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-70.0
@@ -207,7 +208,7 @@ class TestDuplicateRecords:
         assert any(e.code == "SCENARIO_DUPLICATE_MEASUREMENT" for e in r.errors)
 
     def test_duplicate_timestamps_for_same_tower_rejected(self, valid_towers):
-        ts = datetime.now(timezone.utc)
+        ts = datetime.now(UTC)
         measurements = [
             Measurement(
                 measurement_id="M001", tower_id="T001", timestamp=ts, rssi_dbm=-70.0
@@ -260,7 +261,7 @@ class TestPhysicsTAvsRSSI:
         # Expected path loss at 550m ≈ 38 + 35 * log10(550) ≈ 38 + 95.9 ≈ 133.9 dB.
         # Expected RSSI ≈ 43 - 133.9 = -90.9 dBm.
         # An RSSI of -90 dBm should be perfectly fine.
-        ts = datetime.now(timezone.utc)
+        ts = datetime.now(UTC)
         measurements = [
             Measurement(
                 measurement_id="M001",
@@ -288,7 +289,7 @@ class TestPhysicsTAvsRSSI:
         # Expected RSSI ≈ 43 - 168.9 = -125.9 dBm.
         # Shadow fading std is 8dB. 3 * std = 24dB. Upper bound ≈ -101.9 dBm.
         # A measurement with RSSI of -50 dBm is physically way too strong for 5.5km!
-        ts = datetime.now(timezone.utc)
+        ts = datetime.now(UTC)
         measurements = [
             Measurement(
                 measurement_id="M001",
@@ -320,7 +321,7 @@ class TestPhysicsTAvsRSSI:
         # Expected RSSI at 275m ≈ 43 - 123.3 = -80.3 dBm.
         # Shadow fading std is 8dB. 4 * std = 32dB. Lower bound ≈ -112.3 dBm.
         # A measurement with RSSI of -140 dBm is physically way too weak for TA 0!
-        ts = datetime.now(timezone.utc)
+        ts = datetime.now(UTC)
         measurements = [
             Measurement(
                 measurement_id="M001",

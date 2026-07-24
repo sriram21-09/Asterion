@@ -1,6 +1,6 @@
+from app.models.base import BaseModel
 from sqlalchemy import Float, String
 from sqlalchemy.orm import Mapped, mapped_column
-from app.models.base import BaseModel
 
 
 class Tower(BaseModel):

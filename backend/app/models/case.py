@@ -1,15 +1,16 @@
 from typing import TYPE_CHECKING, Optional
+
+from app.models.base import BaseModel
 from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import BaseModel
 
 if TYPE_CHECKING:
-    from app.models.scenario import Scenario
-    from app.models.measurement import Measurement
-    from app.models.localization_result import LocalizationResult
-    from app.models.tracking_result import TrackingResult
     from app.models.confidence_result import ConfidenceResult
+    from app.models.localization_result import LocalizationResult
+    from app.models.measurement import Measurement
     from app.models.movement_event import MovementEvent
+    from app.models.scenario import Scenario
+    from app.models.tracking_result import TrackingResult
 
 
 class Case(BaseModel):
@@ -19,7 +20,7 @@ class Case(BaseModel):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="open", nullable=False)
 
-    scenario_id: Mapped[Optional[int]] = mapped_column(
+    scenario_id: Mapped[int | None] = mapped_column(
         ForeignKey("scenarios.id", ondelete="SET NULL"), nullable=True
     )
     scenario: Mapped[Optional["Scenario"]] = relationship(

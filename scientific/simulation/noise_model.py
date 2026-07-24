@@ -7,7 +7,6 @@ strength values.
 """
 
 import random
-from typing import Optional
 
 from scientific.constants import (
     RSSI_ABSOLUTE_MAX_DBM,
@@ -32,7 +31,7 @@ def bound_rssi(rssi_dbm: float) -> float:
 class AWGNModel:
     """Additive White Gaussian Noise and shadow fading model for RF signals."""
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         """Initialize the noise model.
 
         Args:

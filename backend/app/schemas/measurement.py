@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -8,10 +8,10 @@ class MeasurementResponse(BaseModel):
 
     measurement_code: str
     case_code: str
-    scenario_code: Optional[str] = None
+    scenario_code: str | None = None
     timestamp: datetime
     rssi_dbm: float
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    timing_advance: Optional[float] = None
-    uncertainty_m: Optional[float] = None
+    latitude: float | None = None
+    longitude: float | None = None
+    timing_advance: float | None = None
+    uncertainty_m: float | None = None

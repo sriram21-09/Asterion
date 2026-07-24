@@ -9,8 +9,8 @@ import math
 from datetime import datetime
 
 from scientific.config import (
-    ValidationThresholds,
     DEFAULT_VALIDATION_THRESHOLDS,
+    ValidationThresholds,
     get_environment_config,
 )
 from scientific.constants import TA_RESOLUTION_M

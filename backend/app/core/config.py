@@ -1,6 +1,7 @@
 import os
-from pydantic import BaseModel, Field
+
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -16,8 +17,9 @@ class Settings(BaseModel):
     )
     log_level: str = Field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
     debug: bool = Field(
-        default_factory=lambda: os.getenv("DEBUG", "False").lower()
-        in ("true", "1", "yes")
+        default_factory=lambda: (
+            os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+        )
     )
 
     @property

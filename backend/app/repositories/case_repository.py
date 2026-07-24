@@ -1,6 +1,5 @@
-from sqlalchemy.orm import Session
 from app.models.case import Case
-from typing import List, Optional
+from sqlalchemy.orm import Session
 
 
 class CaseRepository:
@@ -10,11 +9,11 @@ class CaseRepository:
     """
 
     @staticmethod
-    def get(db: Session, case_id: int) -> Optional[Case]:
+    def get(db: Session, case_id: int) -> Case | None:
         return db.query(Case).filter(Case.id == case_id).first()
 
     @staticmethod
-    def get_multi(db: Session, skip: int = 0, limit: int = 100) -> List[Case]:
+    def get_multi(db: Session, skip: int = 0, limit: int = 100) -> list[Case]:
         return db.query(Case).offset(skip).limit(limit).all()
 
     @staticmethod
@@ -22,8 +21,8 @@ class CaseRepository:
         db: Session,
         *,
         title: str,
-        description: Optional[str] = None,
-        scenario_id: Optional[int] = None,
+        description: str | None = None,
+        scenario_id: int | None = None,
     ) -> Case:
         db_obj = Case(title=title, description=description, scenario_id=scenario_id)
         db.add(db_obj)
@@ -32,7 +31,7 @@ class CaseRepository:
         return db_obj
 
     @staticmethod
-    def delete(db: Session, case_id: int) -> Optional[Case]:
+    def delete(db: Session, case_id: int) -> Case | None:
         db_obj = db.query(Case).filter(Case.id == case_id).first()
         if db_obj:
             db.delete(db_obj)

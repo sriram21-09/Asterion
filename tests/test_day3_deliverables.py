@@ -10,7 +10,7 @@ Tests every deliverable from Day 3 (Chaitanya — Scientific Engineer):
 
 import json
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -26,18 +26,20 @@ sys.path.insert(0, str(ROOT / "backend"))
 # =====================================================================
 
 from scientific.models.measurement import Measurement
-from scientific.models.tower import Tower
 from scientific.models.scenario import Scenario
+from scientific.models.tower import Tower
 from scientific.validation.validators import (
     MeasurementValidator,
-    TowerValidator,
     ScenarioValidator,
-    ValidationResult,
-    ValidationError as SciValidationError,
     Severity,
+    TowerValidator,
+    ValidationResult,
     validate_measurement,
-    validate_tower,
     validate_scenario,
+    validate_tower,
+)
+from scientific.validation.validators import (
+    ValidationError as SciValidationError,
 )
 
 
@@ -86,12 +88,12 @@ class TestMeasurementValidator:
         self.validator = MeasurementValidator()
 
     def _make(self, **overrides):
-        defaults = dict(
-            measurement_id="M001",
-            tower_id="T001",
-            timestamp=datetime(2026, 7, 7, 10, 30, tzinfo=timezone.utc),
-            rssi_dbm=-72.0,
-        )
+        defaults = {
+            "measurement_id": "M001",
+            "tower_id": "T001",
+            "timestamp": datetime(2026, 7, 7, 10, 30, tzinfo=UTC),
+            "rssi_dbm": -72.0,
+        }
         defaults.update(overrides)
         return Measurement(**defaults)
 
@@ -125,7 +127,7 @@ class TestMeasurementValidator:
         assert any("MEAS_TA_RSSI_MISMATCH" == e.code for e in r.errors)
 
     def test_future_timestamp_fails(self):
-        future = datetime.now(timezone.utc) + timedelta(days=1)
+        future = datetime.now(UTC) + timedelta(days=1)
         m = self._make(timestamp=future)
         r = self.validator.validate(m)
         assert r.is_valid is False
@@ -144,15 +146,15 @@ class TestTowerValidator:
         self.validator = TowerValidator()
 
     def _make(self, **overrides):
-        defaults = dict(
-            tower_id="T001",
-            latitude=12.97,
-            longitude=77.59,
-            frequency_mhz=1800.0,
-            transmit_power_dbm=43.0,
-            antenna_height_m=35.0,
-            coverage_radius_m=1200.0,
-        )
+        defaults = {
+            "tower_id": "T001",
+            "latitude": 12.97,
+            "longitude": 77.59,
+            "frequency_mhz": 1800.0,
+            "transmit_power_dbm": 43.0,
+            "antenna_height_m": 35.0,
+            "coverage_radius_m": 1200.0,
+        }
         defaults.update(overrides)
         return Tower(**defaults)
 
@@ -211,7 +213,7 @@ class TestScenarioValidator:
                 Measurement(
                     measurement_id=f"M{i + 1:03d}",
                     tower_id=tid,
-                    timestamp=datetime(2026, 7, 7, 10, 30, i, tzinfo=timezone.utc),
+                    timestamp=datetime(2026, 7, 7, 10, 30, i, tzinfo=UTC),
                     rssi_dbm=-70.0 - i * 5,
                 )
             )
@@ -248,7 +250,7 @@ class TestScenarioValidator:
             Measurement(
                 measurement_id="M001",
                 tower_id="T999",  # doesn't exist
-                timestamp=datetime(2026, 7, 7, 10, 30, tzinfo=timezone.utc),
+                timestamp=datetime(2026, 7, 7, 10, 30, tzinfo=UTC),
                 rssi_dbm=-72.0,
             )
         ]
@@ -403,7 +405,7 @@ class TestSampleDataset:
         er = self.data["expected_results"]
         assert "SCN-SAMPLE-001" in er
         assert "SCN-SAMPLE-002" in er
-        for key, val in er.items():
+        for val in er.values():
             assert "expected_latitude" in val
             assert "expected_longitude" in val
             assert "max_error_m" in val
@@ -423,25 +425,27 @@ class TestSampleDataset:
 # =====================================================================
 
 from app.shared.validation import (
-    validate_id_format,
-    validate_non_empty_string,
-    validate_latitude,
-    validate_longitude,
-    validate_coordinates,
-    validate_coordinate_pair_optional,
-    validate_rssi,
-    validate_positive_float,
-    validate_pagination,
-    pagination_offset,
-    validate_list_not_empty,
-    validate_unique_ids,
-    validate_timestamp_not_future,
-    validate_timestamp_range,
-    validate_minimum_signals,
-    ValidationError as BackendValidationError,
     DEFAULT_PAGE,
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
+    pagination_offset,
+    validate_coordinate_pair_optional,
+    validate_coordinates,
+    validate_id_format,
+    validate_latitude,
+    validate_list_not_empty,
+    validate_longitude,
+    validate_minimum_signals,
+    validate_non_empty_string,
+    validate_pagination,
+    validate_positive_float,
+    validate_rssi,
+    validate_timestamp_not_future,
+    validate_timestamp_range,
+    validate_unique_ids,
+)
+from app.shared.validation import (
+    ValidationError as BackendValidationError,
 )
 
 
@@ -597,22 +601,22 @@ class TestCollectionValidation:
 
 class TestTimestampValidation:
     def test_past_timestamp_passes(self):
-        ts = datetime(2026, 7, 7, 10, 0, tzinfo=timezone.utc)
+        ts = datetime(2026, 7, 7, 10, 0, tzinfo=UTC)
         assert validate_timestamp_not_future(ts) == ts
 
     def test_future_timestamp_rejected(self):
-        future = datetime.now(timezone.utc) + timedelta(hours=1)
+        future = datetime.now(UTC) + timedelta(hours=1)
         with pytest.raises(BackendValidationError):
             validate_timestamp_not_future(future)
 
     def test_valid_range(self):
-        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
-        end = datetime(2026, 7, 7, tzinfo=timezone.utc)
+        start = datetime(2026, 7, 1, tzinfo=UTC)
+        end = datetime(2026, 7, 7, tzinfo=UTC)
         assert validate_timestamp_range(start, end) == (start, end)
 
     def test_invalid_range(self):
-        start = datetime(2026, 7, 7, tzinfo=timezone.utc)
-        end = datetime(2026, 7, 1, tzinfo=timezone.utc)
+        start = datetime(2026, 7, 7, tzinfo=UTC)
+        end = datetime(2026, 7, 1, tzinfo=UTC)
         with pytest.raises(BackendValidationError):
             validate_timestamp_range(start, end)
 

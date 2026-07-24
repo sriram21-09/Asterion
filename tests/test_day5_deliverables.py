@@ -19,7 +19,6 @@ import math
 import pytest
 
 # ── Module under test ────────────────────────────────────────────────────
-
 from scientific.config import (
     DEFAULT_SIMULATION_CONFIG,
     DEFAULT_VALIDATION_THRESHOLDS,
@@ -226,7 +225,7 @@ class TestEnvironmentConfig:
             assert cfg.path_loss_exponent > 0, f"{env} path_loss_exponent must be > 0"
 
     def test_all_presets_have_positive_reference_distance(self):
-        for env, cfg in ENVIRONMENT_PRESETS.items():
+        for cfg in ENVIRONMENT_PRESETS.values():
             assert cfg.reference_distance_m > 0
 
 

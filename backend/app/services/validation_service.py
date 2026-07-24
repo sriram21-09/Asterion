@@ -17,14 +17,13 @@ returns a structured result rather than raising on first failure.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import List
+from datetime import UTC, datetime
 
 from app.schemas.validation import (
     MeasurementInput,
-    ValidationErrorItem,
-    ValidateMeasurementsResponse,
     Severity,
+    ValidateMeasurementsResponse,
+    ValidationErrorItem,
 )
 
 from scientific.models.measurement import Measurement as SciMeasurement
@@ -41,12 +40,12 @@ RSSI_MIN, RSSI_MAX = -150.0, 0.0
 def _validate_single(
     m: MeasurementInput,
     index: int,
-) -> List[ValidationErrorItem]:
+) -> list[ValidationErrorItem]:
     """Run all checks against a single measurement.
 
     Returns a (possibly empty) list of errors / warnings.
     """
-    issues: List[ValidationErrorItem] = []
+    issues: list[ValidationErrorItem] = []
 
     # ── Basic constraints & format validation ─────────────────────────
     # 1. measurement_id non-empty
@@ -142,9 +141,9 @@ def _validate_single(
     # 9. Timestamp parseable
     dt = None
     try:
-        dt = datetime.fromisoformat(m.timestamp.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(m.timestamp)
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
+            dt = dt.replace(tzinfo=UTC)
     except (ValueError, TypeError):
         issues.append(
             ValidationErrorItem(
@@ -190,7 +189,7 @@ def _validate_single(
             issues.append(
                 ValidationErrorItem(
                     field="measurement",
-                    message=f"Scientific validator error: {str(e)}",
+                    message=f"Scientific validator error: {e!s}",
                     severity=Severity.ERROR,
                     measurement_index=index,
                 )
@@ -200,10 +199,10 @@ def _validate_single(
 
 
 def validate_measurements_batch(
-    measurements: List[MeasurementInput],
+    measurements: list[MeasurementInput],
 ) -> ValidateMeasurementsResponse:
     """Validate a full batch and return aggregated results."""
-    all_errors: List[ValidationErrorItem] = []
+    all_errors: list[ValidationErrorItem] = []
     rejected_indices: set[int] = set()
 
     for idx, m in enumerate(measurements):

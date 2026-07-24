@@ -7,10 +7,9 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Dict, List
+from datetime import UTC, datetime
 
-from scientific.config import ValidationThresholds, DEFAULT_VALIDATION_THRESHOLDS
+from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.models.cdr_record import CDRRecord
 from scientific.validation.types import Severity, ValidationError, ValidationResult
 
@@ -167,9 +166,9 @@ class CDRRecordValidator:
         if record.timestamp is not None:
             dt = record.timestamp
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
 
-            now_utc = datetime.now(timezone.utc)
+            now_utc = datetime.now(UTC)
             if dt > now_utc:
                 result.errors.append(
                     ValidationError(
@@ -216,7 +215,7 @@ class CDRRecordValidator:
 
 
 def validate_cdr_batch(
-    records: List[CDRRecord],
+    records: list[CDRRecord],
     *,
     thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
 ) -> ValidationResult:
@@ -310,9 +309,9 @@ class CDRValidationReport:
     valid_count: int
     rejected_count: int
     warning_count: int
-    failure_categories: Dict[str, int]
-    warning_categories: Dict[str, int]
-    per_record_results: List[ValidationResult]
+    failure_categories: dict[str, int]
+    warning_categories: dict[str, int]
+    per_record_results: list[ValidationResult]
     quality_score: CDRDataQualityScore
 
     @property
@@ -349,7 +348,7 @@ class CDRValidationService:
         self.thresholds = thresholds
         self._record_validator = CDRRecordValidator(thresholds=thresholds)
 
-    def validate_batch(self, records: List[CDRRecord]) -> CDRValidationReport:
+    def validate_batch(self, records: list[CDRRecord]) -> CDRValidationReport:
         if not records:
             empty_score = CDRDataQualityScore(
                 overall_score=1.0,
@@ -370,15 +369,15 @@ class CDRValidationService:
                 quality_score=empty_score,
             )
 
-        per_record_results: List[ValidationResult] = []
+        per_record_results: list[ValidationResult] = []
         for record in records:
             per_record_results.append(self._record_validator.validate(record))
 
         duplicate_id_indices: set[int] = set()
         duplicate_record_indices: set[int] = set()
 
-        seen_ids: Dict[int, int] = {}
-        seen_keys: Dict[tuple, int] = {}
+        seen_ids: dict[int, int] = {}
+        seen_keys: dict[tuple, int] = {}
 
         for idx, record in enumerate(records):
             if record.id is not None:
@@ -414,8 +413,8 @@ class CDRValidationService:
         valid_count = 0
         rejected_count = 0
         warning_count = 0
-        failure_categories: Dict[str, int] = {}
-        warning_categories: Dict[str, int] = {}
+        failure_categories: dict[str, int] = {}
+        warning_categories: dict[str, int] = {}
 
         for res in per_record_results:
             has_error = not res.is_valid
@@ -453,8 +452,8 @@ class CDRValidationService:
 
     def _calculate_quality_score(
         self,
-        records: List[CDRRecord],
-        per_record_results: List[ValidationResult],
+        records: list[CDRRecord],
+        per_record_results: list[ValidationResult],
         valid_count: int,
         total_duplicates: int,
     ) -> CDRDataQualityScore:
@@ -482,7 +481,7 @@ class CDRValidationService:
             grade=CDRDataQualityScore.grade_from_score(overall),
         )
 
-    def _compute_completeness(self, records: List[CDRRecord]) -> float:
+    def _compute_completeness(self, records: list[CDRRecord]) -> float:
         if not records:
             return 1.0
         total_ratio = 0.0
@@ -496,10 +495,10 @@ class CDRValidationService:
             total_ratio += present / n_fields
         return total_ratio / len(records)
 
-    def _compute_timeliness(self, records: List[CDRRecord]) -> float:
+    def _compute_timeliness(self, records: list[CDRRecord]) -> float:
         if not records:
             return 1.0
-        now_utc = datetime.now(timezone.utc)
+        now_utc = datetime.now(UTC)
         max_age_days = self.thresholds.max_measurement_age_days
         timely_count = 0
         for record in records:
@@ -507,7 +506,7 @@ class CDRValidationService:
             if ts is None:
                 continue
             if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
+                ts = ts.replace(tzinfo=UTC)
             if ts <= now_utc and (now_utc - ts).days <= max_age_days:
                 timely_count += 1
         return timely_count / len(records)

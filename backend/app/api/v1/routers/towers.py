@@ -1,16 +1,14 @@
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-
 from app.database.session import get_db
 from app.schemas.response import APIResponse
 from app.schemas.tower import (
-    TowerCreate,
-    TowerResponse,
     CGILookupRequest,
     CGILookupResponse,
+    TowerCreate,
+    TowerResponse,
 )
 from app.services.tower_service import TowerIntelligenceService
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/towers", tags=["Tower Intelligence"])
 
@@ -41,15 +39,15 @@ def resolve_cgi_lookup(
 
 @router.get(
     "",
-    response_model=APIResponse[List[TowerResponse]],
+    response_model=APIResponse[list[TowerResponse]],
     summary="List Towers",
     description="Retrieve cell tower records with optional operator and confidence filters.",
 )
 def list_towers(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    operator: Optional[str] = Query(None, description="Filter by operator name"),
-    confidence_category: Optional[str] = Query(
+    operator: str | None = Query(None, description="Filter by operator name"),
+    confidence_category: str | None = Query(
         None, description="Filter by confidence category (Known, Estimated, Unknown)"
     ),
     db: Session = Depends(get_db),
