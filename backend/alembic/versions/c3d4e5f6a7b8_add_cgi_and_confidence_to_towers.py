@@ -6,6 +6,7 @@ Create Date: 2026-07-22 10:00:00.000000
 
 """
 
+<<<<<<< HEAD
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
@@ -15,6 +16,18 @@ revision: str = "c3d4e5f6a7b8"
 down_revision: Union[str, Sequence[str], None] = "b2c3d4e5f6a7"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
+=======
+from collections.abc import Sequence
+
+import sqlalchemy as sa
+from alembic import op
+
+# revision identifiers, used by Alembic.
+revision: str = "c3d4e5f6a7b8"
+down_revision: str | Sequence[str] | None = "b2c3d4e5f6a7"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 
 def upgrade() -> None:
@@ -29,9 +42,13 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column("ci", sa.String(length=50), nullable=True))
         batch_op.add_column(sa.Column("operator", sa.String(length=50), nullable=True))
         batch_op.add_column(
+<<<<<<< HEAD
             sa.Column(
                 "confidence", sa.Float(), nullable=False, server_default="1.0"
             )
+=======
+            sa.Column("confidence", sa.Float(), nullable=False, server_default="1.0")
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         )
         batch_op.add_column(
             sa.Column(

@@ -1,16 +1,16 @@
 import json
 from pathlib import Path
-from typing import List
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from app.models.measurement import Measurement as MeasurementORM
-from app.repositories.measurement_repository import MeasurementRepository
 from app.repositories.case_repository import CaseRepository
+from app.repositories.measurement_repository import MeasurementRepository
 from app.shared.validation import (
     ValidationError,
     decode_case_code,
 )
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
 from scientific.models.scenario_config import ScenarioConfig, SimulationParameters
 from scientific.simulation.measurement_generator import generate_scenario_measurements
 
@@ -23,7 +23,7 @@ class MeasurementService:
         db: Session,
         case_code: str,
         params: SimulationParameters,
-    ) -> List[MeasurementORM]:
+    ) -> list[MeasurementORM]:
         """Generate synthetic measurements for a case using Chaitanya's simulation engine."""
         # 1. Decode case code
         case_id = decode_case_code(case_code)
@@ -61,7 +61,7 @@ class MeasurementService:
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to read scenario dataset: {str(e)}",
+                detail=f"Failed to read scenario dataset: {e!s}",
             )
 
         # 5. Search for the scenario config that matches our scenario_id
@@ -93,7 +93,7 @@ class MeasurementService:
         except Exception as e:
             raise ValidationError(
                 "simulation_parameters",
-                f"Failed to validate scenario config or simulation parameters: {str(e)}",
+                f"Failed to validate scenario config or simulation parameters: {e!s}",
                 status_code=400,
             )
 
@@ -103,7 +103,7 @@ class MeasurementService:
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to generate measurements: {str(e)}",
+                detail=f"Failed to generate measurements: {e!s}",
             )
 
         # 8. Delete existing measurements for this case (to allow regeneration/overwriting)

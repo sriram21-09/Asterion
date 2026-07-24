@@ -13,27 +13,27 @@ Verifies:
 
 import json
 import time
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
+
 import pytest
 
-from scientific.models.scenario_config import ScenarioConfig
-from scientific.models.scenario import Scenario
-from scientific.models.tower import Tower
-from scientific.models.measurement import Measurement
+from scientific.config import ValidationThresholds
 from scientific.models.result import (
-    LocalizationResult,
     ConfidenceResult,
+    LocalizationResult,
     PipelineResult,
 )
+from scientific.models.scenario import Scenario
+from scientific.models.scenario_config import ScenarioConfig
+from scientific.models.tower import Tower
+from scientific.pipeline.runner import run_pipeline
 from scientific.validation.validators import (
     ResultValidator,
+    Severity,
     cross_validate,
     validate_batch,
-    Severity,
 )
-from scientific.config import ValidationThresholds
-from scientific.pipeline.runner import run_pipeline
 
 # Path to the sample scenario datasets
 SCENARIO_JSON_PATH = (
@@ -62,7 +62,6 @@ class TestResultValidator:
 
     def test_out_of_bounds_error(self):
         """Result outside absolute coordinate bounds returns ERROR."""
-        # Setup towers and scenario
         t1 = Tower(
             tower_id="T001",
             latitude=12.9716,
@@ -84,19 +83,17 @@ class TestResultValidator:
         scenario = Scenario(
             scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
         )
-        # Out of bounds result relative to custom thresholds (30.0 is outside 10.0-20.0 range)
         res = LocalizationResult(
             scenario_id="S001",
             algorithm="multilateration",
             estimated_latitude=30.0,
             estimated_longitude=77.5946,
             signals_used=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         custom_thresholds = ValidationThresholds(latitude_range=(10.0, 20.0))
         validator = ResultValidator(thresholds=custom_thresholds)
         val_res = validator.validate(res, scenario)
-
         assert not val_res.is_valid
         assert any(e.code == "RESULT_OUT_OF_BOUNDS" for e in val_res.errors)
 
@@ -123,19 +120,16 @@ class TestResultValidator:
         scenario = Scenario(
             scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
         )
-        # Lat is far away (~0.5 degrees lat is ~55km away, well outside 1000m * 1.5 buffer)
         res = LocalizationResult(
             scenario_id="S001",
             algorithm="multilateration",
             estimated_latitude=13.5000,
             estimated_longitude=77.5946,
             signals_used=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
-
-        # It's a warning, so is_valid remains True (warnings are not blocking errors)
         assert val_res.is_valid
         warnings = [e for e in val_res.errors if e.severity == Severity.WARNING]
         assert any(e.code == "RESULT_OUTSIDE_TOWER_BBOX" for e in warnings)
@@ -164,18 +158,16 @@ class TestResultValidator:
         scenario = Scenario(
             scenario_id="S001", name="Test", towers=[t1, t2, t3], measurements=[]
         )
-        # Position is 50m away from the tower
         res = LocalizationResult(
             scenario_id="S001",
             algorithm="multilateration",
             estimated_latitude=12.9718,
             estimated_longitude=77.5946,
             signals_used=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
-
         assert val_res.is_valid
         assert len(val_res.errors) == 0
 
@@ -189,14 +181,13 @@ class TestCrossValidate:
     """Verify cross_validate flags mismatch between error and confidence."""
 
     def test_no_error_provided(self):
-        """If actual error is None, cross-validation returns clean validation result."""
         res = LocalizationResult(
             scenario_id="S001",
             algorithm="multilateration",
             estimated_latitude=12.9716,
             estimated_longitude=77.5946,
             signals_used=3,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
             scenario_id="S001",
@@ -209,15 +200,14 @@ class TestCrossValidate:
         assert len(val_res.errors) == 0
 
     def test_confidence_mismatch_warning(self):
-        """High error with high confidence results in mismatch warning."""
         res = LocalizationResult(
             scenario_id="S001",
             algorithm="multilateration",
             estimated_latitude=12.9716,
             estimated_longitude=77.5946,
-            error_m=200.0,  # > 150m
+            error_m=200.0,
             signals_used=3,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
             scenario_id="S001",
@@ -231,7 +221,6 @@ class TestCrossValidate:
         assert val_res.errors[0].code == "CONFIDENCE_MISMATCH_HIGH_ERROR"
 
     def test_ellipse_bounds_warning(self):
-        """Error exceeding 3-sigma ellipse bound results in outlier warning."""
         res = LocalizationResult(
             scenario_id="S001",
             algorithm="multilateration",
@@ -239,13 +228,13 @@ class TestCrossValidate:
             estimated_longitude=77.5946,
             error_m=100.0,
             signals_used=3,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
             scenario_id="S001",
             confidence_score=0.5,
             confidence_level="medium",
-            error_ellipse_semi_major_m=20.0,  # 3x = 60m, error_m=100m > 60m
+            error_ellipse_semi_major_m=20.0,
             method="gdop",
         )
         val_res = cross_validate(res, conf)
@@ -259,8 +248,6 @@ class TestCrossValidate:
 
 
 class TestValidateBatch:
-    """Verify validate_batch processes multiple Scenario structures."""
-
     def test_validate_batch_correctness(self):
         t1 = Tower(
             tower_id="T001",
@@ -304,59 +291,55 @@ class TestE2EPipelineRunner:
     """Verify that run_pipeline correctly executes on sample configs and benchmarks under 2s."""
 
     def test_pipeline_configs_end_to_end(self, sample_scenarios_data):
-        """Run each scenario through the pipeline and assert accuracy bounds."""
         for cfg_data in sample_scenarios_data:
             scenario_id = cfg_data["scenario_id"]
             expected = cfg_data["expected_results"]
+<<<<<<< HEAD
 
             # Execute the E2E pipeline
+=======
+            config = ScenarioConfig(**cfg_data)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
             start_time = time.perf_counter()
             result = run_pipeline(config)
             duration = time.perf_counter() - start_time
-
-            # Validate output types
             assert isinstance(result, PipelineResult)
             assert result.localization.scenario_id == scenario_id
             assert result.confidence.scenario_id == scenario_id
+<<<<<<< HEAD
 
             # Print execution duration breakdown
             print(f"\nScenario {scenario_id} processed in {duration*1000.0:.2f} ms")
+=======
+            print(f"\nScenario {scenario_id} processed in {duration * 1000.0:.2f} ms")
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
             print(f"Time Breakdown: {result.metadata['time_breakdown_ms']}")
-
-            # Validate localization accuracy
             actual_error = result.localization.error_m
-            assert (
-                actual_error is not None
-            ), "Pipeline must compute error relative to ground truth"
-            assert (
-                actual_error <= expected["max_error_m"] * 1.6
-            ), f"Scenario {scenario_id} error {actual_error:.2f}m exceeds threshold of {expected['max_error_m']}m"
-
-            # Validate confidence score bounds
+            assert actual_error is not None, (
+                "Pipeline must compute error relative to ground truth"
+            )
+            assert actual_error <= expected["max_error_m"] * 1.6, (
+                f"Scenario {scenario_id} error {actual_error:.2f}m exceeds threshold of {expected['max_error_m']}m"
+            )
             actual_confidence = result.confidence.confidence_score
-            assert (
-                actual_confidence >= expected["min_confidence_score"] - 0.05
-            ), f"Scenario {scenario_id} confidence {actual_confidence:.2f} is below limit of {expected['min_confidence_score']}"
-
-            # Check validation findings in metadata
+            assert actual_confidence >= expected["min_confidence_score"] - 0.05, (
+                f"Scenario {scenario_id} confidence {actual_confidence:.2f} is below limit of {expected['min_confidence_score']}"
+            )
             assert "validation_findings" in result.metadata
 
     @pytest.mark.parametrize(
         "algorithm", ["multilateration", "weighted_centroid", "kalman", "hybrid"]
     )
     def test_pipeline_algorithms_support(self, sample_scenarios_data, algorithm):
-        """Verify that all 4 supported algorithms execute without raising exceptions."""
-        cfg_data = sample_scenarios_data[0]  # SCN-CFG-001 (Urban)
+        cfg_data = sample_scenarios_data[0]
         config = ScenarioConfig(**cfg_data)
         config.simulation.algorithm = algorithm
-        # For Kalman/Hybrid, let's use measurement count 3 to test sequential tracking path
         if algorithm in ("kalman", "hybrid"):
             config.simulation.measurement_count = 3
 
         result = run_pipeline(config)
         assert isinstance(result, PipelineResult)
         assert result.metadata["algorithm_selected"] == algorithm
-        # Verify history trace
         history = result.metadata["history"]
         if algorithm in ("kalman", "hybrid"):
             assert len(history) == 3
@@ -366,34 +349,28 @@ class TestE2EPipelineRunner:
             assert result.localization.algorithm == algorithm
 
     def test_pipeline_perf_benchmark(self, sample_scenarios_data):
-        """Ensure execution time for localized pipelines runs well under 2.0 seconds target."""
         total_time = 0.0
         runs_count = 0
+<<<<<<< HEAD
 
         # Run multiple iterations over the configurations to benchmark average performance
+=======
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         for cfg_data in sample_scenarios_data:
             config = ScenarioConfig(**cfg_data)
-
-            # Run 5 trials per scenario configuration
             for _ in range(5):
                 start = time.perf_counter()
                 run_pipeline(config)
                 elapsed = time.perf_counter() - start
-
                 total_time += elapsed
                 runs_count += 1
-
-                # Check that no individual run takes more than 500ms
-                assert (
-                    elapsed < 0.5
-                ), f"Individual run took excessively long: {elapsed*1000.0:.1f}ms"
-
+                assert elapsed < 0.5, (
+                    f"Individual run took excessively long: {elapsed * 1000.0:.1f}ms"
+                )
         avg_time_ms = (total_time / runs_count) * 1000.0
         print(
             f"\nAverage E2E Pipeline execution time: {avg_time_ms:.2f} ms across {runs_count} runs"
         )
-
-        # Target E2E execution benchmark is under 2.0 seconds (2000 ms) in total
-        assert (
-            total_time < 2.0
-        ), f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        assert total_time < 2.0, (
+            f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        )

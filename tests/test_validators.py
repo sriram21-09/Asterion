@@ -10,15 +10,14 @@ Verifies validation rules for Call Detail Records (CDRs):
   5. Duplicate record detection in batches (ID duplicates, content duplicates).
 """
 
-from datetime import datetime, timedelta, timezone
-import pytest
+from datetime import UTC, datetime, timedelta
 
 from scientific.config import ValidationThresholds
 from scientific.models.cdr_record import CDRRecord
 from scientific.validation.validators import (
     CDRRecordValidator,
-    validate_cdr_batch,
     Severity,
+    validate_cdr_batch,
 )
 
 
@@ -30,7 +29,7 @@ class TestCDRRecordValidatorBasic:
         r_op = CDRRecord.model_construct(
             operator="",
             target_number="9714499703",
-            timestamp=datetime.now(timezone.utc) - timedelta(minutes=5),
+            timestamp=datetime.now(UTC) - timedelta(minutes=5),
         )
         validator = CDRRecordValidator()
         res = validator.validate(r_op)
@@ -41,7 +40,7 @@ class TestCDRRecordValidatorBasic:
         r_target = CDRRecord.model_construct(
             operator="airtel",
             target_number="",
-            timestamp=datetime.now(timezone.utc) - timedelta(minutes=5),
+            timestamp=datetime.now(UTC) - timedelta(minutes=5),
         )
         res = validator.validate(r_target)
         assert not res.is_valid
@@ -65,7 +64,7 @@ class TestCDRRecordValidatorBasic:
             r = CDRRecord(
                 operator=op,
                 target_number="9714499703",
-                timestamp=datetime.now(timezone.utc) - timedelta(minutes=5),
+                timestamp=datetime.now(UTC) - timedelta(minutes=5),
             )
             res = validator.validate(r)
             assert res.is_valid, f"Failed for operator {op}"
@@ -74,7 +73,7 @@ class TestCDRRecordValidatorBasic:
         r_inv = CDRRecord(
             operator="docomo",
             target_number="9714499703",
-            timestamp=datetime.now(timezone.utc) - timedelta(minutes=5),
+            timestamp=datetime.now(UTC) - timedelta(minutes=5),
         )
         res = validator.validate(r_inv)
         assert not res.is_valid
@@ -86,7 +85,7 @@ class TestCDRRecordValidatorTimestamp:
 
     def test_future_timestamp(self):
         validator = CDRRecordValidator()
-        future_ts = datetime.now(timezone.utc) + timedelta(hours=2)
+        future_ts = datetime.now(UTC) + timedelta(hours=2)
         r = CDRRecord(
             operator="airtel",
             target_number="9714499703",
@@ -99,7 +98,7 @@ class TestCDRRecordValidatorTimestamp:
     def test_stale_timestamp(self):
         thresholds = ValidationThresholds(max_measurement_age_days=30)
         validator = CDRRecordValidator(thresholds=thresholds)
-        stale_ts = datetime.now(timezone.utc) - timedelta(days=35)
+        stale_ts = datetime.now(UTC) - timedelta(days=35)
         r = CDRRecord(
             operator="airtel",
             target_number="9714499703",
@@ -115,25 +114,49 @@ class TestCDRRecordValidatorTimestamp:
 
     def test_missing_seconds_warning(self):
         validator = CDRRecordValidator()
-        base_time = datetime.now(timezone.utc) - timedelta(hours=1)
+        base_time = datetime.now(UTC) - timedelta(hours=1)
 
         # With seconds in raw row (Airtel index 7)
         r_with_seconds = CDRRecord(
             operator="airtel",
             target_number="9714499703",
             timestamp=base_time,
-            raw_data={"row": ["9714499703", "SMT", "Post", "BParty", "", "", "15/04/2026", "14:30:45"]},
+            raw_data={
+                "row": [
+                    "9714499703",
+                    "SMT",
+                    "Post",
+                    "BParty",
+                    "",
+                    "",
+                    "15/04/2026",
+                    "14:30:45",
+                ]
+            },
         )
         res_sec = validator.validate(r_with_seconds)
         assert res_sec.is_valid
-        assert not any(e.code == "CDR_TIMESTAMP_MISSING_SECONDS" for e in res_sec.errors)
+        assert not any(
+            e.code == "CDR_TIMESTAMP_MISSING_SECONDS" for e in res_sec.errors
+        )
 
         # Missing seconds in raw row
         r_missing_seconds = CDRRecord(
             operator="airtel",
             target_number="9714499703",
             timestamp=base_time.replace(second=0, microsecond=0),
-            raw_data={"row": ["9714499703", "SMT", "Post", "BParty", "", "", "15/04/2026", "14:30"]},
+            raw_data={
+                "row": [
+                    "9714499703",
+                    "SMT",
+                    "Post",
+                    "BParty",
+                    "",
+                    "",
+                    "15/04/2026",
+                    "14:30",
+                ]
+            },
         )
         res_missing = validator.validate(r_missing_seconds)
         assert res_missing.is_valid
@@ -148,7 +171,7 @@ class TestCDRRecordValidatorCoordinates:
 
     def test_coordinate_parity(self):
         validator = CDRRecordValidator()
-        ts = datetime.now(timezone.utc) - timedelta(minutes=5)
+        ts = datetime.now(UTC) - timedelta(minutes=5)
 
         # Start location parity: latitude provided, longitude None
         r_start_parity = CDRRecord.model_construct(
@@ -180,7 +203,7 @@ class TestCDRRecordValidatorCoordinates:
             longitude_range=(70.0, 80.0),
         )
         validator = CDRRecordValidator(thresholds=custom_thresholds)
-        ts = datetime.now(timezone.utc) - timedelta(minutes=5)
+        ts = datetime.now(UTC) - timedelta(minutes=5)
 
         # Inside bounds
         r_inside = CDRRecord(
@@ -226,17 +249,21 @@ class TestCDRBatchValidator:
     """Tests batch-wide validations like duplicate record detection."""
 
     def test_duplicate_record_ids(self):
-        ts = datetime.now(timezone.utc) - timedelta(minutes=5)
+        ts = datetime.now(UTC) - timedelta(minutes=5)
         records = [
-            CDRRecord(id=101, operator="airtel", target_number="9714499703", timestamp=ts),
-            CDRRecord(id=101, operator="bsnl", target_number="9477523061", timestamp=ts),  # duplicate ID
+            CDRRecord(
+                id=101, operator="airtel", target_number="9714499703", timestamp=ts
+            ),
+            CDRRecord(
+                id=101, operator="bsnl", target_number="9477523061", timestamp=ts
+            ),  # duplicate ID
         ]
         res = validate_cdr_batch(records)
         assert not res.is_valid
         assert any(e.code == "CDR_DUPLICATE_ID" for e in res.errors)
 
     def test_duplicate_record_values(self):
-        ts = datetime.now(timezone.utc) - timedelta(hours=2)
+        ts = datetime.now(UTC) - timedelta(hours=2)
         records = [
             CDRRecord(
                 operator="airtel",
@@ -256,7 +283,7 @@ class TestCDRBatchValidator:
         assert any(e.code == "CDR_DUPLICATE_RECORD" for e in res.errors)
 
     def test_no_duplicates_succeeds(self):
-        ts1 = datetime.now(timezone.utc) - timedelta(hours=3)
+        ts1 = datetime.now(UTC) - timedelta(hours=3)
         ts2 = ts1 + timedelta(seconds=1)
         records = [
             CDRRecord(

@@ -6,6 +6,7 @@ Verifies CGI parsing, prefix-based lookup fallback systems, and spatial density 
 """
 
 import pytest
+<<<<<<< HEAD
 from scientific.models.tower import Tower
 from scientific.pipeline.benchmarks import (
     parse_cgi,
@@ -14,6 +15,17 @@ from scientific.pipeline.benchmarks import (
     calculate_neighbor_density,
     calculate_grid_density,
     normalize_densities,
+=======
+
+from scientific.models.tower import Tower
+from scientific.pipeline.benchmarks import (
+    CGIResolver,
+    calculate_grid_density,
+    calculate_neighbor_density,
+    calculate_radius_density,
+    normalize_densities,
+    parse_cgi,
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 )
 
 
@@ -197,7 +209,13 @@ class TestDensityCalculations:
         assert count_100m == 1  # Only T1 itself
 
         count_100km = calculate_radius_density(12.9716, 77.5946, towers, 100000.0)
+<<<<<<< HEAD
         assert count_100km == 4  # T1, T2, T3, T4 (T5 is ignored because coords are None)
+=======
+        assert (
+            count_100km == 4
+        )  # T1, T2, T3, T4 (T5 is ignored because coords are None)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
     def test_calculate_neighbor_density(self, towers):
         neighbor_densities = calculate_neighbor_density(towers, 1000.0)

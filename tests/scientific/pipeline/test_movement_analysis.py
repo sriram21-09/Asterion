@@ -6,11 +6,16 @@ Validates distance/speed calculators, handover detection, velocity
 classification, anomaly flagging, and full reconstruction logic.
 """
 
+<<<<<<< HEAD
 from datetime import datetime, timezone, timedelta
+=======
+from datetime import UTC, datetime, timedelta
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 import pytest
 
 from scientific.pipeline.movement import (
+<<<<<<< HEAD
     calculate_distance_m,
     calculate_speed_kmh,
     calculate_bearing_deg,
@@ -27,12 +32,25 @@ from scientific.pipeline.movement import (
 
 # ── Coordinates used across tests ──────────────────────────────────────────
 
+=======
+    calculate_bearing_deg,
+    calculate_distance_m,
+    calculate_speed_kmh,
+    classify_velocity,
+    detect_handover,
+    flag_impossible_velocity,
+    reconstruct_movement_events,
+)
+
+
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 MUMBAI = (19.0760, 72.8777)
 PUNE = (18.5204, 73.8567)
 DELHI = (28.6139, 77.2090)
 SURAT = (21.1702, 72.8311)
 
 
+<<<<<<< HEAD
 # ═══════════════════════════════════════════════════════════════════════════
 # 1. Distance Calculator
 # ═══════════════════════════════════════════════════════════════════════════
@@ -41,18 +59,27 @@ SURAT = (21.1702, 72.8311)
 class TestCalculateDistanceM:
     """Tests for calculate_distance_m."""
 
+=======
+class TestCalculateDistanceM:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     def test_same_point_returns_zero(self):
         d = calculate_distance_m(*MUMBAI, *MUMBAI)
         assert d == pytest.approx(0.0, abs=0.01)
 
     def test_mumbai_to_pune_reference(self):
+<<<<<<< HEAD
         """Well-known reference: Mumbai → Pune ≈ 120 km geodesic (straight-line)."""
+=======
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         d = calculate_distance_m(*MUMBAI, *PUNE)
         assert d is not None
         assert 118_000 < d < 125_000
 
     def test_mumbai_to_delhi(self):
+<<<<<<< HEAD
         """Mumbai → Delhi ≈ 1150 km."""
+=======
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         d = calculate_distance_m(*MUMBAI, *DELHI)
         assert d is not None
         assert 1_100_000 < d < 1_200_000
@@ -67,7 +94,10 @@ class TestCalculateDistanceM:
         assert calculate_distance_m(None, None, None, None) is None
 
     def test_equator_one_degree(self):
+<<<<<<< HEAD
         """One degree of longitude at the equator ≈ 111.32 km."""
+=======
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         d = calculate_distance_m(0.0, 0.0, 0.0, 1.0)
         assert d is not None
         assert 110_000 < d < 112_000
@@ -78,6 +108,7 @@ class TestCalculateDistanceM:
         assert d1 == pytest.approx(d2, rel=1e-9)
 
 
+<<<<<<< HEAD
 # ═══════════════════════════════════════════════════════════════════════════
 # 2. Speed Calculator
 # ═══════════════════════════════════════════════════════════════════════════
@@ -88,6 +119,10 @@ class TestCalculateSpeedKmh:
 
     def test_normal_speed(self):
         # 100 km in 1 hour = 100 km/h
+=======
+class TestCalculateSpeedKmh:
+    def test_normal_speed(self):
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         s = calculate_speed_kmh(100_000.0, 3600.0)
         assert s == pytest.approx(100.0, rel=1e-6)
 
@@ -104,11 +139,15 @@ class TestCalculateSpeedKmh:
         assert calculate_speed_kmh(500.0, None) is None
 
     def test_walking_speed(self):
+<<<<<<< HEAD
         # 1.4 m/s ≈ 5 km/h
+=======
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         s = calculate_speed_kmh(1.4, 1.0)
         assert s == pytest.approx(5.04, rel=0.01)
 
 
+<<<<<<< HEAD
 # ═══════════════════════════════════════════════════════════════════════════
 # 3. Bearing Calculator
 # ═══════════════════════════════════════════════════════════════════════════
@@ -117,6 +156,9 @@ class TestCalculateSpeedKmh:
 class TestCalculateBearingDeg:
     """Tests for calculate_bearing_deg."""
 
+=======
+class TestCalculateBearingDeg:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     def test_due_north(self):
         b = calculate_bearing_deg(0.0, 0.0, 1.0, 0.0)
         assert b == pytest.approx(0.0, abs=0.1)
@@ -135,7 +177,11 @@ class TestCalculateBearingDeg:
 
     def test_same_point(self):
         b = calculate_bearing_deg(10.0, 20.0, 10.0, 20.0)
+<<<<<<< HEAD
         assert b is not None  # Returns 0.0 by convention
+=======
+        assert b is not None
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
     def test_null_returns_none(self):
         assert calculate_bearing_deg(None, 0.0, 1.0, 0.0) is None
@@ -146,6 +192,7 @@ class TestCalculateBearingDeg:
         assert 0.0 <= b < 360.0
 
 
+<<<<<<< HEAD
 # ═══════════════════════════════════════════════════════════════════════════
 # 4. Handover Detection
 # ═══════════════════════════════════════════════════════════════════════════
@@ -207,6 +254,58 @@ class TestDetectHandover:
 class TestClassifyVelocity:
     """Tests for classify_velocity."""
 
+=======
+class TestDetectHandover:
+    def test_same_cgi_not_handover(self):
+        assert (
+            detect_handover("404-98-100-1", "404-98-100-1", 19.0, 72.8, 19.0, 72.8)
+            is False
+        )
+
+    def test_different_cgi_same_coords_is_handover(self):
+        assert (
+            detect_handover(
+                "404-98-100-1", "404-98-100-2", 19.076, 72.878, 19.076, 72.878
+            )
+            is True
+        )
+
+    def test_different_cgi_close_coords_is_handover(self):
+        assert (
+            detect_handover(
+                "404-98-100-1",
+                "404-98-100-2",
+                19.076000,
+                72.878000,
+                19.076270,
+                72.878000,
+            )
+            is True
+        )
+
+    def test_different_cgi_far_coords_not_handover(self):
+        assert detect_handover("404-98-100-1", "404-98-200-5", *MUMBAI, *PUNE) is False
+
+    def test_none_prev_cgi(self):
+        assert detect_handover(None, "404-98-100-1", 19.0, 72.8, 19.0, 72.8) is False
+
+    def test_none_curr_cgi(self):
+        assert detect_handover("404-98-100-1", None, 19.0, 72.8, 19.0, 72.8) is False
+
+    def test_missing_coords_not_handover(self):
+        assert (
+            detect_handover("404-98-100-1", "404-98-100-2", None, None, None, None)
+            is False
+        )
+
+    def test_boundary_at_tolerance(self):
+        assert (
+            detect_handover("A", "B", 0.0, 0.0, 0.0, 0.0, coord_tolerance_m=0.0) is True
+        )
+
+
+class TestClassifyVelocity:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     def test_stationary(self):
         assert classify_velocity(0.0) == "stationary"
         assert classify_velocity(0.5) == "stationary"
@@ -239,6 +338,7 @@ class TestClassifyVelocity:
         assert classify_velocity(200.0, max_plausible_kmh=150.0) == "anomalous"
 
 
+<<<<<<< HEAD
 # ═══════════════════════════════════════════════════════════════════════════
 # 6. Impossible Velocity Flag
 # ═══════════════════════════════════════════════════════════════════════════
@@ -247,6 +347,9 @@ class TestClassifyVelocity:
 class TestFlagImpossibleVelocity:
     """Tests for flag_impossible_velocity."""
 
+=======
+class TestFlagImpossibleVelocity:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     def test_below_threshold(self):
         assert flag_impossible_velocity(100.0) is False
 
@@ -264,6 +367,7 @@ class TestFlagImpossibleVelocity:
         assert flag_impossible_velocity(100.0, threshold_kmh=150.0) is False
 
 
+<<<<<<< HEAD
 # ═══════════════════════════════════════════════════════════════════════════
 # 7. End-to-End Reconstruction
 # ═══════════════════════════════════════════════════════════════════════════
@@ -275,6 +379,12 @@ class TestReconstructMovementEvents:
     @staticmethod
     def _make_record(ts_offset_min, lat, lon, cgi, event_type="call_start"):
         base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=timezone.utc)
+=======
+class TestReconstructMovementEvents:
+    @staticmethod
+    def _make_record(ts_offset_min, lat, lon, cgi, event_type="call_start"):
+        base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=UTC)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         return {
             "timestamp": base + timedelta(minutes=ts_offset_min),
             "latitude": lat,
@@ -297,6 +407,7 @@ class TestReconstructMovementEvents:
         assert summary.events[0].distance_m == 0.0
 
     def test_normal_movement(self):
+<<<<<<< HEAD
         """Two records at different locations → non-zero distance and speed."""
         records = [
             self._make_record(0, *SURAT, "404-98-100-1"),
@@ -309,6 +420,18 @@ class TestReconstructMovementEvents:
 
     def test_handover_detection(self):
         """Same coords, different CGI → handover with zero distance/speed."""
+=======
+        records = [
+            self._make_record(0, *SURAT, "404-98-100-1"),
+            self._make_record(60, *MUMBAI, "404-98-200-5"),
+        ]
+        summary = reconstruct_movement_events(records)
+        assert summary.total_events == 2
+        assert summary.total_distance_m > 200_000
+        assert summary.events[1].speed_kmh > 0
+
+    def test_handover_detection(self):
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         records = [
             self._make_record(0, 19.076, 72.878, "404-98-100-1"),
             self._make_record(5, 19.076, 72.878, "404-98-100-2"),
@@ -320,10 +443,16 @@ class TestReconstructMovementEvents:
         assert summary.events[1].speed_kmh == 0.0
 
     def test_impossible_velocity_flagged(self):
+<<<<<<< HEAD
         """Very far apart in very short time → anomalous."""
         records = [
             self._make_record(0, *MUMBAI, "404-98-100-1"),
             self._make_record(1, *DELHI, "404-98-200-5"),  # 1 min for ~1150km
+=======
+        records = [
+            self._make_record(0, *MUMBAI, "404-98-100-1"),
+            self._make_record(1, *DELHI, "404-98-200-5"),
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         summary = reconstruct_movement_events(records)
         assert summary.anomaly_count == 1
@@ -331,12 +460,20 @@ class TestReconstructMovementEvents:
         assert summary.events[1].velocity_class == "anomalous"
 
     def test_mixed_sequence(self):
+<<<<<<< HEAD
         """Multi-step: normal → handover → anomalous."""
         records = [
             self._make_record(0, 19.076, 72.878, "A"),
             self._make_record(30, 19.080, 72.880, "B"),       # short move
             self._make_record(35, 19.080, 72.880, "C"),       # handover
             self._make_record(36, *DELHI, "D"),                # impossible
+=======
+        records = [
+            self._make_record(0, 19.076, 72.878, "A"),
+            self._make_record(30, 19.080, 72.880, "B"),
+            self._make_record(35, 19.080, 72.880, "C"),
+            self._make_record(36, *DELHI, "D"),
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         summary = reconstruct_movement_events(records)
         assert summary.total_events == 4
@@ -357,7 +494,11 @@ class TestReconstructMovementEvents:
     def test_time_span_calculation(self):
         records = [
             self._make_record(0, 19.0, 72.8, "A"),
+<<<<<<< HEAD
             self._make_record(120, 19.1, 72.9, "B"),  # 2 hours later
+=======
+            self._make_record(120, 19.1, 72.9, "B"),
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         summary = reconstruct_movement_events(records)
         assert summary.time_span_seconds == pytest.approx(7200.0, abs=1.0)
@@ -368,11 +509,17 @@ class TestReconstructMovementEvents:
             self._make_record(120, *MUMBAI, "B"),
         ]
         summary = reconstruct_movement_events(records)
+<<<<<<< HEAD
         assert summary.total_distance_km > 200  # ~250 km
 
     def test_records_as_objects(self):
         """Verify that object-style records (attrs) also work."""
 
+=======
+        assert summary.total_distance_km > 200
+
+    def test_records_as_objects(self):
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         class FakeRecord:
             def __init__(self, ts, lat, lon, cgi):
                 self.timestamp = ts
@@ -381,7 +528,11 @@ class TestReconstructMovementEvents:
                 self.first_cgi = cgi
                 self.event_type = "sms"
 
+<<<<<<< HEAD
         base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=timezone.utc)
+=======
+        base = datetime(2026, 7, 23, 10, 0, 0, tzinfo=UTC)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         records = [
             FakeRecord(base, 19.076, 72.878, "X-1"),
             FakeRecord(base + timedelta(minutes=10), 19.076, 72.878, "X-2"),
@@ -391,11 +542,20 @@ class TestReconstructMovementEvents:
         assert summary.handover_count == 1
 
     def test_null_coordinates_handled(self):
+<<<<<<< HEAD
         """Records with None lat/lon should not crash."""
+=======
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         records = [
             self._make_record(0, None, None, "A"),
             self._make_record(5, 19.076, 72.878, "B"),
         ]
         summary = reconstruct_movement_events(records)
         assert summary.total_events == 2
+<<<<<<< HEAD
         assert summary.events[1].distance_m is None or summary.events[1].distance_m == 0.0
+=======
+        assert (
+            summary.events[1].distance_m is None or summary.events[1].distance_m == 0.0
+        )
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468

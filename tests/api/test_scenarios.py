@@ -6,13 +6,12 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend"))
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from main import app
 from app.database.session import get_db
 from app.models.base import Base
+from fastapi.testclient import TestClient
+from main import app
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # Setup in-memory database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

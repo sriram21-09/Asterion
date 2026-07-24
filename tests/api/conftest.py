@@ -17,23 +17,21 @@ sys.path.insert(0, str(ROOT / "backend"))
 sys.path.insert(0, str(ROOT))
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from main import app
 from app.database.session import get_db
 from app.models.base import Base
+from app.models.case import Case  # noqa: F401
+from app.models.confidence_result import ConfidenceResult  # noqa: F401
+from app.models.localization_result import LocalizationResult  # noqa: F401
+from app.models.measurement import Measurement  # noqa: F401
 
 # Import all ORM models so metadata.create_all picks them up
 from app.models.scenario import Scenario  # noqa: F401
-from app.models.case import Case  # noqa: F401
-from app.models.measurement import Measurement  # noqa: F401
-from app.models.localization_result import LocalizationResult  # noqa: F401
-from app.models.tracking_result import TrackingResult  # noqa: F401
-from app.models.confidence_result import ConfidenceResult  # noqa: F401
 from app.models.tower import Tower  # noqa: F401
-
+from app.models.tracking_result import TrackingResult  # noqa: F401
+from fastapi.testclient import TestClient
+from main import app
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # ---------------------------------------------------------------------------
 # In-memory SQLite engine (shared across tests/api)

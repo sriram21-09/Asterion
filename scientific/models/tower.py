@@ -20,8 +20,6 @@ Example:
     ... )
 """
 
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -73,7 +71,7 @@ class Tower(BaseModel):
         default=43.0,
         description="Effective Isotropic Radiated Power (EIRP) in dBm",
     )
-    sector: Optional[str] = Field(
+    sector: str | None = Field(
         default=None,
         description="Sector identifier (e.g., 'A', 'B', 'C')",
         examples=["A"],

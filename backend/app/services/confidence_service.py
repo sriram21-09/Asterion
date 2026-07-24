@@ -9,21 +9,19 @@ Orchestrates the confidence analysis pipeline:
 import json
 import time
 from pathlib import Path
-from typing import Dict, List
-
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
 
 from app.models.confidence_result import ConfidenceResult as ConfidenceResultORM
+from app.repositories.case_repository import CaseRepository
 from app.repositories.confidence_repository import ConfidenceRepository
 from app.repositories.localization_repository import LocalizationRepository
 from app.repositories.measurement_repository import MeasurementRepository
-from app.repositories.case_repository import CaseRepository
 from app.shared.validation import ValidationError, decode_case_code
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 from scientific.models.measurement import Measurement as ScientificMeasurement
-from scientific.models.tower import Tower as ScientificTower
 from scientific.models.scenario_config import ScenarioConfig
+from scientific.models.tower import Tower as ScientificTower
 from scientific.pipeline.confidence import compute_confidence
 
 
@@ -34,7 +32,7 @@ class ConfidenceService:
     def run_confidence(
         db: Session,
         case_code: str,
-    ) -> Dict:
+    ) -> dict:
         """Run confidence analysis for a case.
 
         1. Decode case_code → load case + scenario
@@ -175,7 +173,7 @@ class ConfidenceService:
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to read scenario dataset: {str(e)}",
+                detail=f"Failed to read scenario dataset: {e!s}",
             )
 
         for cfg_dict in configs_list:
@@ -190,7 +188,7 @@ class ConfidenceService:
                 except Exception as e:
                     raise ValidationError(
                         "scenario_config",
-                        f"Failed to parse scenario config: {str(e)}",
+                        f"Failed to parse scenario config: {e!s}",
                         status_code=400,
                     )
 
@@ -203,7 +201,7 @@ class ConfidenceService:
     @staticmethod
     def _convert_to_scientific(config, db_measurements):
         """Convert DB ORM measurement records + scenario config → scientific models."""
-        scientific_towers: List[ScientificTower] = []
+        scientific_towers: list[ScientificTower] = []
         for tp in config.tower_placements:
             scientific_towers.append(
                 ScientificTower(
@@ -218,7 +216,7 @@ class ConfidenceService:
                 )
             )
 
-        scientific_measurements: List[ScientificMeasurement] = []
+        scientific_measurements: list[ScientificMeasurement] = []
         for m in db_measurements:
             # Map measurement back to tower_id using measurement_code pattern
             parts = m.measurement_code.split("-")

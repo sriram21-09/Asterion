@@ -1,13 +1,12 @@
-import csv
-import io
-import re
-from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
+"""
+CDR Import Service
+==================
+"""
 
-from sqlalchemy.orm import Session
-from app.models.import_job import ImportJob
+from typing import Any
+
 from app.models.cdr_record import CDRRecord
+<<<<<<< HEAD
 
 
 class BaseCDRParser(ABC):
@@ -302,6 +301,17 @@ class BSNLCDRParser(BaseCDRParser):
                 failed_count += 1
 
         return records, failed_count
+=======
+from app.models.import_job import ImportJob
+from app.services.parsers import (
+    AirtelCDRParser,
+    BaseCDRParser,
+    BSNLCDRParser,
+    JioCDRParser,
+    ViCDRParser,
+)
+from sqlalchemy.orm import Session
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 
 
@@ -570,7 +580,7 @@ class ViCDRParser(BaseCDRParser):
 class CDRImportService:
     """Service to orchestrate CDR file uploads, parsing, and database storage."""
 
-    PARSERS: List[BaseCDRParser] = [
+    PARSERS: list[BaseCDRParser] = [
         AirtelCDRParser(),
         JioCDRParser(),
         ViCDRParser(),
@@ -593,7 +603,7 @@ class CDRImportService:
         return "unknown"
 
     @classmethod
-    def get_parser(cls, operator: str) -> Optional[BaseCDRParser]:
+    def get_parser(cls, operator: str) -> BaseCDRParser | None:
         op_lower = operator.lower()
         if op_lower == "airtel":
             return AirtelCDRParser()
@@ -609,11 +619,10 @@ class CDRImportService:
         self,
         file_name: str,
         file_bytes: bytes,
-        case_id: Optional[int] = None,
-        operator: Optional[str] = None,
+        case_id: int | None = None,
+        operator: str | None = None,
         db: Session = None,  # type: ignore[assignment]
-    ) -> Dict[str, Any]:
-
+    ) -> dict[str, Any]:
         content = file_bytes.decode("utf-8", errors="replace")
 
         detected_op = operator
@@ -693,3 +702,13 @@ class CDRImportService:
                     "error": str(e),
                 },
             }
+
+
+__all__ = [
+    "AirtelCDRParser",
+    "BSNLCDRParser",
+    "BaseCDRParser",
+    "CDRImportService",
+    "JioCDRParser",
+    "ViCDRParser",
+]

@@ -6,14 +6,13 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "backend"))
 
 # Import all models to configure mapper correctly
-from app.models.case import Case
-from app.models.scenario import Scenario
-from app.models.measurement import Measurement
-from app.models.localization_result import LocalizationResult
-from app.models.tracking_result import TrackingResult
-from app.models.confidence_result import ConfidenceResult
-
 from app.database.session import SessionLocal
+from app.models.case import Case
+from app.models.confidence_result import ConfidenceResult
+from app.models.localization_result import LocalizationResult
+from app.models.measurement import Measurement
+from app.models.scenario import Scenario
+from app.models.tracking_result import TrackingResult
 
 db = SessionLocal()
 try:

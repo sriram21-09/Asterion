@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.models.movement_event import MovementEvent
+=======
+from app.models.movement_event import MovementEvent
+from sqlalchemy.orm import Session
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 
 class MovementRepository:
@@ -18,7 +23,11 @@ class MovementRepository:
         return event
 
     @staticmethod
+<<<<<<< HEAD
     def bulk_create(db: Session, events: List[MovementEvent]) -> List[MovementEvent]:
+=======
+    def bulk_create(db: Session, events: list[MovementEvent]) -> list[MovementEvent]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         """Persist a list of movement events in one commit."""
         db.add_all(events)
         db.commit()
@@ -27,7 +36,11 @@ class MovementRepository:
         return events
 
     @staticmethod
+<<<<<<< HEAD
     def get_by_case(db: Session, case_id: int) -> List[MovementEvent]:
+=======
+    def get_by_case(db: Session, case_id: int) -> list[MovementEvent]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         """Retrieve all movement events for a case, ordered by sequence_number."""
         return (
             db.query(MovementEvent)
@@ -39,7 +52,11 @@ class MovementRepository:
     @staticmethod
     def get_by_case_and_type(
         db: Session, case_id: int, event_type: str
+<<<<<<< HEAD
     ) -> List[MovementEvent]:
+=======
+    ) -> list[MovementEvent]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         """Retrieve movement events for a case filtered by event_type."""
         return (
             db.query(MovementEvent)

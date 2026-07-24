@@ -81,7 +81,8 @@ export function LeafletMap({ towers, center = [12.9716, 77.5946], zoom = 13, pat
                     opacity: 0.8,
                     dashArray: '8, 8',
                     lineCap: 'round',
-                    lineJoin: 'round'
+                    lineJoin: 'round',
+                    className: 'leaflet-animated-path'
                   }}
                 />
               )}
@@ -142,3 +143,5 @@ export function LeafletMap({ towers, center = [12.9716, 77.5946], zoom = 13, pat
     </div>
   )
 }
+
+export default LeafletMap

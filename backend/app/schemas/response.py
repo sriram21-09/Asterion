@@ -1,4 +1,5 @@
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar
+
 from pydantic import BaseModel
 
 T = TypeVar("T")
@@ -11,8 +12,8 @@ class ErrorDetail(BaseModel):
 
 class APIResponse(BaseModel, Generic[T]):
     success: bool
-    data: Optional[T] = None
-    error: Optional[ErrorDetail] = None
-    detail: Optional[str] = (
+    data: T | None = None
+    error: ErrorDetail | None = None
+    detail: str | None = (
         None  # Kept for backward compatibility with standard FastAPI errors/tests
     )

@@ -7,11 +7,20 @@ and spatial density metrics for cell towers within the Asterion scientific pipel
 """
 
 import re
+<<<<<<< HEAD
 from typing import Dict, List, Any, Optional, Tuple
 from scientific.constants import haversine_distance_m
 
 
 def parse_cgi(cgi_str: str) -> Dict[str, Optional[str]]:
+=======
+from typing import Any
+
+from scientific.constants import haversine_distance_m
+
+
+def parse_cgi(cgi_str: str) -> dict[str, str | None]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     """Parse a delimited Cell Global Identity (CGI) string into its components.
 
     Standard format: MCC-MNC-LAC-CI (e.g. '404-98-8331-23071').
@@ -46,14 +55,22 @@ class CGIResolver:
       4. MCC Prefix Match (MCC) -> centroid of all matching towers
     """
 
+<<<<<<< HEAD
     def __init__(self, towers: List[Any]) -> None:
+=======
+    def __init__(self, towers: list[Any]) -> None:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         """Initialize the resolver with a list/registry of towers.
 
         Towers can be dictionaries, Pydantic objects, or ORM models.
         Must have coordinates (latitude, longitude) and CGI-associated fields (e.g. cgi, tower_id, or mcc/mnc/lac/ci).
         """
         self.towers = towers
+<<<<<<< HEAD
         self._parsed_towers: List[Dict[str, Any]] = []
+=======
+        self._parsed_towers: list[dict[str, Any]] = []
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         self._initialize_registry()
 
     def _get_val(self, obj: Any, key: str) -> Any:
@@ -104,7 +121,11 @@ class CGIResolver:
                 }
             )
 
+<<<<<<< HEAD
     def resolve_cgi(self, q_cgi: str) -> Dict[str, Any]:
+=======
+    def resolve_cgi(self, q_cgi: str) -> dict[str, Any]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         """Resolve a query Cell Global Identity (CGI) string to coordinates and metadata.
 
         Returns:
@@ -122,8 +143,13 @@ class CGIResolver:
 
         # Helper to compute centroid/mean of list of parsed towers
         def compute_mean_coords(
+<<<<<<< HEAD
             matches: List[dict],
         ) -> Tuple[Optional[float], Optional[float]]:
+=======
+            matches: list[dict],
+        ) -> tuple[float | None, float | None]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
             valid_coords = [
                 (t["latitude"], t["longitude"])
                 for t in matches
@@ -188,9 +214,13 @@ class CGIResolver:
 
         # 4. Try MCC Prefix Fallback (MCC)
         if q_mcc:
+<<<<<<< HEAD
             mcc_matches = [
                 t for t in self._parsed_towers if t["mcc"] == q_mcc
             ]
+=======
+            mcc_matches = [t for t in self._parsed_towers if t["mcc"] == q_mcc]
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
             lat, lon = compute_mean_coords(mcc_matches)
             if lat is not None and lon is not None:
                 return {
@@ -212,7 +242,11 @@ class CGIResolver:
 def calculate_radius_density(
     lat: float,
     lon: float,
+<<<<<<< HEAD
     towers: List[Any],
+=======
+    towers: list[Any],
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     radius_m: float = 1000.0,
 ) -> int:
     """Calculate the number of towers located within radius_m of the given coordinates.
@@ -247,9 +281,15 @@ def calculate_radius_density(
 
 
 def calculate_neighbor_density(
+<<<<<<< HEAD
     towers: List[Any],
     radius_m: float = 1000.0,
 ) -> Dict[str, int]:
+=======
+    towers: list[Any],
+    radius_m: float = 1000.0,
+) -> dict[str, int]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     """Calculate the density of neighboring towers around each tower.
 
     Args:
@@ -287,18 +327,28 @@ def calculate_neighbor_density(
             continue
 
         # Count other towers
+<<<<<<< HEAD
         count = calculate_radius_density(
             float(t_lat), float(t_lon), towers, radius_m
         )
+=======
+        count = calculate_radius_density(float(t_lat), float(t_lon), towers, radius_m)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         densities[str(t_id)] = count
 
     return densities
 
 
 def calculate_grid_density(
+<<<<<<< HEAD
     towers: List[Any],
     grid_size_deg: float = 0.01,
 ) -> Dict[Tuple[float, float], int]:
+=======
+    towers: list[Any],
+    grid_size_deg: float = 0.01,
+) -> dict[tuple[float, float], int]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     """Group towers into spatial grid cells and compute the count per cell.
 
     Args:
@@ -330,7 +380,11 @@ def calculate_grid_density(
     return grid
 
 
+<<<<<<< HEAD
 def normalize_densities(densities: Dict[Any, float]) -> Dict[Any, float]:
+=======
+def normalize_densities(densities: dict[Any, float]) -> dict[Any, float]:
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     """Normalize density scores to the interval [0.0, 1.0] using Min-Max scaling.
 
     If the maximum and minimum densities are equal, returns 1.0 for all entries.

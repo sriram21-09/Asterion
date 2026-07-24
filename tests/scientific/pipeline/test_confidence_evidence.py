@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from scientific.models.measurement import Measurement
 
@@ -24,21 +24,21 @@ def test_confidence_equilateral_layout():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
         Measurement(
             measurement_id="M003",
             tower_id="T003",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
@@ -79,21 +79,21 @@ def test_confidence_collinear_layout():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
         Measurement(
             measurement_id="M003",
             tower_id="T003",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
@@ -123,7 +123,7 @@ def test_confidence_insufficient_towers():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
         ),
     ]
@@ -160,21 +160,21 @@ def test_ellipse_orientation_alignment():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
         Measurement(
             measurement_id="M003",
             tower_id="T003",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
             uncertainty_m=30.0,
         ),
@@ -208,21 +208,21 @@ def test_evidence_synthesis_audit():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
         # Valid measurement 2
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
         ),
         # Invalid measurement (partial coordinates: latitude without longitude)
         Measurement(
             measurement_id="M003",
             tower_id="T003",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-80.0,
             latitude=10.0,
             longitude=None,

@@ -25,7 +25,7 @@ Example:
     ... )
 """
 
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -66,16 +66,16 @@ class Scenario(BaseModel):
         description="Human-readable scenario name",
         examples=["Urban 3-Tower Test"],
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         default=None,
         description="Optional textual description of the scenario",
     )
-    towers: List[Tower] = Field(
+    towers: list[Tower] = Field(
         ...,
         min_length=3,
         description="Tower configurations (minimum 3 for multilateration)",
     )
-    measurements: List[Measurement] = Field(
+    measurements: list[Measurement] = Field(
         default_factory=list,
         description="Signal measurements for this scenario",
     )
@@ -87,13 +87,13 @@ class Scenario(BaseModel):
         default="urban",
         description="Environment classification: urban, suburban, rural, highway",
     )
-    expected_device_lat: Optional[float] = Field(
+    expected_device_lat: float | None = Field(
         default=None,
         ge=-90.0,
         le=90.0,
         description="Ground-truth device latitude for validation (WGS84)",
     )
-    expected_device_lon: Optional[float] = Field(
+    expected_device_lon: float | None = Field(
         default=None,
         ge=-180.0,
         le=180.0,

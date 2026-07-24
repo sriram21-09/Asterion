@@ -7,23 +7,25 @@ ScenarioConfig → Validation → Simulation → Evidence Synthesis → Localiza
 """
 
 import time
-from typing import List, Dict, Any, Optional
 from collections import defaultdict
+<<<<<<< HEAD
 from datetime import timedelta, timezone, datetime
+=======
+from datetime import UTC, datetime, timedelta
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 from scientific.logger import get_logger
-from scientific.models.scenario_config import ScenarioConfig
+from scientific.models.result import LocalizationResult, PipelineResult
 from scientific.models.scenario import Scenario
+from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.tower import Tower
-from scientific.models.measurement import Measurement
-from scientific.models.result import LocalizationResult, ConfidenceResult, PipelineResult
-from scientific.validation.validators import ScenarioValidator, ResultValidator
-from scientific.simulation.measurement_generator import generate_scenario_measurements
-from scientific.pipeline.evidence import synthesize_evidence
-from scientific.pipeline.weighted_centroid import solve_weighted_centroid
-from scientific.pipeline.multilateration import solve_multilateration
-from scientific.pipeline.kalman_tracker import track_positions
 from scientific.pipeline.confidence import compute_confidence
+from scientific.pipeline.evidence import synthesize_evidence
+from scientific.pipeline.kalman_tracker import track_positions
+from scientific.pipeline.multilateration import solve_multilateration
+from scientific.pipeline.weighted_centroid import solve_weighted_centroid
+from scientific.simulation.measurement_generator import generate_scenario_measurements
+from scientific.validation.validators import ResultValidator, ScenarioValidator
 
 logger = get_logger(__name__)
 
@@ -42,7 +44,7 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         ValueError: If config validation fails or no measurements are accepted.
     """
     total_start = time.perf_counter()
-    time_breakdown: Dict[str, float] = {}
+    time_breakdown: dict[str, float] = {}
 
     logger.info(f"Starting E2E pipeline for scenario config: {config.scenario_id}")
 
@@ -79,12 +81,18 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     # -------------------------------------------------------------------------
     stage_start = time.perf_counter()
     measurements = generate_scenario_measurements(config)
+<<<<<<< HEAD
     # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
     now_utc = datetime.now(timezone.utc)
+=======
+
+    # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
+    now_utc = datetime.now(UTC)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     for m in measurements:
         if m.timestamp:
             if m.timestamp.tzinfo is None:
-                m.timestamp = m.timestamp.replace(tzinfo=timezone.utc)
+                m.timestamp = m.timestamp.replace(tzinfo=UTC)
             if m.timestamp > now_utc:
                 m.timestamp -= timedelta(minutes=1)
 
@@ -131,7 +139,7 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     for m in accepted_measurements:
         meas_by_timestamp[m.timestamp].append(m)
     sorted_timestamps = sorted(meas_by_timestamp.keys())
-    raw_localization_results: List[LocalizationResult] = []
+    raw_localization_results: list[LocalizationResult] = []
 
     algorithm = config.simulation.algorithm
 

@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 sys.path.insert(0, str(ROOT))
 
+<<<<<<< HEAD
 from datetime import datetime, timedelta, timezone
 import pytest
 
@@ -44,6 +45,31 @@ from app.services.movement_service import (
     EVENT_TYPE_LOCATION_UPDATE,
 )
 from main import app
+=======
+from datetime import UTC, datetime, timedelta
+
+import app.database.base  # Ensure all ORM models are registered
+import pytest
+from app.database.session import get_db
+from app.models.base import Base
+from app.models.case import Case
+from app.models.cdr_record import CDRRecord
+from app.models.import_job import ImportJob
+from app.models.movement_event import MovementEvent
+from app.models.tracking_result import TrackingResult
+from app.repositories.movement_repository import MovementRepository
+from app.services.movement_service import (
+    EVENT_TYPE_CALL_START,
+    EVENT_TYPE_HANDOVER,
+    EVENT_TYPE_SMS,
+    MovementReconstructionService,
+)
+from fastapi.testclient import TestClient
+from main import app
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 # ---------------------------------------------------------------------------
 # Test database fixture setup
@@ -86,6 +112,10 @@ def db():
 @pytest.fixture
 def client(db):
     """FastAPI TestClient using the test database session."""
+<<<<<<< HEAD
+=======
+
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     def override_get_db():
         try:
             yield db
@@ -107,7 +137,11 @@ def test_movement_event_orm_and_repo(db: Session):
     db.add(case)
     db.commit()
 
+<<<<<<< HEAD
     now = datetime.now(timezone.utc)
+=======
+    now = datetime.now(UTC)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     evt1 = MovementEvent(
         case_id=case.id,
         sequence_number=1,
@@ -174,7 +208,11 @@ def test_reconstruct_movements_handover_and_kinematics(db: Session):
     db.add(job)
     db.commit()
 
+<<<<<<< HEAD
     base_time = datetime(2026, 7, 23, 10, 0, 0, tzinfo=timezone.utc)
+=======
+    base_time = datetime(2026, 7, 23, 10, 0, 0, tzinfo=UTC)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
     # CDR 1: Call start at CGI 1
     cdr1 = CDRRecord(
@@ -232,7 +270,11 @@ def test_reconstruct_movements_with_tracking_merge(db: Session):
     db.add(job)
     db.commit()
 
+<<<<<<< HEAD
     base_time = datetime(2026, 7, 23, 12, 0, 0, tzinfo=timezone.utc)
+=======
+    base_time = datetime(2026, 7, 23, 12, 0, 0, tzinfo=UTC)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
     # CDR record without lat/lon coordinates
     cdr = CDRRecord(
@@ -281,7 +323,11 @@ def test_reconstruct_movement_api_success(client: TestClient, db: Session):
     job = ImportJob(id=1, filename="test.csv", status="completed")
     db.add(job)
 
+<<<<<<< HEAD
     base_time = datetime(2026, 7, 23, 14, 0, 0, tzinfo=timezone.utc)
+=======
+    base_time = datetime(2026, 7, 23, 14, 0, 0, tzinfo=UTC)
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     cdr = CDRRecord(
         import_job_id=job.id,
         case_id=case.id,

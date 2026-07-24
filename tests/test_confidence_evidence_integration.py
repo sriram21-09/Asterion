@@ -10,25 +10,24 @@ Tests cover:
   - API endpoint response shape and error cases for both endpoints
 """
 
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
-
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
-
+from app.database.session import get_db
 from app.models.base import Base
 from app.models.case import Case
-from app.models.scenario import Scenario
-from app.models.measurement import Measurement
-from app.models.localization_result import LocalizationResult
-from app.models.tracking_result import TrackingResult  # noqa: F401 – needed for mapper
 from app.models.confidence_result import ConfidenceResult
-from app.database.session import get_db
+from app.models.localization_result import LocalizationResult
+from app.models.measurement import Measurement
+from app.models.scenario import Scenario
+from app.models.tracking_result import TrackingResult  # noqa: F401 – needed for mapper
 from app.repositories.confidence_repository import ConfidenceRepository
 from app.services.confidence_service import ConfidenceService
 from app.services.evidence_service import EvidenceService
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # ---------------------------------------------------------------------------
 # Test database fixture
@@ -106,7 +105,7 @@ def sample_measurements(db: Session, sample_case):
             case_id=sample_case.id,
             scenario_id=sample_case.scenario_id,
             measurement_code=f"MEAS-SCN001-T00{tower_idx + 1}-{i + 1:04d}",
-            timestamp=datetime(2026, 7, 17, 10, i, tzinfo=timezone.utc),
+            timestamp=datetime(2026, 7, 17, 10, i, tzinfo=UTC),
             rssi_dbm=-75.0 - i * 2,
             latitude=base_lat + (i * 0.001),
             longitude=base_lon + (i * 0.0005),

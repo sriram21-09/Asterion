@@ -11,7 +11,7 @@ Tests every deliverable from Day 4 (Chaitanya — Scientific Engineer):
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -25,6 +25,7 @@ sys.path.insert(0, str(ROOT))
 # DELIVERABLE 1: scientific/models/scenario_config.py
 # =====================================================================
 
+from scientific.models.scenario import Scenario
 from scientific.models.scenario_config import (
     PROPAGATION_PRESETS,
     PropagationDefaults,
@@ -32,9 +33,7 @@ from scientific.models.scenario_config import (
     SimulationParameters,
     TowerPlacement,
 )
-from scientific.models.scenario import Scenario
 from scientific.models.tower import Tower
-
 
 # ── TowerPlacement Tests ─────────────────────────────────────────────
 
@@ -209,7 +208,7 @@ class TestScenarioConfig:
     def _make_placements(count=3):
         return [
             TowerPlacement(
-                tower_id=f"T{i+1:03d}",
+                tower_id=f"T{i + 1:03d}",
                 latitude=12.97 + i * 0.003,
                 longitude=77.59 - i * 0.005,
             )
@@ -510,7 +509,7 @@ class ScenarioORM(_Base):
     created_at = Column(
         DateTime,
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )
 
 
@@ -552,8 +551,8 @@ class TestScenarioRepository:
         for i in range(5):
             scenario_db.add(
                 ScenarioORM(
-                    name=f"Scenario {i+1}",
-                    description=f"Test scenario number {i+1}",
+                    name=f"Scenario {i + 1}",
+                    description=f"Test scenario number {i + 1}",
                 )
             )
         scenario_db.commit()
@@ -623,7 +622,7 @@ class TestScenarioService:
         """Scenario → ScenarioConfig → JSON → ScenarioConfig roundtrip."""
         towers = [
             Tower(
-                tower_id=f"T{i+1:03d}",
+                tower_id=f"T{i + 1:03d}",
                 latitude=12.97 + i * 0.003,
                 longitude=77.59 - i * 0.005,
             )
@@ -651,7 +650,7 @@ class TestScenarioService:
         """Different environment types should produce different propagation."""
         placements = [
             TowerPlacement(
-                tower_id=f"T{i+1:03d}",
+                tower_id=f"T{i + 1:03d}",
                 latitude=12.97 + i * 0.003,
                 longitude=77.59 - i * 0.005,
             )

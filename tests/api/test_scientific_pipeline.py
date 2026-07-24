@@ -24,7 +24,6 @@ sys.path.insert(0, str(ROOT))
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # 1. E2E Scientific Pipeline — Sequential Endpoint Tests
 # ---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ class TestScientificPipelineE2E:
 
     def test_step3_generate_measurements(self, client, seed_scenario_and_case):
         """POST /api/v1/simulation/generate generates synthetic measurements."""
-        scenario_id, case_id = seed_scenario_and_case
+        _scenario_id, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
 
         response = client.post(
@@ -107,7 +106,7 @@ class TestScientificPipelineE2E:
 
     def test_step4_run_localization(self, client, seed_scenario_and_case):
         """POST /api/v1/localization/run runs multilateration solver."""
-        scenario_id, case_id = seed_scenario_and_case
+        _scenario_id, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
 
         # Generate measurements first
@@ -134,7 +133,7 @@ class TestScientificPipelineE2E:
 
     def test_step5_run_tracking(self, client, seed_scenario_and_case):
         """POST /api/v1/tracking/run runs Kalman-smoothed tracking."""
-        scenario_id, case_id = seed_scenario_and_case
+        _scenario_id, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
 
         # Generate measurements (multiple timestamps for tracking)
@@ -165,7 +164,7 @@ class TestScientificPipelineE2E:
 
     def test_step6_run_confidence(self, client, seed_scenario_and_case):
         """POST /api/v1/confidence/run runs GDOP confidence analysis."""
-        scenario_id, case_id = seed_scenario_and_case
+        _scenario_id, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
 
         # Pipeline prerequisite: generate + localize
@@ -195,7 +194,7 @@ class TestScientificPipelineE2E:
 
     def test_step7_get_evidence(self, client, seed_scenario_and_case):
         """GET /api/v1/evidence/{case_code} retrieves audit evidence packet."""
-        scenario_id, case_id = seed_scenario_and_case
+        _scenario_id, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
 
         # Pipeline prerequisite: generate + localize + confidence
@@ -341,7 +340,7 @@ class TestDatabaseWipeSeed:
 
     def test_pipeline_idempotent_on_regenerate(self, client, seed_scenario_and_case):
         """Running simulation twice replaces old measurements (idempotent)."""
-        scenario_id, case_id = seed_scenario_and_case
+        _scenario_id, case_id = seed_scenario_and_case
         case_code = f"CASE-{case_id:03d}"
 
         sim_payload = {

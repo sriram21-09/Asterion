@@ -1,15 +1,14 @@
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from app.models.scenario import Scenario
 from app.repositories.scenario_repository import ScenarioRepository
 from app.schemas.scenario import ScenarioCreate
-from app.models.scenario import Scenario
 from app.shared.validation import (
+    ValidationError,
+    pagination_offset,
     validate_non_empty_string,
     validate_pagination,
-    pagination_offset,
-    ValidationError,
 )
-from typing import List, Optional
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 
 class ScenarioService:
@@ -51,8 +50,8 @@ class ScenarioService:
 
     @staticmethod
     def list_scenarios(
-        db: Session, page: Optional[int] = None, page_size: Optional[int] = None
-    ) -> List[Scenario]:
+        db: Session, page: int | None = None, page_size: int | None = None
+    ) -> list[Scenario]:
         validated_page, validated_page_size = validate_pagination(page, page_size)
         offset = pagination_offset(validated_page, validated_page_size)
         return ScenarioRepository.get_multi(db, skip=offset, limit=validated_page_size)

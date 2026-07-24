@@ -6,6 +6,7 @@ Verifies database-backed CGI resolution, prefix fallback hierarchy, confidence s
 """
 
 import pytest
+<<<<<<< HEAD
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.testclient import TestClient
@@ -15,6 +16,16 @@ from app.schemas.tower import TowerCreate
 from app.services.tower_service import TowerIntelligenceService
 from main import app
 from app.database.session import get_db
+=======
+from app.database.session import get_db
+from app.models.base import Base
+from app.schemas.tower import TowerCreate
+from app.services.tower_service import TowerIntelligenceService
+from fastapi.testclient import TestClient
+from main import app
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 # Configure in-memory SQLite database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

@@ -1,7 +1,8 @@
-from typing import TYPE_CHECKING, Optional, List
-from sqlalchemy import ForeignKey, String, Text, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING, Optional
+
 from app.models.base import BaseModel
+from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.models.case import Case
@@ -17,13 +18,13 @@ class ImportJob(BaseModel):
     total_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     parsed_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     failed_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    case_id: Mapped[Optional[int]] = mapped_column(
+    case_id: Mapped[int | None] = mapped_column(
         ForeignKey("cases.id", ondelete="CASCADE"), nullable=True
     )
     case: Mapped[Optional["Case"]] = relationship("Case", backref="import_jobs")
 
-    cdr_records: Mapped[List["CDRRecord"]] = relationship(
+    cdr_records: Mapped[list["CDRRecord"]] = relationship(
         "CDRRecord", back_populates="import_job", cascade="all, delete-orphan"
     )

@@ -1,50 +1,14 @@
 """
-Scientific Validation Interfaces & Validators
-===============================================
+Scientific Validation Interfaces & Validators (Facade)
+======================================================
 
-Defines expected interfaces and concrete validators for the core scientific
-data models: Measurement, Tower, and Scenario.
-
-Interface Contracts
---------------------
-Each validator protocol specifies the contract that any conforming
-implementation must satisfy. This enables:
-
-- Swapping validation strategies without changing pipeline code
-- Mocking validators in tests
-- Layering validation (quick → deep → physics-based)
-
-Concrete Validators
---------------------
-Ready-to-use validators that enforce domain constraints beyond what
-Pydantic field-level validation covers:
-
-- **MeasurementValidator**: Cross-field consistency (lat/lon pairing,
-  RSSI plausibility given timing advance, timestamp sanity).
-- **TowerValidator**: Physics-aware checks (frequency band validity,
-  transmit power range, height realism).
-- **ScenarioValidator**: Structural integrity (tower uniqueness,
-  measurement–tower referential consistency, minimum coverage).
-
-Usage::
-
-    >>> from scientific.validation.validators import ScenarioValidator
-    >>> validator = ScenarioValidator()
-    >>> result = validator.validate(some_scenario)
-    >>> if not result.is_valid:
-    ...     for err in result.errors:
-    ...         print(f"[{err.severity}] {err.field}: {err.message}")
+Provides modularized validators and re-exports all interfaces, data models,
+and validator classes for 100% backwards compatibility across the project.
 """
 
 from __future__ import annotations
- 
-import math
-import re
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
-from typing import List, Optional, Protocol, TypeVar, Dict, Any
 
+<<<<<<< HEAD
 from scientific.models.cdr_record import CDRRecord
 from scientific.models.measurement import Measurement
 from scientific.models.scenario import Scenario
@@ -56,142 +20,55 @@ from scientific.config import (
     ValidationThresholds,
     DEFAULT_VALIDATION_THRESHOLDS,
     get_environment_config,
+=======
+from scientific.validation.cdr_validator import (
+    CDRDataQualityScore,
+    CDRRecordValidator,
+    CDRValidationReport,
+    CDRValidationService,
+    validate_cdr_batch,
 )
-from scientific.constants import TA_RESOLUTION_M, haversine_distance_m
+from scientific.validation.measurement_validator import MeasurementValidator
+from scientific.validation.result_validator import ResultValidator, cross_validate
+from scientific.validation.scenario_validator import (
+    ScenarioValidator,
+    validate_batch,
+    validate_measurement,
+    validate_scenario,
+    validate_tower,
+)
+from scientific.validation.tower_validator import TowerValidator
+from scientific.validation.types import (
+    CELLULAR_BANDS_MHZ,
+    Severity,
+    ValidationError,
+    ValidationResult,
+    Validator,
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
+)
 
-# ---------------------------------------------------------------------------
-# Validation result types
-# ---------------------------------------------------------------------------
-
-
-class Severity(str, Enum):
-    """Severity level for a validation finding."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
-@dataclass(frozen=True)
-class ValidationError:
-    """A single validation finding.
-
-    Attributes:
-        field: Dot-separated path to the offending field (e.g. ``"towers[0].latitude"``).
-        message: Human-readable description of the issue.
-        severity: How serious the finding is.
-        code: Machine-readable error code for programmatic handling.
-    """
-
-    field: str
-    message: str
-    severity: Severity = Severity.ERROR
-    code: Optional[str] = None
-
-
-@dataclass
-class ValidationResult:
-    """Aggregated result of running one or more validation checks.
-
-    Attributes:
-        errors: List of validation findings (errors, warnings, info).
-        is_valid: ``True`` if there are no ``ERROR``-severity findings.
-    """
-
-    errors: List[ValidationError] = field(default_factory=list)
-
-    @property
-    def is_valid(self) -> bool:
-        """Return True if no ERROR-severity findings exist."""
-        return not any(e.severity == Severity.ERROR for e in self.errors)
-
-    @property
-    def warnings(self) -> List[ValidationError]:
-        """Return only WARNING-severity findings."""
-        return [e for e in self.errors if e.severity == Severity.WARNING]
-
-    def merge(self, other: ValidationResult) -> ValidationResult:
-        """Merge another result into this one, combining all findings."""
-        self.errors.extend(other.errors)
-        return self
-
-
-# ---------------------------------------------------------------------------
-# Protocol interfaces (structural typing)
-# ---------------------------------------------------------------------------
-
-T = TypeVar("T")
-
-
-class Validator(Protocol[T]):
-    """Protocol that all scientific validators must satisfy.
-
-    Implementing classes must provide a ``validate`` method that accepts
-    an instance of the target model and returns a :class:`ValidationResult`.
-
-    Expected Interfaces
-    --------------------
-
-    **Measurement objects** must expose:
-        - ``measurement_id: str``   — unique measurement identifier
-        - ``tower_id: str``         — reference to the source tower
-        - ``timestamp: datetime``   — when the measurement was taken
-        - ``rssi_dbm: float``       — RSSI in dBm, range [-150, 0]
-        - ``latitude: float | None``  — optional measurement-point latitude
-        - ``longitude: float | None`` — optional measurement-point longitude
-        - ``timing_advance: float | None`` — optional GSM TA value
-        - ``uncertainty_m: float | None``  — optional uncertainty in meters
-
-    **Tower objects** must expose:
-        - ``tower_id: str``           — unique tower identifier
-        - ``latitude: float``         — WGS84 latitude [-90, 90]
-        - ``longitude: float``        — WGS84 longitude [-180, 180]
-        - ``antenna_height_m: float`` — antenna height > 0 meters
-        - ``frequency_mhz: float``    — operating frequency > 0 MHz
-        - ``transmit_power_dbm: float`` — EIRP in dBm
-        - ``sector: str | None``      — optional sector identifier
-        - ``coverage_radius_m: float`` — coverage radius > 0 meters
-
-    **Scenario objects** must expose:
-        - ``scenario_id: str``                  — unique scenario identifier
-        - ``name: str``                         — human-readable name
-        - ``description: str | None``           — optional description
-        - ``towers: list[Tower]``               — ≥ 3 towers
-        - ``measurements: list[Measurement]``   — associated measurements
-        - --noise_level_dbm: float``            -- background noise floor
-        - ``environment_type: str``             — one of: urban, suburban, rural, highway
-        - ``expected_device_lat: float | None`` — optional ground-truth latitude
-        - ``expected_device_lon: float | None`` — optional ground-truth longitude
-    """
-
-    def validate(self, obj: T) -> ValidationResult:
-        """Validate *obj* and return a :class:`ValidationResult`."""
-        ...  # pragma: no cover
-
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-# Common cellular frequency bands (MHz) — used for plausibility checks
-CELLULAR_BANDS_MHZ = [
-    700,
-    800,
-    850,
-    900,  # Low-band
-    1700,
-    1800,
-    1900,
-    2100,  # Mid-band
-    2300,
-    2500,
-    2600,  # Upper mid-band
-    3500,
-    3700,  # C-band (5G)
-    26000,
-    28000,
-    39000,  # mmWave (5G)
+__all__ = [
+    "CELLULAR_BANDS_MHZ",
+    "CDRDataQualityScore",
+    "CDRRecordValidator",
+    "CDRValidationReport",
+    "CDRValidationService",
+    "MeasurementValidator",
+    "ResultValidator",
+    "ScenarioValidator",
+    "Severity",
+    "TowerValidator",
+    "ValidationError",
+    "ValidationResult",
+    "Validator",
+    "cross_validate",
+    "validate_batch",
+    "validate_cdr_batch",
+    "validate_measurement",
+    "validate_scenario",
+    "validate_tower",
 ]
+<<<<<<< HEAD
 
 
 # ---------------------------------------------------------------------------
@@ -1680,3 +1557,5 @@ class CDRValidationService:
                 timely_count += 1
         return timely_count / len(records)
 >>>>>>> 034c9ebf04c348c706d620f5344c7215ed3eb6ad
+=======
+>>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
