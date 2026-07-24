@@ -239,4 +239,10 @@ E-Rakshak CDR & Location Data Sets/
 *.sqlite3
 data/
 
+# Get-Shit-Done (GSD) Runtime & State
+.gsd/STATE.md
+.gsd/journal/
+.gsd/snapshots/
+*.gsd.log
+
 
