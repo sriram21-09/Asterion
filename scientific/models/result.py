@@ -103,6 +103,22 @@ class LocalizationResult(BaseModel):
         description="When the result was computed (ISO 8601)",
         examples=["2026-07-07T10:31:00Z"],
     )
+    velocity_lat: float | None = Field(
+        default=None,
+        description="Estimated latitude velocity in deg/s (Kalman filter)",
+    )
+    velocity_lon: float | None = Field(
+        default=None,
+        description="Estimated longitude velocity in deg/s (Kalman filter)",
+    )
+    velocity_lat_mps: float | None = Field(
+        default=None,
+        description="Estimated latitude velocity in m/s (Kalman filter)",
+    )
+    velocity_lon_mps: float | None = Field(
+        default=None,
+        description="Estimated longitude velocity in m/s (Kalman filter)",
+    )
 
     model_config = {
         "json_schema_extra": {

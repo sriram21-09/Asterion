@@ -230,7 +230,7 @@ def track_positions(
         v_lat_mps = float(x_state[2] * METERS_PER_DEGREE_LAT)
         v_lon_mps = float(x_state[3] * METERS_PER_DEGREE_LAT * cos_lat)
 
-        res = LocalizationResult(
+        return LocalizationResult(
             scenario_id=res_obj.scenario_id,
             algorithm="kalman",
             estimated_latitude=est_lat,
@@ -239,14 +239,11 @@ def track_positions(
             computation_time_ms=elapsed_ms,
             signals_used=res_obj.signals_used,
             timestamp=res_obj.timestamp,
+            velocity_lat=float(x_state[2]),
+            velocity_lon=float(x_state[3]),
+            velocity_lat_mps=v_lat_mps,
+            velocity_lon_mps=v_lon_mps,
         )
-
-        # Attach velocity estimates as extra properties for database storage
-        object.__setattr__(res, "velocity_lat", float(x_state[2]))
-        object.__setattr__(res, "velocity_lon", float(x_state[3]))
-        object.__setattr__(res, "velocity_lat_mps", v_lat_mps)
-        object.__setattr__(res, "velocity_lon_mps", v_lon_mps)
-        return res
 
     # The first result doesn't have a previous step to compute dt
     # We record it as a smoothed result with initial velocity zero
