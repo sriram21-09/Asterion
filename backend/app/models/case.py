@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from app.models.localization_result import LocalizationResult
     from app.models.tracking_result import TrackingResult
     from app.models.confidence_result import ConfidenceResult
+    from app.models.movement_event import MovementEvent
 
 
 class Case(BaseModel):
@@ -35,4 +36,7 @@ class Case(BaseModel):
     )
     confidence_results: Mapped[list["ConfidenceResult"]] = relationship(
         "ConfidenceResult", back_populates="case", cascade="all, delete-orphan"
+    )
+    movement_events: Mapped[list["MovementEvent"]] = relationship(
+        "MovementEvent", back_populates="case", cascade="all, delete-orphan"
     )

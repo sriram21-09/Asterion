@@ -1,4 +1,4 @@
-import { useState, useRef, DragEvent, ChangeEvent } from 'react'
+import { useState, useRef, type DragEvent, type ChangeEvent } from 'react'
 import { UploadCloud, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ShieldAlert, Database, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/cn'

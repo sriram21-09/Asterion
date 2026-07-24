@@ -8,6 +8,7 @@ from app.models.tracking_result import TrackingResult
 from app.models.confidence_result import ConfidenceResult
 from app.models.import_job import ImportJob
 from app.models.cdr_record import CDRRecord
+from app.models.movement_event import MovementEvent
 
 __all__ = [
     "Base",
@@ -21,4 +22,5 @@ __all__ = [
     "ConfidenceResult",
     "ImportJob",
     "CDRRecord",
+    "MovementEvent",
 ]

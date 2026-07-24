@@ -9,6 +9,7 @@ ScenarioConfig → Validation → Simulation → Evidence Synthesis → Localiza
 import time
 from typing import List, Dict, Any, Optional
 from collections import defaultdict
+from datetime import timedelta, timezone, datetime
 
 from scientific.logger import get_logger
 from scientific.models.scenario_config import ScenarioConfig
@@ -67,6 +68,7 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
         errors_str = "; ".join(f"{err.field}: {err.message}" for err in val_res.errors)
         logger.error(f"Scenario configuration validation failed: {errors_str}")
         raise ValueError(f"Invalid ScenarioConfig: {errors_str}")
+
     time_breakdown["validation"] = (time.perf_counter() - stage_start) * 1000.0
     logger.info(
         f"Stage 1 complete: Config validated in {time_breakdown['validation']:.2f} ms"
@@ -78,8 +80,6 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     stage_start = time.perf_counter()
     measurements = generate_scenario_measurements(config)
     # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
-    from datetime import timedelta, timezone, datetime
-
     now_utc = datetime.now(timezone.utc)
     for m in measurements:
         if m.timestamp:

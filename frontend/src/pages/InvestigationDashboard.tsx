@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { MapPin, Search, Filter, Shield, AlertCircle, Signal } from 'lucide-react'
-import { LeafletMap, MapTower, ConfidenceTier } from '@/components/map/LeafletMap'
+import { MapPin, Search, Filter, Shield, AlertCircle, Signal, Clock } from 'lucide-react'
+import { LeafletMap, type MapTower, type ConfidenceTier } from '@/components/map/LeafletMap'
+import { TimelineStrip, type TimelineEvent } from '@/components/timeline/TimelineStrip'
 import { cn } from '@/lib/cn'
 
 // Mock Data for the Tower Registry
@@ -10,6 +11,15 @@ const MOCK_TOWERS: MapTower[] = [
   { id: 'TWR-103', name: 'Gamma Relay', lat: 12.9680, lng: 77.5850, confidenceTier: 'Estimated', radius_m: 2000 },
   { id: 'TWR-104', name: 'Delta Node', lat: 12.9650, lng: 77.6050, confidenceTier: 'Unknown', radius_m: 800 },
   { id: 'TWR-105', name: 'Epsilon Mast', lat: 12.9800, lng: 77.6000, confidenceTier: 'Estimated', radius_m: 1800 },
+]
+
+const MOCK_EVENTS: TimelineEvent[] = [
+  { id: 'ev-1', timestamp: '08:00 AM', title: 'Device Online', description: 'Initial connection to network.', type: 'connection' },
+  { id: 'ev-2', timestamp: '08:15 AM', title: 'Location Update', description: 'Device connected to Alpha Station.', type: 'movement', coordinates: [12.9716, 77.5946] },
+  { id: 'ev-3', timestamp: '09:30 AM', title: 'Location Update', description: 'Device moved to Beta Sector.', type: 'movement', coordinates: [12.9750, 77.5900] },
+  { id: 'ev-4', timestamp: '10:45 AM', title: 'Signal Drop', description: 'Lost connection briefly.', type: 'alert' },
+  { id: 'ev-5', timestamp: '11:00 AM', title: 'Location Update', description: 'Device detected at Delta Node.', type: 'movement', coordinates: [12.9650, 77.6050] },
+  { id: 'ev-6', timestamp: '12:30 PM', title: 'System Check', description: 'Automated diagnostic complete.', type: 'system' }
 ]
 
 export default function InvestigationDashboard() {
@@ -31,8 +41,12 @@ export default function InvestigationDashboard() {
   const centerLat = filteredTowers.length > 0 ? filteredTowers.reduce((acc, t) => acc + t.lat, 0) / filteredTowers.length : 12.9716
   const centerLng = filteredTowers.length > 0 ? filteredTowers.reduce((acc, t) => acc + t.lng, 0) / filteredTowers.length : 77.5946
 
+  const pathCoordinates = MOCK_EVENTS
+    .filter(e => e.coordinates)
+    .map(e => e.coordinates as [number, number])
+
   return (
-    <div className="space-y-6 animate-fade-in pb-12 h-[calc(100vh-80px)] flex flex-col">
+    <div className="space-y-6 animate-fade-in pb-12 min-h-[calc(100vh-80px)] flex flex-col">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border-primary pb-5 shrink-0">
         <div>
@@ -143,10 +157,24 @@ export default function InvestigationDashboard() {
               towers={filteredTowers}
               center={[centerLat, centerLng]}
               zoom={13}
+              pathCoordinates={pathCoordinates}
             />
           </div>
         </div>
 
+      </div>
+
+      {/* Bottom Row: Timeline Strip */}
+      <div className="bg-surface-primary border border-border-primary rounded-2xl flex flex-col overflow-hidden shrink-0">
+        <div className="p-4 border-b border-border-primary bg-surface-secondary/50">
+          <h2 className="text-lg font-bold text-content-primary flex items-center gap-2">
+            <Clock className="w-5 h-5 text-brand-primary" />
+            Movement Timeline
+          </h2>
+        </div>
+        <div className="p-2">
+          <TimelineStrip events={MOCK_EVENTS} />
+        </div>
       </div>
     </div>
   )
