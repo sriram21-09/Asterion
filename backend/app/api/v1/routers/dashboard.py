@@ -3,7 +3,7 @@ from app.database.session import get_db
 from app.schemas.dashboard import DashboardSummary
 from app.schemas.response import APIResponse
 from app.services.dashboard_service import DashboardService
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])

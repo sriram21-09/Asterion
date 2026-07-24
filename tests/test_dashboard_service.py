@@ -70,7 +70,9 @@ def test_get_case_summary_non_existent_api(client):
 
 def test_get_case_summary_empty_case(test_db_session, client):
     # Create empty case
-    case = Case(title="Test Empty Case", description="No data attached yet", status="open")
+    case = Case(
+        title="Test Empty Case", description="No data attached yet", status="open"
+    )
     test_db_session.add(case)
     test_db_session.commit()
     test_db_session.refresh(case)
@@ -99,13 +101,22 @@ def test_get_case_summary_empty_case(test_db_session, client):
 
 def test_get_case_summary_populated_case(test_db_session, client):
     # 1. Create Case
-    case = Case(title="Full Investigation Case", description="Populated test case", status="active")
+    case = Case(
+        title="Full Investigation Case",
+        description="Populated test case",
+        status="active",
+    )
     test_db_session.add(case)
     test_db_session.commit()
     test_db_session.refresh(case)
 
     # 2. Add ImportJob
-    job = ImportJob(filename="test_airtel.csv", operator="airtel", status="completed", case_id=case.id)
+    job = ImportJob(
+        filename="test_airtel.csv",
+        operator="airtel",
+        status="completed",
+        case_id=case.id,
+    )
     test_db_session.add(job)
     test_db_session.commit()
     test_db_session.refresh(job)

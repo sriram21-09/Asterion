@@ -40,7 +40,9 @@ class DashboardService:
         """Fetch and calculate all aggregated summary metrics for a given case."""
         case = db.query(Case).filter(Case.id == case_id).first()
         if not case:
-            raise HTTPException(status_code=404, detail=f"Case with ID {case_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Case with ID {case_id} not found"
+            )
 
         # 1. Case Summary Info
         case_info = CaseSummaryInfo.model_validate(case)
@@ -75,12 +77,9 @@ class DashboardService:
         )
         call_type_breakdown = {ct: count for ct, count in type_rows if ct}
 
-        min_ts, max_ts = (
-            db.query(func.min(CDRRecord.timestamp), func.max(CDRRecord.timestamp))
-            .filter(CDRRecord.case_id == case_id)
-            .first()
-            or (None, None)
-        )
+        min_ts, max_ts = db.query(
+            func.min(CDRRecord.timestamp), func.max(CDRRecord.timestamp)
+        ).filter(CDRRecord.case_id == case_id).first() or (None, None)
 
         target_nums = [
             r[0]
@@ -176,7 +175,9 @@ class DashboardService:
         )
         handover_events = (
             db.query(func.count(MovementEvent.id))
-            .filter(MovementEvent.case_id == case_id, MovementEvent.event_type == "handover")
+            .filter(
+                MovementEvent.case_id == case_id, MovementEvent.event_type == "handover"
+            )
             .scalar()
             or 0
         )
@@ -217,7 +218,9 @@ class DashboardService:
         latest_loc_obj = (
             db.query(LocalizationResult)
             .filter(LocalizationResult.case_id == case_id)
-            .order_by(LocalizationResult.created_at.desc(), LocalizationResult.id.desc())
+            .order_by(
+                LocalizationResult.created_at.desc(), LocalizationResult.id.desc()
+            )
             .first()
         )
         latest_loc = (
