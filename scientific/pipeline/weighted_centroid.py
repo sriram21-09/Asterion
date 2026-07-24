@@ -28,7 +28,6 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
 
 from scientific.constants import haversine_distance_m
 from scientific.models.measurement import Measurement
@@ -106,9 +105,7 @@ def compute_input_quality_scores(
     for m in measurements:
         tower_rssis.setdefault(m.tower_id, []).append(m.rssi_dbm)
         tower_timestamps.setdefault(m.tower_id, []).append(m.timestamp)
-        tower_meas_coords.setdefault(m.tower_id, []).append(
-            (m.latitude, m.longitude)
-        )
+        tower_meas_coords.setdefault(m.tower_id, []).append((m.latitude, m.longitude))
 
     # ── 2. Compute per-dimension scores ──────────────────────────────────
     # Normalize RSSI across all towers (min-max on linear power)
@@ -133,7 +130,11 @@ def compute_input_quality_scores(
 
         # ── Coordinate availability score ────────────────────────────────
         tower = tower_map.get(tid)
-        if tower is not None and tower.latitude is not None and tower.longitude is not None:
+        if (
+            tower is not None
+            and tower.latitude is not None
+            and tower.longitude is not None
+        ):
             coord_score = 1.0
         else:
             # Check if any measurement has coordinates

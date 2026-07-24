@@ -11,7 +11,6 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from scientific.pipeline.movement import (
-    MovementSummary,
     reconstruct_movement_events,
     smooth_movement_path,
 )
@@ -177,7 +176,9 @@ class TestSmoothingProperties:
         raw = reconstruct_movement_events(records)
         smoothed = smooth_movement_path(raw)
 
-        assert smoothed.time_span_seconds == pytest.approx(raw.time_span_seconds, abs=1.0)
+        assert smoothed.time_span_seconds == pytest.approx(
+            raw.time_span_seconds, abs=1.0
+        )
 
     def test_velocity_distribution_populated(self):
         """Smoothed summary should still have velocity distribution."""
