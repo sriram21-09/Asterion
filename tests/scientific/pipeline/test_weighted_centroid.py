@@ -1,5 +1,6 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timezone
 
 from scientific.models.measurement import Measurement
 from scientific.models.tower import Tower
@@ -21,19 +22,19 @@ def test_weighted_centroid_symmetric_geometry():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
         Measurement(
             measurement_id="M003",
             tower_id="T003",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
     ]
@@ -67,13 +68,13 @@ def test_weighted_centroid_dominant_tower():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-30.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-120.0,
         ),
     ]
@@ -103,19 +104,19 @@ def test_weighted_centroid_measurement_averaging():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-60.0,
         ),
         Measurement(
             measurement_id="M002",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-80.0,
         ),
         Measurement(
             measurement_id="M003",
             tower_id="T002",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
     ]
@@ -139,7 +140,7 @@ def test_weighted_centroid_empty_towers():
         Measurement(
             measurement_id="M001",
             tower_id="T001",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
     ]
@@ -162,7 +163,7 @@ def test_weighted_centroid_unweighted_fallback():
         Measurement(
             measurement_id="M001",
             tower_id="T999",
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             rssi_dbm=-70.0,
         ),
     ]

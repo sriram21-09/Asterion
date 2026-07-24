@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -33,43 +33,43 @@ class MovementEventResponse(BaseModel):
         ...,
         description="Type of movement event (e.g. location_update, handover, call_start, call_end, sms, data_session)",
     )
-    timestamp: Optional[datetime] = Field(
+    timestamp: datetime | None = Field(
         None, description="Timestamp of the event in ISO format"
     )
-    latitude: Optional[float] = Field(
+    latitude: float | None = Field(
         None,
         description="Best estimate latitude coordinate (WGS84)",
         ge=-90.0,
         le=90.0,
     )
-    longitude: Optional[float] = Field(
+    longitude: float | None = Field(
         None,
         description="Best estimate longitude coordinate (WGS84)",
         ge=-180.0,
         le=180.0,
     )
-    from_cgi: Optional[str] = Field(
+    from_cgi: str | None = Field(
         None, description="Source Cell Global Identifier for handovers"
     )
-    to_cgi: Optional[str] = Field(
+    to_cgi: str | None = Field(
         None, description="Target Cell Global Identifier for handovers"
     )
-    speed_kmh: Optional[float] = Field(
+    speed_kmh: float | None = Field(
         None, description="Estimated speed at this event in km/h", ge=0.0
     )
-    heading_deg: Optional[float] = Field(
+    heading_deg: float | None = Field(
         None,
         description="Estimated bearing heading in degrees (0-360)",
         ge=0.0,
         le=360.0,
     )
-    distance_from_prev_m: Optional[float] = Field(
+    distance_from_prev_m: float | None = Field(
         None, description="Distance from previous event in meters", ge=0.0
     )
-    dwell_time_seconds: Optional[float] = Field(
+    dwell_time_seconds: float | None = Field(
         None, description="Time spent at this location prior to moving", ge=0.0
     )
-    confidence: Optional[float] = Field(
+    confidence: float | None = Field(
         None, description="Confidence score [0.0 - 1.0]", ge=0.0, le=1.0
     )
 
@@ -113,14 +113,16 @@ class MovementReconstructionResponse(BaseModel):
     total_events: int = Field(
         ..., description="Total number of discrete movement events generated", ge=0
     )
-    events: List[MovementEventResponse] = Field(
+    events: list[MovementEventResponse] = Field(
         ..., description="Chronologically ordered array of movement events"
     )
     handover_count: int = Field(
         ..., description="Total number of handover events detected", ge=0
     )
     total_distance_km: float = Field(
-        ..., description="Total distance traversed across all events in kilometers", ge=0.0
+        ...,
+        description="Total distance traversed across all events in kilometers",
+        ge=0.0,
     )
     time_span_hours: float = Field(
         ..., description="Time duration between first and last event in hours", ge=0.0

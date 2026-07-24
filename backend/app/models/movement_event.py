@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, Optional
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING, Any, Optional
+
 from app.models.base import BaseModel
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.models.case import Case
@@ -23,39 +24,33 @@ class MovementEvent(BaseModel):
     case_id: Mapped[int] = mapped_column(
         ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    cdr_record_id: Mapped[Optional[int]] = mapped_column(
+    cdr_record_id: Mapped[int | None] = mapped_column(
         ForeignKey("cdr_records.id", ondelete="SET NULL"), nullable=True
     )
-    tracking_result_id: Mapped[Optional[int]] = mapped_column(
+    tracking_result_id: Mapped[int | None] = mapped_column(
         ForeignKey("tracking_results.id", ondelete="SET NULL"), nullable=True
     )
 
     sequence_number: Mapped[int] = mapped_column(Integer, nullable=False)
     event_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    timestamp: Mapped[Optional[datetime]] = mapped_column(
+    timestamp: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, index=True
     )
 
-    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
 
-    from_cgi: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    to_cgi: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    from_cgi: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    to_cgi: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    speed_kmh: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    heading_deg: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    distance_from_prev_m: Mapped[Optional[float]] = mapped_column(
-        Float, nullable=True
-    )
-    dwell_time_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    speed_kmh: Mapped[float | None] = mapped_column(Float, nullable=True)
+    heading_deg: Mapped[float | None] = mapped_column(Float, nullable=True)
+    distance_from_prev_m: Mapped[float | None] = mapped_column(Float, nullable=True)
+    dwell_time_seconds: Mapped[float | None] = mapped_column(Float, nullable=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
-    metadata_json: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSON, nullable=True
-    )
+    metadata_json: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
 
     case: Mapped["Case"] = relationship("Case", back_populates="movement_events")
     cdr_record: Mapped[Optional["CDRRecord"]] = relationship("CDRRecord")
-    tracking_result: Mapped[Optional["TrackingResult"]] = relationship(
-        "TrackingResult"
-    )
+    tracking_result: Mapped[Optional["TrackingResult"]] = relationship("TrackingResult")

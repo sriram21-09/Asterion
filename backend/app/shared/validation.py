@@ -36,8 +36,9 @@ Usage::
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import HTTPException
 
@@ -107,7 +108,7 @@ def validate_id_format(
     value: str,
     field_name: str = "id",
     *,
-    prefix: Optional[str] = None,
+    prefix: str | None = None,
     min_length: int = 1,
     max_length: int = 64,
 ) -> str:
@@ -216,7 +217,7 @@ def validate_coordinates(
     *,
     lat_field: str = "latitude",
     lon_field: str = "longitude",
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """Validate a latitude/longitude pair.
 
     Returns:
@@ -231,12 +232,12 @@ def validate_coordinates(
 
 
 def validate_coordinate_pair_optional(
-    latitude: Optional[float],
-    longitude: Optional[float],
+    latitude: float | None,
+    longitude: float | None,
     *,
     lat_field: str = "latitude",
     lon_field: str = "longitude",
-) -> Tuple[Optional[float], Optional[float]]:
+) -> tuple[float | None, float | None]:
     """Validate that optional lat/lon are provided together or not at all.
 
     Returns:
@@ -310,9 +311,9 @@ def validate_positive_float(
 
 
 def validate_pagination(
-    page: Optional[int] = None,
-    page_size: Optional[int] = None,
-) -> Tuple[int, int]:
+    page: int | None = None,
+    page_size: int | None = None,
+) -> tuple[int, int]:
     """Normalize and validate pagination parameters.
 
     Returns:
@@ -378,10 +379,10 @@ def validate_list_not_empty(
 
 
 def validate_unique_ids(
-    items: Sequence[Dict[str, Any]],
+    items: Sequence[dict[str, Any]],
     id_field: str,
     collection_name: str = "items",
-) -> List[str]:
+) -> list[str]:
     """Check that all *id_field* values are unique across *items*.
 
     Returns:
@@ -390,9 +391,9 @@ def validate_unique_ids(
     Raises:
         ValidationError: If duplicates are found.
     """
-    ids: List[str] = []
+    ids: list[str] = []
     seen: set[str] = set()
-    duplicates: List[str] = []
+    duplicates: list[str] = []
     for item in items:
         val = str(item.get(id_field, ""))
         if val in seen:
@@ -421,9 +422,9 @@ def validate_timestamp_not_future(
     Raises:
         ValidationError: If the timestamp is in the future.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if ts.tzinfo is None:
-        ts = ts.replace(tzinfo=timezone.utc)
+        ts = ts.replace(tzinfo=UTC)
     if ts > now:
         raise ValidationError(
             field_name,
@@ -438,7 +439,7 @@ def validate_timestamp_range(
     *,
     start_field: str = "start_time",
     end_field: str = "end_time",
-) -> Tuple[datetime, datetime]:
+) -> tuple[datetime, datetime]:
     """Validate that *start* ≤ *end*.
 
     Raises:

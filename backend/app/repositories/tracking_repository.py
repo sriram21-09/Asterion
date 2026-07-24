@@ -1,6 +1,5 @@
-from typing import List, Optional
-from sqlalchemy.orm import Session
 from app.models.tracking_result import TrackingResult
+from sqlalchemy.orm import Session
 
 
 class TrackingRepository:
@@ -18,7 +17,7 @@ class TrackingRepository:
         return result
 
     @staticmethod
-    def bulk_create(db: Session, results: List[TrackingResult]) -> List[TrackingResult]:
+    def bulk_create(db: Session, results: list[TrackingResult]) -> list[TrackingResult]:
         """Persist a list of tracking results in one commit."""
         db.add_all(results)
         db.commit()
@@ -27,7 +26,7 @@ class TrackingRepository:
         return results
 
     @staticmethod
-    def get_by_case(db: Session, case_id: int) -> List[TrackingResult]:
+    def get_by_case(db: Session, case_id: int) -> list[TrackingResult]:
         """Retrieve all tracking results for a case, ordered by step_number."""
         return (
             db.query(TrackingResult)
@@ -37,7 +36,7 @@ class TrackingRepository:
         )
 
     @staticmethod
-    def get_latest_by_case(db: Session, case_id: int) -> Optional[TrackingResult]:
+    def get_latest_by_case(db: Session, case_id: int) -> TrackingResult | None:
         """Retrieve the last step in the most recent tracking run for a case."""
         return (
             db.query(TrackingResult)

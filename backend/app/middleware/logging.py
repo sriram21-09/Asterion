@@ -1,7 +1,8 @@
 import time
+
+from app.core.logging import logger
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from app.core.logging import logger
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
@@ -32,6 +33,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
             # Log unhandled/failed request details
             logger.error(
-                f"{client_host} - {request.method} {request.url.path} - Failed - Duration: {duration_str} - Error: {str(exc)}"
+                f"{client_host} - {request.method} {request.url.path} - Failed - Duration: {duration_str} - Error: {exc!s}"
             )
-            raise exc
+            raise

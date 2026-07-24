@@ -1,10 +1,11 @@
-import pytest
 from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+
+import pytest
 from app.models.base import Base
 from app.models.case import Case
 from app.models.scenario import Scenario
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 @pytest.fixture(scope="function")

@@ -1,6 +1,5 @@
-from typing import List, Optional
-from sqlalchemy.orm import Session
 from app.models.localization_result import LocalizationResult
+from sqlalchemy.orm import Session
 
 
 class LocalizationRepository:
@@ -18,7 +17,7 @@ class LocalizationRepository:
         return result
 
     @staticmethod
-    def get_by_case(db: Session, case_id: int) -> List[LocalizationResult]:
+    def get_by_case(db: Session, case_id: int) -> list[LocalizationResult]:
         """Retrieve all localization results for a specific case."""
         return (
             db.query(LocalizationResult)
@@ -28,7 +27,7 @@ class LocalizationRepository:
         )
 
     @staticmethod
-    def get_latest_by_case(db: Session, case_id: int) -> Optional[LocalizationResult]:
+    def get_latest_by_case(db: Session, case_id: int) -> LocalizationResult | None:
         """Retrieve the most recent localization result for a case."""
         return (
             db.query(LocalizationResult)

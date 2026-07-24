@@ -232,3 +232,17 @@ E-Rakshak CDR & Location Data Sets/
 *.xlsx
 *.csv
 
+# SQLite Databases & Local Storage
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+
+# Get-Shit-Done (GSD) Runtime & State
+.gsd/STATE.md
+.gsd/journal/
+.gsd/snapshots/
+*.gsd.log
+
+

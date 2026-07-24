@@ -13,27 +13,27 @@ Verifies:
 
 import json
 import time
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
+
 import pytest
 
-from scientific.models.scenario_config import ScenarioConfig
-from scientific.models.scenario import Scenario
-from scientific.models.tower import Tower
-from scientific.models.measurement import Measurement
+from scientific.config import ValidationThresholds
 from scientific.models.result import (
-    LocalizationResult,
     ConfidenceResult,
+    LocalizationResult,
     PipelineResult,
 )
+from scientific.models.scenario import Scenario
+from scientific.models.scenario_config import ScenarioConfig
+from scientific.models.tower import Tower
+from scientific.pipeline.runner import run_pipeline
 from scientific.validation.validators import (
     ResultValidator,
+    Severity,
     cross_validate,
     validate_batch,
-    Severity,
 )
-from scientific.config import ValidationThresholds
-from scientific.pipeline.runner import run_pipeline
 
 # Path to the sample scenario datasets
 SCENARIO_JSON_PATH = (
@@ -55,6 +55,7 @@ def sample_scenarios_data():
 # ---------------------------------------------------------------------------
 # 1. ResultValidator Tests
 # ---------------------------------------------------------------------------
+
 
 class TestResultValidator:
     """Verify ResultValidator checks bounds and coverage requirements."""
@@ -90,7 +91,7 @@ class TestResultValidator:
             estimated_latitude=30.0,
             estimated_longitude=77.5946,
             signals_used=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         custom_thresholds = ValidationThresholds(latitude_range=(10.0, 20.0))
         validator = ResultValidator(thresholds=custom_thresholds)
@@ -128,7 +129,7 @@ class TestResultValidator:
             estimated_latitude=13.5000,
             estimated_longitude=77.5946,
             signals_used=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
@@ -168,7 +169,7 @@ class TestResultValidator:
             estimated_latitude=12.9718,
             estimated_longitude=77.5946,
             signals_used=1,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         validator = ResultValidator()
         val_res = validator.validate(res, scenario)
@@ -192,7 +193,7 @@ class TestCrossValidate:
             estimated_latitude=12.9716,
             estimated_longitude=77.5946,
             signals_used=3,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
             scenario_id="S001",
@@ -213,7 +214,7 @@ class TestCrossValidate:
             estimated_longitude=77.5946,
             error_m=200.0,  # > 150m
             signals_used=3,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
             scenario_id="S001",
@@ -235,7 +236,7 @@ class TestCrossValidate:
             estimated_longitude=77.5946,
             error_m=100.0,
             signals_used=3,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
         )
         conf = ConfidenceResult(
             scenario_id="S001",
@@ -318,23 +319,23 @@ class TestE2EPipelineRunner:
             assert result.confidence.scenario_id == scenario_id
 
             # Print execution duration breakdown
-            print(f"\nScenario {scenario_id} processed in {duration*1000.0:.2f} ms")
+            print(f"\nScenario {scenario_id} processed in {duration * 1000.0:.2f} ms")
             print(f"Time Breakdown: {result.metadata['time_breakdown_ms']}")
 
             # Validate localization accuracy
             actual_error = result.localization.error_m
-            assert (
-                actual_error is not None
-            ), "Pipeline must compute error relative to ground truth"
-            assert (
-                actual_error <= expected["max_error_m"] * 1.6
-            ), f"Scenario {scenario_id} error {actual_error:.2f}m exceeds threshold of {expected['max_error_m']}m"
+            assert actual_error is not None, (
+                "Pipeline must compute error relative to ground truth"
+            )
+            assert actual_error <= expected["max_error_m"] * 1.6, (
+                f"Scenario {scenario_id} error {actual_error:.2f}m exceeds threshold of {expected['max_error_m']}m"
+            )
 
             # Validate confidence score bounds
             actual_confidence = result.confidence.confidence_score
-            assert (
-                actual_confidence >= expected["min_confidence_score"] - 0.05
-            ), f"Scenario {scenario_id} confidence {actual_confidence:.2f} is below limit of {expected['min_confidence_score']}"
+            assert actual_confidence >= expected["min_confidence_score"] - 0.05, (
+                f"Scenario {scenario_id} confidence {actual_confidence:.2f} is below limit of {expected['min_confidence_score']}"
+            )
 
             # Check validation findings in metadata
             assert "validation_findings" in result.metadata
@@ -382,9 +383,9 @@ class TestE2EPipelineRunner:
                 runs_count += 1
 
                 # Check that no individual run takes more than 500ms
-                assert (
-                    elapsed < 0.5
-                ), f"Individual run took excessively long: {elapsed*1000.0:.1f}ms"
+                assert elapsed < 0.5, (
+                    f"Individual run took excessively long: {elapsed * 1000.0:.1f}ms"
+                )
 
         avg_time_ms = (total_time / runs_count) * 1000.0
         print(
@@ -392,6 +393,6 @@ class TestE2EPipelineRunner:
         )
 
         # Target E2E execution benchmark is under 2.0 seconds (2000 ms) in total
-        assert (
-            total_time < 2.0
-        ), f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        assert total_time < 2.0, (
+            f"Total execution time {total_time:.2f}s exceeds the 2.0s target"
+        )

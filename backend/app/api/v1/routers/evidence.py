@@ -8,20 +8,19 @@ Endpoints:
   - ``GET /evidence/{case_code}`` — get evidence audit packet
 """
 
-from fastapi import APIRouter, Depends, status, Path
-from sqlalchemy.orm import Session
-
 from app.database.session import get_db
-from app.schemas.response import APIResponse
 from app.schemas.evidence import (
+    EvidenceConfidence,
+    EvidenceRejection,
+    EvidenceRejectionError,
     EvidenceResponse,
     EvidenceSummary,
     EvidenceTower,
-    EvidenceRejection,
-    EvidenceRejectionError,
-    EvidenceConfidence,
 )
+from app.schemas.response import APIResponse
 from app.services.evidence_service import EvidenceService
+from fastapi import APIRouter, Depends, Path, status
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/evidence", tags=["evidence"])
 

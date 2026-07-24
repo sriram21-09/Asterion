@@ -1,6 +1,5 @@
-from typing import List
-from sqlalchemy.orm import Session
 from app.models.measurement import Measurement
+from sqlalchemy.orm import Session
 
 
 class MeasurementRepository:
@@ -10,12 +9,12 @@ class MeasurementRepository:
     """
 
     @staticmethod
-    def get_by_case(db: Session, case_id: int) -> List[Measurement]:
+    def get_by_case(db: Session, case_id: int) -> list[Measurement]:
         """Retrieve all measurements associated with a specific case."""
         return db.query(Measurement).filter(Measurement.case_id == case_id).all()
 
     @staticmethod
-    def get_by_case_code(db: Session, case_code: str) -> List[Measurement]:
+    def get_by_case_code(db: Session, case_code: str) -> list[Measurement]:
         """Retrieve all measurements associated with a specific case code."""
         from app.shared.validation import decode_case_code
 
@@ -23,7 +22,7 @@ class MeasurementRepository:
         return db.query(Measurement).filter(Measurement.case_id == case_id).all()
 
     @staticmethod
-    def batch_create(db: Session, measurements: List[Measurement]) -> List[Measurement]:
+    def batch_create(db: Session, measurements: list[Measurement]) -> list[Measurement]:
         """Batch insert measurement ORM objects."""
         if not measurements:
             return []

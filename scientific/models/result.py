@@ -27,7 +27,7 @@ Example:
 """
 
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -80,13 +80,13 @@ class LocalizationResult(BaseModel):
         description="Estimated device longitude (WGS84)",
         examples=[77.5949],
     )
-    error_m: Optional[float] = Field(
+    error_m: float | None = Field(
         default=None,
         ge=0,
         description="Error distance from ground truth in meters",
         examples=[45.3],
     )
-    computation_time_ms: Optional[float] = Field(
+    computation_time_ms: float | None = Field(
         default=None,
         ge=0,
         description="Processing time in milliseconds",
@@ -158,26 +158,26 @@ class ConfidenceResult(BaseModel):
         description="Categorical confidence classification",
         examples=["high"],
     )
-    error_ellipse_semi_major_m: Optional[float] = Field(
+    error_ellipse_semi_major_m: float | None = Field(
         default=None,
         ge=0,
         description="Semi-major axis of the error ellipse in meters",
         examples=[120.0],
     )
-    error_ellipse_semi_minor_m: Optional[float] = Field(
+    error_ellipse_semi_minor_m: float | None = Field(
         default=None,
         ge=0,
         description="Semi-minor axis of the error ellipse in meters",
         examples=[75.0],
     )
-    error_ellipse_orientation_deg: Optional[float] = Field(
+    error_ellipse_orientation_deg: float | None = Field(
         default=None,
         ge=0,
         le=360.0,
         description="Orientation of the error ellipse in degrees from north",
         examples=[45.0],
     )
-    gdop: Optional[float] = Field(
+    gdop: float | None = Field(
         default=None,
         ge=0,
         description="Geometric Dilution of Precision (lower = better geometry)",
@@ -233,4 +233,3 @@ class PipelineResult(BaseModel):
         default_factory=dict,
         description="Optional execution metadata (e.g. timing breakdown)",
     )
-

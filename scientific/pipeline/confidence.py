@@ -8,23 +8,22 @@ measurement covariance.
 """
 
 import math
-from typing import List
 
 import numpy as np
 
+from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.constants import METERS_PER_DEGREE_LAT
 from scientific.models.measurement import Measurement
 from scientific.models.result import ConfidenceResult
 from scientific.models.tower import Tower
-from scientific.config import ValidationThresholds, DEFAULT_VALIDATION_THRESHOLDS
 
 
 def compute_confidence(
     scenario_id: str,
     estimated_latitude: float,
     estimated_longitude: float,
-    towers: List[Tower],
-    measurements: List[Measurement],
+    towers: list[Tower],
+    measurements: list[Measurement],
     thresholds: ValidationThresholds = DEFAULT_VALIDATION_THRESHOLDS,
 ) -> ConfidenceResult:
     """Calculate the confidence score, level, and error ellipse parameters for an estimate.

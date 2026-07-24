@@ -8,19 +8,17 @@ validation and compiling tower/measurement acceptance/rejection reports.
 
 import json
 from pathlib import Path
-from typing import Dict, List
 
+from app.repositories.case_repository import CaseRepository
+from app.repositories.confidence_repository import ConfidenceRepository
+from app.repositories.measurement_repository import MeasurementRepository
+from app.shared.validation import ValidationError, decode_case_code
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.repositories.confidence_repository import ConfidenceRepository
-from app.repositories.measurement_repository import MeasurementRepository
-from app.repositories.case_repository import CaseRepository
-from app.shared.validation import ValidationError, decode_case_code
-
 from scientific.models.measurement import Measurement as ScientificMeasurement
-from scientific.models.tower import Tower as ScientificTower
 from scientific.models.scenario_config import ScenarioConfig
+from scientific.models.tower import Tower as ScientificTower
 from scientific.pipeline.evidence import synthesize_evidence
 
 
@@ -31,7 +29,7 @@ class EvidenceService:
     def get_evidence(
         db: Session,
         case_code: str,
-    ) -> Dict:
+    ) -> dict:
         """Build an evidence audit packet for a case.
 
         1. Decode case_code → load case + scenario
@@ -127,7 +125,7 @@ class EvidenceService:
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to read scenario dataset: {str(e)}",
+                detail=f"Failed to read scenario dataset: {e!s}",
             )
 
         for cfg_dict in configs_list:
@@ -142,7 +140,7 @@ class EvidenceService:
                 except Exception as e:
                     raise ValidationError(
                         "scenario_config",
-                        f"Failed to parse scenario config: {str(e)}",
+                        f"Failed to parse scenario config: {e!s}",
                         status_code=400,
                     )
 
@@ -155,7 +153,7 @@ class EvidenceService:
     @staticmethod
     def _convert_to_scientific(config, db_measurements):
         """Convert DB ORM measurement records + scenario config → scientific models."""
-        scientific_towers: List[ScientificTower] = []
+        scientific_towers: list[ScientificTower] = []
         for tp in config.tower_placements:
             scientific_towers.append(
                 ScientificTower(
@@ -170,7 +168,7 @@ class EvidenceService:
                 )
             )
 
-        scientific_measurements: List[ScientificMeasurement] = []
+        scientific_measurements: list[ScientificMeasurement] = []
         for m in db_measurements:
             parts = m.measurement_code.split("-")
             tower_id = None

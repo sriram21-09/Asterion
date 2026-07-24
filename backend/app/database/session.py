@@ -1,6 +1,7 @@
-from typing import Generator
-from sqlalchemy.orm import sessionmaker, Session
+from collections.abc import Generator
+
 from app.database.engine import engine
+from sqlalchemy.orm import Session, sessionmaker
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

@@ -9,13 +9,12 @@ Endpoints:
   - ``POST /tracking/run`` — run tracking and return the smoothed path
 """
 
-from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.orm import Session
-
 from app.database.session import get_db
 from app.schemas.response import APIResponse
 from app.schemas.tracking import TrackingRunResponse, TrackingStepResponse
 from app.services.tracking_service import TrackingService
+from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/tracking", tags=["tracking"])
 

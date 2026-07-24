@@ -9,13 +9,12 @@ Endpoints:
   - ``POST /movement/reconstruct`` — reconstruct movement path and handover events
 """
 
+from app.database.session import get_db
+from app.schemas.movement import MovementEventResponse, MovementReconstructionResponse
+from app.schemas.response import APIResponse
+from app.services.movement_service import MovementReconstructionService
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-
-from app.database.session import get_db
-from app.schemas.response import APIResponse
-from app.schemas.movement import MovementReconstructionResponse, MovementEventResponse
-from app.services.movement_service import MovementReconstructionService
 
 router = APIRouter(prefix="/movement", tags=["movement"])
 
@@ -51,7 +50,9 @@ def reconstruct_movement(
     ),
     db: Session = Depends(get_db),
 ):
-    result = MovementReconstructionService.reconstruct_movements(db=db, case_code=case_code)
+    result = MovementReconstructionService.reconstruct_movements(
+        db=db, case_code=case_code
+    )
 
     events_list = [
         MovementEventResponse(

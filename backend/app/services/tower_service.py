@@ -5,12 +5,13 @@ Provides database-backed cell tower lookup, CGI fallback resolution,
 and confidence classification into three categories: Known (1.0), Estimated (0.6), and Unknown (0.2).
 """
 
-from typing import List, Optional, Tuple, Any
-from sqlalchemy.orm import Session
+from typing import Any
 
 from app.models.tower import Tower
-from app.schemas.tower import TowerCreate, CGILookupResponse
-from scientific.pipeline.benchmarks import parse_cgi, CGIResolver
+from app.schemas.tower import CGILookupResponse, TowerCreate
+from sqlalchemy.orm import Session
+
+from scientific.pipeline.benchmarks import CGIResolver, parse_cgi
 
 
 class TowerIntelligenceService:
@@ -18,10 +19,10 @@ class TowerIntelligenceService:
 
     @staticmethod
     def classify_confidence(
-        latitude: Optional[float],
-        longitude: Optional[float],
-        resolution_method: Optional[str] = None,
-    ) -> Tuple[float, str]:
+        latitude: float | None,
+        longitude: float | None,
+        resolution_method: str | None = None,
+    ) -> tuple[float, str]:
         """Enforce the 3 strict confidence categories:
 
         - Known (1.0): Direct parsed/exact coordinates available.
@@ -128,9 +129,9 @@ class TowerIntelligenceService:
         # Helper to compute centroid from matching DB towers with valid coordinates
         def query_centroid(
             mcc: str,
-            mnc: Optional[str] = None,
-            lac: Optional[str] = None,
-            ci: Optional[str] = None,
+            mnc: str | None = None,
+            lac: str | None = None,
+            ci: str | None = None,
         ):
             query = db.query(Tower).filter(
                 Tower.latitude.isnot(None),
@@ -284,9 +285,9 @@ class TowerIntelligenceService:
         db: Session,
         skip: int = 0,
         limit: int = 100,
-        operator: Optional[str] = None,
-        confidence_category: Optional[str] = None,
-    ) -> List[Tower]:
+        operator: str | None = None,
+        confidence_category: str | None = None,
+    ) -> list[Tower]:
         """Retrieve list of towers with optional filtering."""
         query = db.query(Tower)
         if operator:
@@ -296,12 +297,12 @@ class TowerIntelligenceService:
         return query.offset(skip).limit(limit).all()
 
     @classmethod
-    def get_tower_by_cgi(cls, db: Session, cgi: str) -> Optional[Tower]:
+    def get_tower_by_cgi(cls, db: Session, cgi: str) -> Tower | None:
         """Find a single tower by exact CGI."""
         return db.query(Tower).filter(Tower.cgi == cgi).first()
 
     @classmethod
-    def bulk_resolve_cdr_records(cls, db: Session, cdr_records: List[Any]) -> List[Any]:
+    def bulk_resolve_cdr_records(cls, db: Session, cdr_records: list[Any]) -> list[Any]:
         """Enrich a list of CDR record dictionaries/objects with resolved coordinates and tower confidence metrics."""
         for rec in cdr_records:
             cell_id = getattr(rec, "cell_id", None) or (
@@ -324,9 +325,9 @@ class TowerIntelligenceService:
                     rec["tower_resolution_method"] = res.resolution_method
                 else:
                     if getattr(rec, "latitude", None) is None:
-                        setattr(rec, "latitude", res.resolved_latitude)
-                        setattr(rec, "longitude", res.resolved_longitude)
-                    setattr(rec, "tower_confidence", res.confidence)
-                    setattr(rec, "tower_confidence_category", res.confidence_category)
-                    setattr(rec, "tower_resolution_method", res.resolution_method)
+                        rec.latitude = res.resolved_latitude
+                        rec.longitude = res.resolved_longitude
+                    rec.tower_confidence = res.confidence
+                    rec.tower_confidence_category = res.confidence_category
+                    rec.tower_resolution_method = res.resolution_method
         return cdr_records

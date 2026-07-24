@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -26,7 +26,7 @@ class LocalizationRunResponse(BaseModel):
     case_code: str = Field(
         ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
     )
-    scenario_code: Optional[str] = Field(
+    scenario_code: str | None = Field(
         None, description="The unique Scenario Code if linked", examples=["SCN-001"]
     )
     algorithm: str = Field(
@@ -39,7 +39,7 @@ class LocalizationRunResponse(BaseModel):
     estimated_longitude: float = Field(
         ..., description="Estimated longitude coordinate (WGS84)", ge=-180.0, le=180.0
     )
-    error_m: Optional[float] = Field(
+    error_m: float | None = Field(
         None, description="Calculated circular error probability radius in meters"
     )
     signals_used: int = Field(
@@ -47,7 +47,7 @@ class LocalizationRunResponse(BaseModel):
         description="Number of distinct cellular tower signals used in the calculation",
         ge=1,
     )
-    computation_time_ms: Optional[float] = Field(
+    computation_time_ms: float | None = Field(
         None, description="Solver execution time in milliseconds"
     )
     timestamp: datetime = Field(

@@ -6,21 +6,19 @@ Orchestrates the Kalman filter tracking pipeline:
   DB localization results → scientific tracker → persisted tracking path.
 """
 
-import math
 import json
+import math
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
 
 from app.models.tracking_result import TrackingResult as TrackingResultORM
-from app.repositories.tracking_repository import TrackingRepository
-from app.repositories.localization_repository import LocalizationRepository
 from app.repositories.case_repository import CaseRepository
+from app.repositories.localization_repository import LocalizationRepository
+from app.repositories.tracking_repository import TrackingRepository
 from app.shared.validation import ValidationError, decode_case_code
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 from scientific.constants import haversine_distance_m
 from scientific.models.result import LocalizationResult as ScientificResult
@@ -34,7 +32,7 @@ class TrackingService:
     def run_tracking(
         db: Session,
         case_code: str,
-    ) -> Dict:
+    ) -> dict:
         """Run Kalman-smoothed tracking over stored localization results for a case.
 
         1. Decode case_code → load case + scenario
@@ -80,7 +78,7 @@ class TrackingService:
             )
 
         # 4. Convert DB ORM models → scientific Pydantic models
-        scientific_results: List[ScientificResult] = []
+        scientific_results: list[ScientificResult] = []
         for loc in db_loc_results:
             scientific_results.append(
                 ScientificResult(
@@ -93,7 +91,7 @@ class TrackingService:
                     error_m=loc.error_m,
                     computation_time_ms=loc.computation_time_ms,
                     signals_used=3,  # default if not stored
-                    timestamp=loc.created_at or datetime.now(timezone.utc),
+                    timestamp=loc.created_at or datetime.now(UTC),
                 )
             )
 
@@ -107,7 +105,7 @@ class TrackingService:
         # 6. Delete previous tracking results for this case, then persist new ones
         TrackingRepository.delete_by_case(db, case_id)
 
-        tracking_rows: List[TrackingResultORM] = []
+        tracking_rows: list[TrackingResultORM] = []
         for i, sr in enumerate(smoothed):
             # Compute heading from velocity components
             v_lat = getattr(sr, "velocity_lat", 0.0)
@@ -142,7 +140,7 @@ class TrackingService:
 
         path = []
         total_distance_m = 0.0
-        velocities_kmh: List[float] = []
+        velocities_kmh: list[float] = []
 
         for i, row in enumerate(tracking_rows):
             speed_kmh = (row.velocity_mps or 0.0) * 3.6
@@ -184,7 +182,7 @@ class TrackingService:
         }
 
     @staticmethod
-    def _load_ground_truth(scenario_id: int) -> Tuple[Optional[float], Optional[float]]:
+    def _load_ground_truth(scenario_id: int) -> tuple[float | None, float | None]:
         """Load expected device coordinates from the scenario dataset."""
         dataset_path = (
             Path(__file__).resolve().parents[3]
@@ -215,7 +213,7 @@ class TrackingService:
         return None, None
 
     @staticmethod
-    def _compute_heading(v_lat: float, v_lon: float) -> Optional[float]:
+    def _compute_heading(v_lat: float, v_lon: float) -> float | None:
         """Compute bearing in degrees [0, 360) from velocity components.
 
         Uses atan2(v_lon, v_lat) to get heading where 0° = North, 90° = East.

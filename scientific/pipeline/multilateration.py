@@ -8,8 +8,7 @@ scipy.optimize.least_squares.
 
 import math
 import time
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
 
 import numpy as np
 from scipy.optimize import least_squares
@@ -27,12 +26,12 @@ logger = get_logger(__name__)
 
 def solve_multilateration(
     scenario_id: str,
-    towers: List[Tower],
-    measurements: List[Measurement],
+    towers: list[Tower],
+    measurements: list[Measurement],
     propagation: PropagationDefaults,
     simulation: SimulationParameters,
-    expected_device_lat: Optional[float] = None,
-    expected_device_lon: Optional[float] = None,
+    expected_device_lat: float | None = None,
+    expected_device_lon: float | None = None,
 ) -> LocalizationResult:
     """Solve for the device position using Non-Linear Least Squares (NLLS).
 
@@ -187,5 +186,5 @@ def solve_multilateration(
         error_m=error_m,
         computation_time_ms=computation_time_ms,
         signals_used=len(valid_towers_rssi),
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )

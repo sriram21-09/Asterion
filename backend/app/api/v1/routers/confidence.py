@@ -8,13 +8,12 @@ Endpoints:
   - ``POST /confidence/run`` — run confidence analysis and return GDOP/error ellipse
 """
 
+from app.database.session import get_db
+from app.schemas.confidence import ConfidenceRunResponse
+from app.schemas.response import APIResponse
+from app.services.confidence_service import ConfidenceService
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-
-from app.database.session import get_db
-from app.schemas.response import APIResponse
-from app.schemas.confidence import ConfidenceRunResponse
-from app.services.confidence_service import ConfidenceService
 
 router = APIRouter(prefix="/confidence", tags=["confidence"])
 

@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from app.shared.validation import ValidationError
 from app.core.logging import logger
 from app.schemas.response import APIResponse, ErrorDetail
+from app.shared.validation import ValidationError
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -72,7 +72,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
-        logger.exception(f"Unhandled exception occurred: {str(exc)}")
+        logger.exception(f"Unhandled exception occurred: {exc!s}")
         response_body = APIResponse(
             success=False,
             error=ErrorDetail(
