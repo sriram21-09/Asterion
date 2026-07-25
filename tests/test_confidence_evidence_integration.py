@@ -646,3 +646,84 @@ class TestEvidenceAPIConformance:
         ]
         for field in expected_tower:
             assert field in tower_fields, f"Missing field in EvidenceTower: {field}"
+
+    def test_reproducibility_hash_calculation(self):
+        """Service produces deterministic SHA-256 reproducibility hashes."""
+        from app.services.evidence_service import EvidenceGenerationService
+
+        h1 = EvidenceGenerationService.generate_reproducibility_hash(
+            solver_version="1.0.0",
+            input_record_ids=["MEAS-002", "MEAS-001"],
+            parameter_strings={"scenario_id": "SCN-001"},
+        )
+        h2 = EvidenceGenerationService.generate_reproducibility_hash(
+            solver_version="1.0.0",
+            input_record_ids=["MEAS-001", "MEAS-002"],
+            parameter_strings={"scenario_id": "SCN-001"},
+        )
+
+        assert len(h1) == 64
+        assert h1 == h2  # Order invariant due to sorting of IDs
+
+        # Different parameter produces different hash
+        h3 = EvidenceGenerationService.generate_reproducibility_hash(
+            solver_version="1.0.0",
+            input_record_ids=["MEAS-001", "MEAS-002"],
+            parameter_strings={"scenario_id": "SCN-002"},
+        )
+        assert h1 != h3
+
+    def test_get_evidence_audit_service(
+        self, db: Session, sample_case, sample_measurements
+    ):
+        """EvidenceGenerationService.get_audit produces a verified audit record."""
+        from app.services.evidence_service import EvidenceGenerationService
+
+        audit = EvidenceGenerationService.get_audit(db, sample_case.id)
+        assert audit["audit_status"] == "VERIFIED"
+        assert "generated_at" in audit
+        assert len(audit["reproducibility_hash"]) == 64
+        assert audit["solver_version"] == "1.0.0"
+        assert len(audit["input_record_ids"]) == 6
+
+    def test_get_evidence_endpoint_success(
+        self, db: Session, sample_case, sample_measurements
+    ):
+        """GET /api/v1/evidence/{case_id} returns evidence packet with reproducibility hash."""
+        from main import app
+
+        app.dependency_overrides[get_db] = override_get_db
+        client = TestClient(app)
+
+        response = client.get(f"/api/v1/evidence/CASE-{sample_case.id:03d}")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["success"] is True
+        data = json_data["data"]
+        assert data["case_code"] == f"CASE-{sample_case.id:03d}"
+        assert data["reproducibility_hash"] is not None
+        assert len(data["reproducibility_hash"]) == 64
+
+        app.dependency_overrides.clear()
+
+    def test_get_evidence_audit_endpoint_success(
+        self, db: Session, sample_case, sample_measurements
+    ):
+        """GET /api/v1/evidence/{case_id}/audit returns full audit report."""
+        from main import app
+
+        app.dependency_overrides[get_db] = override_get_db
+        client = TestClient(app)
+
+        response = client.get(f"/api/v1/evidence/{sample_case.id}/audit")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["success"] is True
+        data = json_data["data"]
+        assert data["case_code"] == f"CASE-{sample_case.id:03d}"
+        assert data["audit_status"] == "VERIFIED"
+        assert len(data["reproducibility_hash"]) == 64
+        assert data["solver_version"] == "1.0.0"
+        assert isinstance(data["input_record_ids"], list)
+
+        app.dependency_overrides.clear()
