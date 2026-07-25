@@ -249,4 +249,3 @@ class PipelineResult(BaseModel):
         default_factory=dict,
         description="Optional execution metadata (e.g. timing breakdown)",
     )
-

@@ -84,7 +84,7 @@ class MeasurementValidator:
                     code="MEAS_PARTIAL_COORDS",
                 )
             )
-        elif has_lat and has_lon:
+        elif measurement.latitude is not None and measurement.longitude is not None:
             lat_min, lat_max = self.thresholds.latitude_range
             lon_min, lon_max = self.thresholds.longitude_range
             if not (lat_min <= measurement.latitude <= lat_max) or not (

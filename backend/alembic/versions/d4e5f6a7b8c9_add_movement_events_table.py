@@ -6,17 +6,6 @@ Create Date: 2026-07-23 14:00:00.000000
 
 """
 
-<<<<<<< HEAD
-from typing import Sequence, Union
-from alembic import op
-import sqlalchemy as sa
-
-# revision identifiers, used by Alembic.
-revision: str = "d4e5f6a7b8c9"
-down_revision: Union[str, Sequence[str], None] = "c3d4e5f6a7b8"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
-=======
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -27,7 +16,6 @@ revision: str = "d4e5f6a7b8c9"
 down_revision: str | Sequence[str] | None = "c3d4e5f6a7b8"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 
 def upgrade() -> None:
@@ -64,13 +52,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["case_id"], ["cases.id"], ondelete="CASCADE"),
-<<<<<<< HEAD
-        sa.ForeignKeyConstraint(["cdr_record_id"], ["cdr_records.id"], ondelete="SET NULL"),
-=======
         sa.ForeignKeyConstraint(
             ["cdr_record_id"], ["cdr_records.id"], ondelete="SET NULL"
         ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         sa.ForeignKeyConstraint(
             ["tracking_result_id"], ["tracking_results.id"], ondelete="SET NULL"
         ),
@@ -83,14 +67,10 @@ def upgrade() -> None:
         op.f("ix_movement_events_case_id"), "movement_events", ["case_id"], unique=False
     )
     op.create_index(
-<<<<<<< HEAD
-        op.f("ix_movement_events_timestamp"), "movement_events", ["timestamp"], unique=False
-=======
         op.f("ix_movement_events_timestamp"),
         "movement_events",
         ["timestamp"],
         unique=False,
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     )
     op.create_index(
         op.f("ix_movement_events_case_seq"),

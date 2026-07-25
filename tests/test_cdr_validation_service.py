@@ -20,11 +20,7 @@ Verifies the CDR Validation Service layer (Week 3, Day 2):
        j. Failure category aggregation across multiple records.
 """
 
-<<<<<<< HEAD
-from datetime import datetime, timedelta, timezone
-=======
 from datetime import UTC, datetime, timedelta
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 from typing import Any
 
 import pytest
@@ -35,26 +31,15 @@ from scientific.validation.validators import (
     CDRDataQualityScore,
     CDRValidationReport,
     CDRValidationService,
-<<<<<<< HEAD
-    Severity,
 )
 
-
-=======
-)
-
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
 def _now() -> datetime:
-<<<<<<< HEAD
-    return datetime.now(timezone.utc)
-=======
     return datetime.now(UTC)
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 
 _record_seq = 0
@@ -263,13 +248,9 @@ class TestCDRValidationServiceMixedBatch:
         records = [
             _valid_record(),
             _valid_record(),
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9000000001", timestamp=future_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9000000001", timestamp=future_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -281,13 +262,9 @@ class TestCDRValidationServiceMixedBatch:
         future_ts = _now() + timedelta(hours=2)
         records = [
             _valid_record(),
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9000000001", timestamp=future_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9000000001", timestamp=future_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -297,16 +274,11 @@ class TestCDRValidationServiceMixedBatch:
     def test_invalid_operator_in_failure_categories(self):
         records = [
             _valid_record(),
-<<<<<<< HEAD
-            CDRRecord(operator="unknown_op", target_number="9000000001",
-                      timestamp=_now() - timedelta(hours=1)),
-=======
             CDRRecord(
                 operator="unknown_op",
                 target_number="9000000001",
                 timestamp=_now() - timedelta(hours=1),
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -319,13 +291,9 @@ class TestCDRValidationServiceMixedBatch:
             _valid_record(),
             _valid_record(),
             _valid_record(),
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9000000001", timestamp=future_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9000000001", timestamp=future_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -334,11 +302,6 @@ class TestCDRValidationServiceMixedBatch:
     def test_multiple_error_codes_tallied_separately(self):
         future_ts = _now() + timedelta(hours=1)
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="docomo", target_number="9000000001",
-                      timestamp=_now() - timedelta(hours=1)),  # CDR_INVALID_OPERATOR
-            CDRRecord(operator="airtel", target_number="9000000002", timestamp=future_ts),  # CDR_FUTURE_TIMESTAMP
-=======
             CDRRecord(
                 operator="docomo",
                 target_number="9000000001",
@@ -347,7 +310,6 @@ class TestCDRValidationServiceMixedBatch:
             CDRRecord(
                 operator="airtel", target_number="9000000002", timestamp=future_ts
             ),  # CDR_FUTURE_TIMESTAMP
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -366,17 +328,12 @@ class TestCDRValidationServiceAllInvalid:
     def test_all_invalid_is_not_valid(self):
         future_ts = _now() + timedelta(days=1)
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9000000001", timestamp=future_ts),
-            CDRRecord(operator="airtel", target_number="9000000002", timestamp=future_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9000000001", timestamp=future_ts
             ),
             CDRRecord(
                 operator="airtel", target_number="9000000002", timestamp=future_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -387,17 +344,12 @@ class TestCDRValidationServiceAllInvalid:
     def test_all_invalid_low_validity_score(self):
         future_ts = _now() + timedelta(days=1)
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9000000001", timestamp=future_ts),
-            CDRRecord(operator="airtel", target_number="9000000002", timestamp=future_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9000000001", timestamp=future_ts
             ),
             CDRRecord(
                 operator="airtel", target_number="9000000002", timestamp=future_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -426,17 +378,12 @@ class TestCDRValidationServiceDuplicateIds:
     def test_duplicate_id_in_failure_categories(self):
         ts = _now() - timedelta(hours=1)
         records = [
-<<<<<<< HEAD
-            CDRRecord(id=42, operator="airtel", target_number="9714499703", timestamp=ts),
-            CDRRecord(id=42, operator="airtel", target_number="9877654321", timestamp=ts),
-=======
             CDRRecord(
                 id=42, operator="airtel", target_number="9714499703", timestamp=ts
             ),
             CDRRecord(
                 id=42, operator="airtel", target_number="9877654321", timestamp=ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -446,17 +393,12 @@ class TestCDRValidationServiceDuplicateIds:
     def test_duplicate_id_reduces_consistency_score(self):
         ts = _now() - timedelta(hours=1)
         records = [
-<<<<<<< HEAD
-            CDRRecord(id=99, operator="airtel", target_number="9714499703", timestamp=ts),
-            CDRRecord(id=99, operator="airtel", target_number="9877654321", timestamp=ts),
-=======
             CDRRecord(
                 id=99, operator="airtel", target_number="9714499703", timestamp=ts
             ),
             CDRRecord(
                 id=99, operator="airtel", target_number="9877654321", timestamp=ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -465,17 +407,12 @@ class TestCDRValidationServiceDuplicateIds:
     def test_unique_ids_no_duplicate_error(self):
         ts = _now() - timedelta(hours=1)
         records = [
-<<<<<<< HEAD
-            CDRRecord(id=1, operator="airtel", target_number="9714499703", timestamp=ts),
-            CDRRecord(id=2, operator="airtel", target_number="9877654321", timestamp=ts),
-=======
             CDRRecord(
                 id=1, operator="airtel", target_number="9714499703", timestamp=ts
             ),
             CDRRecord(
                 id=2, operator="airtel", target_number="9877654321", timestamp=ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -493,17 +430,12 @@ class TestCDRValidationServiceDuplicateContent:
     def test_duplicate_content_in_failure_categories(self):
         ts = _now() - timedelta(hours=2)
         records = [
-<<<<<<< HEAD
-            _valid_record(target_number="9714499703", timestamp=ts, first_cgi="404-1-2-3"),
-            _valid_record(target_number="9714499703", timestamp=ts, first_cgi="404-1-2-3"),
-=======
             _valid_record(
                 target_number="9714499703", timestamp=ts, first_cgi="404-1-2-3"
             ),
             _valid_record(
                 target_number="9714499703", timestamp=ts, first_cgi="404-1-2-3"
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -514,17 +446,12 @@ class TestCDRValidationServiceDuplicateContent:
         ts1 = _now() - timedelta(hours=3)
         ts2 = ts1 + timedelta(seconds=30)
         records = [
-<<<<<<< HEAD
-            _valid_record(target_number="9714499703", timestamp=ts1, first_cgi="404-1-2-3"),
-            _valid_record(target_number="9714499703", timestamp=ts2, first_cgi="404-1-2-3"),
-=======
             _valid_record(
                 target_number="9714499703", timestamp=ts1, first_cgi="404-1-2-3"
             ),
             _valid_record(
                 target_number="9714499703", timestamp=ts2, first_cgi="404-1-2-3"
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         svc = CDRValidationService()
         report = svc.validate_batch(records)
@@ -545,13 +472,9 @@ class TestCDRValidationServiceTimeliness:
         svc = CDRValidationService(thresholds=thresholds)
         stale_ts = _now() - timedelta(days=60)
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9714499703", timestamp=stale_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9714499703", timestamp=stale_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         report = svc.validate_batch(records)
         assert report.quality_score.timeliness_score < 1.0
@@ -567,13 +490,9 @@ class TestCDRValidationServiceTimeliness:
         svc = CDRValidationService(thresholds=thresholds)
         stale_ts = _now() - timedelta(days=60)
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9714499703", timestamp=stale_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9714499703", timestamp=stale_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         report = svc.validate_batch(records)
         assert "CDR_STALE_TIMESTAMP" in report.warning_categories
@@ -630,13 +549,9 @@ class TestCDRValidationServiceWarnings:
         svc = CDRValidationService(thresholds=thresholds)
         stale_ts = _now() - timedelta(days=20)
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9714499703", timestamp=stale_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9714499703", timestamp=stale_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         report = svc.validate_batch(records)
         # Stale is WARNING, not ERROR → record is still "valid"
@@ -649,11 +564,6 @@ class TestCDRValidationServiceWarnings:
         svc = CDRValidationService(thresholds=thresholds)
         stale_ts = _now() - timedelta(days=30)
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number="9714499703", timestamp=stale_ts),
-            CDRRecord(operator="airtel", target_number="9877654321", timestamp=stale_ts),
-            CDRRecord(operator="airtel", target_number="9000000000", timestamp=stale_ts),
-=======
             CDRRecord(
                 operator="airtel", target_number="9714499703", timestamp=stale_ts
             ),
@@ -663,7 +573,6 @@ class TestCDRValidationServiceWarnings:
             CDRRecord(
                 operator="airtel", target_number="9000000000", timestamp=stale_ts
             ),
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         ]
         report = svc.validate_batch(records)
         assert report.warning_count == 3
@@ -682,13 +591,9 @@ class TestCDRValidationServiceCategoryAggregation:
         future_ts = _now() + timedelta(hours=1)
         # 3 records all with future timestamp → count should be 3
         records = [
-<<<<<<< HEAD
-            CDRRecord(operator="airtel", target_number=f"900000000{i}", timestamp=future_ts)
-=======
             CDRRecord(
                 operator="airtel", target_number=f"900000000{i}", timestamp=future_ts
             )
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
             for i in range(3)
         ]
         svc = CDRValidationService()

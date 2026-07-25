@@ -294,25 +294,14 @@ class TestE2EPipelineRunner:
         for cfg_data in sample_scenarios_data:
             scenario_id = cfg_data["scenario_id"]
             expected = cfg_data["expected_results"]
-<<<<<<< HEAD
-
-            # Execute the E2E pipeline
-=======
             config = ScenarioConfig(**cfg_data)
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
             start_time = time.perf_counter()
             result = run_pipeline(config)
             duration = time.perf_counter() - start_time
             assert isinstance(result, PipelineResult)
             assert result.localization.scenario_id == scenario_id
             assert result.confidence.scenario_id == scenario_id
-<<<<<<< HEAD
-
-            # Print execution duration breakdown
-            print(f"\nScenario {scenario_id} processed in {duration*1000.0:.2f} ms")
-=======
             print(f"\nScenario {scenario_id} processed in {duration * 1000.0:.2f} ms")
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
             print(f"Time Breakdown: {result.metadata['time_breakdown_ms']}")
             actual_error = result.localization.error_m
             assert actual_error is not None, (
@@ -351,11 +340,8 @@ class TestE2EPipelineRunner:
     def test_pipeline_perf_benchmark(self, sample_scenarios_data):
         total_time = 0.0
         runs_count = 0
-<<<<<<< HEAD
 
         # Run multiple iterations over the configurations to benchmark average performance
-=======
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         for cfg_data in sample_scenarios_data:
             config = ScenarioConfig(**cfg_data)
             for _ in range(5):

@@ -45,8 +45,3 @@ __all__ = [
     "Tower",
     "TowerPlacement",
 ]
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468

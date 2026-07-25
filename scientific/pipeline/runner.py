@@ -8,11 +8,7 @@ ScenarioConfig → Validation → Simulation → Evidence Synthesis → Localiza
 
 import time
 from collections import defaultdict
-<<<<<<< HEAD
-from datetime import timedelta, timezone, datetime
-=======
 from datetime import UTC, datetime, timedelta
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 from scientific.logger import get_logger
 from scientific.models.result import LocalizationResult, PipelineResult
@@ -81,14 +77,9 @@ def run_pipeline(config: ScenarioConfig) -> PipelineResult:
     # -------------------------------------------------------------------------
     stage_start = time.perf_counter()
     measurements = generate_scenario_measurements(config)
-<<<<<<< HEAD
-    # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
-    now_utc = datetime.now(timezone.utc)
-=======
 
     # Shift timestamps slightly into the past to prevent "future timestamp" validation failure
     now_utc = datetime.now(UTC)
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     for m in measurements:
         if m.timestamp:
             if m.timestamp.tzinfo is None:

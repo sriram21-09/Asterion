@@ -149,7 +149,7 @@ def compute_input_quality_scores(
         if not ts_list:
             ts_score = 0.0
         else:
-            valid_count = 0
+            valid_count = 0.0
             now_utc = datetime.now(UTC)
             for ts in ts_list:
                 if ts is not None:

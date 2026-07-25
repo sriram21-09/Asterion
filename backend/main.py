@@ -8,11 +8,6 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from app.api.v1.routers.cases import router as cases_router
 from app.api.v1.routers.cdr_import import router as import_router
-<<<<<<< HEAD
-from app.api.v1.routers.towers import router as towers_router
-from app.api.v1.routers.movement import router as movement_router
-
-=======
 from app.api.v1.routers.confidence import router as confidence_router
 from app.api.v1.routers.dashboard import router as dashboard_router
 from app.api.v1.routers.evidence import router as evidence_router
@@ -24,7 +19,6 @@ from app.api.v1.routers.simulation import router as simulation_router
 from app.api.v1.routers.towers import router as towers_router
 from app.api.v1.routers.tracking import router as tracking_router
 from app.core.config import settings
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 from app.exceptions.handlers import register_exception_handlers
 from app.middleware.logging import LoggingMiddleware
 from fastapi import FastAPI
@@ -63,32 +57,7 @@ app.include_router(evidence_router, prefix=settings.api_prefix)
 app.include_router(import_router, prefix=settings.api_prefix)
 app.include_router(towers_router, prefix=settings.api_prefix)
 app.include_router(movement_router, prefix=settings.api_prefix)
-<<<<<<< HEAD
-
-
-
-class TowerSignal(BaseModel):
-    tower_id: str
-    latitude: float
-    longitude: float
-    signal_strength_dbm: float
-    timestamp: float
-
-
-class LocalizationRequest(BaseModel):
-    signals: List[TowerSignal]
-    algorithm: Optional[str] = "multilateration"
-
-
-class LocalizationResponse(BaseModel):
-    estimated_latitude: float
-    estimated_longitude: float
-    confidence_score: float
-    signals_used: int
-    algorithm_applied: str
-=======
 app.include_router(dashboard_router, prefix=settings.api_prefix)
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 
 @app.get("/")

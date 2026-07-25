@@ -247,6 +247,7 @@ def track_positions(
 
     # The first result doesn't have a previous step to compute dt
     # We record it as a smoothed result with initial velocity zero
+    assert tracker.x is not None
     smoothed_results.append(make_result(first_res, tracker.x, 0.0))
 
     # Process subsequent results
@@ -265,6 +266,7 @@ def track_positions(
         end_time = time.perf_counter()
         elapsed_ms = (end_time - start_time) * 1000.0
 
+        assert tracker.x is not None
         smoothed_results.append(make_result(res, tracker.x, elapsed_ms))
 
     return smoothed_results

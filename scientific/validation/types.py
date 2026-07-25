@@ -62,7 +62,7 @@ class ValidationResult:
         return self
 
 
-T = TypeVar("T")
+T = TypeVar("T", contravariant=True)
 
 
 class Validator(Protocol[T]):

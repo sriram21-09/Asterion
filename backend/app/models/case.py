@@ -6,15 +6,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.models.confidence_result import ConfidenceResult
-<<<<<<< HEAD
-    from app.models.movement_event import MovementEvent
-=======
     from app.models.localization_result import LocalizationResult
     from app.models.measurement import Measurement
     from app.models.movement_event import MovementEvent
     from app.models.scenario import Scenario
     from app.models.tracking_result import TrackingResult
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 
 
 class Case(BaseModel):

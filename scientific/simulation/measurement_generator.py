@@ -119,7 +119,11 @@ def generate_scenario_measurements(
         tower = next(
             (t for t in config.tower_placements if t.tower_id == m.tower_id), None
         )
-        if tower:
+        if (
+            tower
+            and config.expected_device_lat is not None
+            and config.expected_device_lon is not None
+        ):
             # Calculate distance
             distance = RSSIGenerator.calculate_distance(
                 tower_lat=tower.latitude,

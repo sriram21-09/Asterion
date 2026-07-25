@@ -7,8 +7,6 @@ from app.models.import_job import ImportJob
 from app.services.import_service import (
     AirtelCDRParser,
     BSNLCDRParser,
-    JioCDRParser,
-    ViCDRParser,
     CDRImportService,
     JioCDRParser,
     ViCDRParser,
@@ -92,11 +90,8 @@ Target /A PARTY NUMBER,CALL_TYPE,Type of Connection,B PARTY NUMBER,LRN- B Party 
 08980261614,Incoming,POSTPAID,06352663530,4106,Vodafone - Mobile-Gujarat,01-01-2026,10:08:37,26,OPEN PLOT OF MR AMITBHAI,404056205320221,BUILDING OF NALINBHAI,404056205528433,-,Voice,869236064978130,404051650035282,-,Guj-Vodafone - GUJARAT - INDIA,GMSGZ20_R17A,MTB,BSCRJ8O,-,-
 08980261614,Outgoing,PREPAID,09772303390,3099,Reliance Jio - Mobile-Rajasthan,01-01-2026,10:32:38,13,BUILDING OF MUNICIPALITY,404056205520773,BUILDING OF MUNICIPALITY,404056205520773,-,Voice,869236064978130,404051650035282,-,Guj-Vodafone - GUJARAT - INDIA,GMSGZ20_R17A,BSCRJ9I,TRACO,-,-
 """
-<<<<<<< HEAD
-=======
 
 
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 class TestAirtelCDRParser:
     def test_detect_airtel(self):
         parser = AirtelCDRParser()
@@ -237,11 +232,8 @@ class TestViCDRParser:
         rec1 = records[1]
         assert rec1["call_type"] == "Outgoing"
         assert rec1["duration"] == 13
-<<<<<<< HEAD
-=======
 
 
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
 class TestCDRImportService:
     def test_detect_operator(self):
         service = CDRImportService()
@@ -293,10 +285,7 @@ class TestCDRImportService:
         assert len(db_records) == 2
         assert db_records[0].latitude == pytest.approx(22.39711)
         assert db_records[0].longitude == pytest.approx(88.43938)
-<<<<<<< HEAD
-=======
 
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
     def test_process_upload_jio(self, db_session):
         service = CDRImportService()
         res = service.process_upload(
@@ -309,13 +298,7 @@ class TestCDRImportService:
 
         job_id = res["job"].id
         db_records = (
-<<<<<<< HEAD
-            db_session.query(CDRRecord)
-            .filter(CDRRecord.import_job_id == job_id)
-            .all()
-=======
             db_session.query(CDRRecord).filter(CDRRecord.import_job_id == job_id).all()
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         )
         assert len(db_records) == 2
         assert db_records[0].operator == "jio"
@@ -334,13 +317,7 @@ class TestCDRImportService:
 
         job_id = res["job"].id
         db_records = (
-<<<<<<< HEAD
-            db_session.query(CDRRecord)
-            .filter(CDRRecord.import_job_id == job_id)
-            .all()
-=======
             db_session.query(CDRRecord).filter(CDRRecord.import_job_id == job_id).all()
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468
         )
         assert len(db_records) == 2
         assert db_records[0].operator == "vi"
