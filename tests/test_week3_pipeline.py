@@ -13,7 +13,6 @@ to location tracking and movement reconstruction:
 6. End-to-End CSV-to-Location Pipeline Flow
 """
 
-import hashlib
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -30,16 +29,10 @@ if str(ROOT / "backend") not in sys.path:
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import app.database.base  # Ensure all ORM models are registered
 from app.models.base import Base
 from app.models.case import Case
 from app.models.cdr_record import CDRRecord
 from app.models.import_job import ImportJob
-from app.models.movement_event import MovementEvent
-from app.models.tracking_result import TrackingResult
-from app.repositories.case_repository import CaseRepository
-from app.repositories.movement_repository import MovementRepository
-from app.services.evidence_service import EvidenceService
 from app.services.import_service import CDRImportService
 from app.services.movement_service import (
     EVENT_TYPE_CALL_START,
@@ -47,37 +40,20 @@ from app.services.movement_service import (
     EVENT_TYPE_SMS,
     MovementReconstructionService,
 )
-from app.services.parsers import (
-    AirtelCDRParser,
-    BSNLCDRParser,
-    JioCDRParser,
-    ViCDRParser,
-)
-from scientific.config import ValidationThresholds
 from scientific.models.cdr_record import CDRRecord as ScientificCDRRecord
 from scientific.models.measurement import Measurement
-from scientific.models.scenario import Scenario
-from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.tower import Tower
 from scientific.pipeline.confidence import compute_confidence
 from scientific.pipeline.evidence import compute_evidence_hash, synthesize_evidence
-from scientific.pipeline.kalman_tracker import track_positions
 from scientific.pipeline.movement import (
-    calculate_bearing_deg,
-    calculate_distance_m,
     calculate_speed_kmh,
     classify_velocity,
-    detect_handover,
     flag_impossible_velocity,
     reconstruct_movement_events,
     smooth_movement_path,
 )
-from scientific.pipeline.multilateration import solve_multilateration
-from scientific.pipeline.runner import run_pipeline
 from scientific.pipeline.weighted_centroid import solve_weighted_centroid
 from scientific.validation.validators import (
-    CDRDataQualityScore,
-    CDRValidationReport,
     CDRValidationService,
 )
 
@@ -360,13 +336,22 @@ class TestLocalizationEngineIntegration:
         ]
         measurements = [
             Measurement(
-                measurement_id="M001", tower_id="T001", rssi_dbm=-50.0, timestamp=datetime.now(UTC)
+                measurement_id="M001",
+                tower_id="T001",
+                rssi_dbm=-50.0,
+                timestamp=datetime.now(UTC),
             ),
             Measurement(
-                measurement_id="M002", tower_id="T002", rssi_dbm=-80.0, timestamp=datetime.now(UTC)
+                measurement_id="M002",
+                tower_id="T002",
+                rssi_dbm=-80.0,
+                timestamp=datetime.now(UTC),
             ),
             Measurement(
-                measurement_id="M003", tower_id="T003", rssi_dbm=-80.0, timestamp=datetime.now(UTC)
+                measurement_id="M003",
+                tower_id="T003",
+                rssi_dbm=-80.0,
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -392,13 +377,22 @@ class TestLocalizationEngineIntegration:
         ]
         measurements = [
             Measurement(
-                measurement_id="M1", tower_id="T001", rssi_dbm=-60.0, timestamp=datetime.now(UTC)
+                measurement_id="M1",
+                tower_id="T001",
+                rssi_dbm=-60.0,
+                timestamp=datetime.now(UTC),
             ),
             Measurement(
-                measurement_id="M2", tower_id="T002", rssi_dbm=-60.0, timestamp=datetime.now(UTC)
+                measurement_id="M2",
+                tower_id="T002",
+                rssi_dbm=-60.0,
+                timestamp=datetime.now(UTC),
             ),
             Measurement(
-                measurement_id="M3", tower_id="T003", rssi_dbm=-60.0, timestamp=datetime.now(UTC)
+                measurement_id="M3",
+                tower_id="T003",
+                rssi_dbm=-60.0,
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -568,7 +562,9 @@ class TestEndToEndCSVToLocationPipeline:
                 id=r.id,
                 operator=r.operator,
                 target_number=r.target_number,
-                timestamp=r.timestamp.replace(tzinfo=UTC) if r.timestamp and r.timestamp.tzinfo is None else (r.timestamp or now_utc),
+                timestamp=r.timestamp.replace(tzinfo=UTC)
+                if r.timestamp and r.timestamp.tzinfo is None
+                else (r.timestamp or now_utc),
                 latitude=r.latitude,
                 longitude=r.longitude,
                 first_cgi=r.first_cgi,
@@ -619,7 +615,9 @@ class TestEndToEndCSVToLocationPipeline:
         assert evidence_report["scenario_id"] == "SCN-E2E-FULL"
         assert "evidence_hash" in evidence_report
         assert len(evidence_report["evidence_hash"]) == 64
-        assert compute_evidence_hash(evidence_report) == evidence_report["evidence_hash"]
+        assert (
+            compute_evidence_hash(evidence_report) == evidence_report["evidence_hash"]
+        )
 
         loc_res = solve_weighted_centroid(
             scenario_id="SCN-E2E-FULL",

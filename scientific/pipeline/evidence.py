@@ -27,7 +27,9 @@ def compute_evidence_hash(evidence: dict[str, Any]) -> str:
         Hexadecimal SHA-256 digest string.
     """
     clean_dict = {
-        k: v for k, v in evidence.items() if k not in ("evidence_hash", "hash", "sha256_hash")
+        k: v
+        for k, v in evidence.items()
+        if k not in ("evidence_hash", "hash", "sha256_hash")
     }
     json_bytes = json.dumps(clean_dict, sort_keys=True, default=str).encode("utf-8")
     return hashlib.sha256(json_bytes).hexdigest()
@@ -163,4 +165,3 @@ def synthesize_evidence(
     report["evidence_hash"] = evidence_hash
     report["hash"] = evidence_hash
     return report
-
