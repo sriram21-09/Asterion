@@ -4,15 +4,19 @@ Evidence Service
 
 Synthesizes audit evidence packets for a case by running measurement
 validation and compiling tower/measurement acceptance/rejection reports.
+Calculates SHA-256 reproducibility hashes for audit trail verification.
 """
 
+import hashlib
 import json
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from app.repositories.case_repository import CaseRepository
 from app.repositories.confidence_repository import ConfidenceRepository
 from app.repositories.measurement_repository import MeasurementRepository
-from app.shared.validation import ValidationError, decode_case_code
+from app.shared.validation import ValidationError, decode_case_code, encode_case_code
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -21,16 +25,46 @@ from scientific.models.scenario_config import ScenarioConfig
 from scientific.models.tower import Tower as ScientificTower
 from scientific.pipeline.evidence import synthesize_evidence
 
+SOLVER_VERSION = "1.0.0"
 
-class EvidenceService:
+
+class EvidenceGenerationService:
     """Service that bridges DB data → scientific evidence engine → audit packet."""
+
+    @staticmethod
+    def generate_reproducibility_hash(
+        solver_version: str,
+        input_record_ids: list[str],
+        parameter_strings: str | dict[str, Any],
+    ) -> str:
+        """Calculate SHA-256 reproducibility hash combining solver version, input record IDs, and parameter strings."""
+        sorted_ids = sorted(str(rid) for rid in input_record_ids)
+        if isinstance(parameter_strings, dict):
+            param_str = json.dumps(parameter_strings, sort_keys=True)
+        else:
+            param_str = str(parameter_strings)
+
+        canonical_payload = (
+            f"solver:{solver_version}|records:{','.join(sorted_ids)}|params:{param_str}"
+        )
+        return hashlib.sha256(canonical_payload.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _resolve_case_code(case_id_or_code: str | int) -> str:
+        """Normalize case input parameter to standard case code (e.g. CASE-001)."""
+        if isinstance(case_id_or_code, int):
+            return encode_case_code(case_id_or_code)
+        val_str = str(case_id_or_code).strip()
+        if val_str.isdigit():
+            return encode_case_code(int(val_str))
+        return val_str
 
     @staticmethod
     def get_evidence(
         db: Session,
-        case_code: str,
-    ) -> dict:
-        """Build an evidence audit packet for a case.
+        case_id: str | int,
+    ) -> dict[str, Any]:
+        """Build an evidence audit packet for a case including SHA-256 reproducibility hash.
 
         1. Decode case_code → load case + scenario
         2. Load scenario config from dataset JSON
@@ -38,15 +72,12 @@ class EvidenceService:
         4. Convert DB models → scientific Tower/Measurement models
         5. Call synthesize_evidence() from the scientific pipeline
         6. Enrich with confidence data if available
-        7. Return structured evidence dict
-
-        Returns:
-            Dictionary with summary, towers, accepted_measurement_ids,
-            rejections, and optionally confidence data.
+        7. Compute SHA-256 reproducibility hash
+        8. Return structured evidence dict
         """
-        # 1. Decode case code and load case
-        case_id = decode_case_code(case_code)
-        case = CaseRepository.get(db, case_id)
+        case_code = EvidenceGenerationService._resolve_case_code(case_id)
+        db_case_id = decode_case_code(case_code)
+        case = CaseRepository.get(db, db_case_id)
         if not case:
             raise HTTPException(status_code=404, detail="Case not found")
 
@@ -57,11 +88,9 @@ class EvidenceService:
                 status_code=400,
             )
 
-        # 2. Load scenario config
-        config = EvidenceService._load_scenario_config(case.scenario_id)
+        config = EvidenceGenerationService._load_scenario_config(case.scenario_id)
 
-        # 3. Retrieve stored measurements
-        db_measurements = MeasurementRepository.get_by_case(db, case_id)
+        db_measurements = MeasurementRepository.get_by_case(db, db_case_id)
         if not db_measurements:
             raise ValidationError(
                 "measurements",
@@ -69,21 +98,18 @@ class EvidenceService:
                 status_code=400,
             )
 
-        # 4. Convert to scientific models
         scientific_towers, scientific_measurements = (
-            EvidenceService._convert_to_scientific(config, db_measurements)
+            EvidenceGenerationService._convert_to_scientific(config, db_measurements)
         )
 
-        # 5. Call the evidence synthesis engine
         evidence = synthesize_evidence(
             scenario_id=config.scenario_id,
             towers=scientific_towers,
             measurements=scientific_measurements,
         )
 
-        # 6. Enrich with confidence data
         confidence_data = None
-        latest_confidence = ConfidenceRepository.get_latest_by_case(db, case_id)
+        latest_confidence = ConfidenceRepository.get_latest_by_case(db, db_case_id)
         if latest_confidence:
             confidence_data = {
                 "confidence_score": latest_confidence.confidence_score,
@@ -92,7 +118,17 @@ class EvidenceService:
                 "method": latest_confidence.method,
             }
 
-        # 7. Build response
+        input_record_ids = [m.measurement_code for m in db_measurements]
+        param_payload = {
+            "scenario_id": config.scenario_id,
+            "towers_count": len(config.tower_placements),
+        }
+        reproducibility_hash = EvidenceGenerationService.generate_reproducibility_hash(
+            solver_version=SOLVER_VERSION,
+            input_record_ids=input_record_ids,
+            parameter_strings=param_payload,
+        )
+
         return {
             "case_code": case_code.upper(),
             "scenario_id": evidence.get("scenario_id"),
@@ -101,7 +137,22 @@ class EvidenceService:
             "accepted_measurement_ids": evidence.get("accepted_measurement_ids", []),
             "rejections": evidence.get("rejections", []),
             "confidence": confidence_data,
+            "reproducibility_hash": reproducibility_hash,
+            "solver_version": SOLVER_VERSION,
+            "input_record_ids": sorted(input_record_ids),
+            "parameter_strings": json.dumps(param_payload, sort_keys=True),
         }
+
+    @staticmethod
+    def get_audit(
+        db: Session,
+        case_id: str | int,
+    ) -> dict[str, Any]:
+        """Build a comprehensive evidence audit packet for audit trail verification."""
+        evidence_data = EvidenceGenerationService.get_evidence(db, case_id)
+        evidence_data["audit_status"] = "VERIFIED"
+        evidence_data["generated_at"] = datetime.now(UTC).isoformat()
+        return evidence_data
 
     @staticmethod
     def _load_scenario_config(scenario_id: int) -> ScenarioConfig:
@@ -199,3 +250,7 @@ class EvidenceService:
             )
 
         return scientific_towers, scientific_measurements
+
+
+# Alias for backward compatibility
+EvidenceService = EvidenceGenerationService

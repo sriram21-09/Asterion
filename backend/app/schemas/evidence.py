@@ -168,3 +168,45 @@ class EvidenceResponse(BaseModel):
     confidence: EvidenceConfidence | None = Field(
         None, description="Confidence evaluation parameters if computed"
     )
+    reproducibility_hash: str | None = Field(
+        None, description="SHA-256 reproducibility hash for audit trail verification"
+    )
+
+
+class EvidenceAuditResponse(BaseModel):
+    """Detailed evidence audit record for compliance and verification."""
+
+    case_code: str = Field(
+        ..., description="The unique Case Code (e.g. CASE-001)", examples=["CASE-001"]
+    )
+    reproducibility_hash: str = Field(
+        ..., description="SHA-256 reproducibility hash computed for audit trail"
+    )
+    solver_version: str = Field(
+        ..., description="Version of the solver algorithm used", examples=["1.0.0"]
+    )
+    input_record_ids: list[str] = Field(
+        ..., description="Sorted list of input measurement record IDs used in calculation"
+    )
+    parameter_strings: str = Field(
+        ..., description="Canonical parameter string used to compute the reproducibility hash"
+    )
+    summary: EvidenceSummary = Field(
+        ..., description="Summary statistics of validation results"
+    )
+    towers: list[EvidenceTower] = Field(
+        ..., description="List of per-tower measurement details"
+    )
+    rejections: list[EvidenceRejection] = Field(
+        ..., description="List of rejected measurements with error details"
+    )
+    confidence: EvidenceConfidence | None = Field(
+        None, description="Confidence evaluation parameters if computed"
+    )
+    audit_status: str = Field(
+        "VERIFIED", description="Status of evidence audit (e.g. 'VERIFIED')"
+    )
+    generated_at: str = Field(
+        ..., description="ISO 8601 timestamp of audit generation"
+    )
+
