@@ -7,12 +7,32 @@ documenting accepted and rejected measurements, active towers, and specific
 rejection reasons.
 """
 
+import hashlib
+import json
 from typing import Any
 
 from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.models.measurement import Measurement
 from scientific.models.tower import Tower
 from scientific.validation.validators import MeasurementValidator, Severity
+
+
+def compute_evidence_hash(evidence: dict[str, Any]) -> str:
+    """Compute a deterministic SHA-256 hash of an evidence audit dictionary.
+
+    Args:
+        evidence: The audit evidence report dictionary.
+
+    Returns:
+        Hexadecimal SHA-256 digest string.
+    """
+    clean_dict = {
+        k: v
+        for k, v in evidence.items()
+        if k not in ("evidence_hash", "hash", "sha256_hash")
+    }
+    json_bytes = json.dumps(clean_dict, sort_keys=True, default=str).encode("utf-8")
+    return hashlib.sha256(json_bytes).hexdigest()
 
 
 def synthesize_evidence(
@@ -30,7 +50,7 @@ def synthesize_evidence(
         thresholds: Validation thresholds to use for measurement audits.
 
     Returns:
-        A dictionary containing structured audit records.
+        A dictionary containing structured audit records and cryptographic SHA-256 hash.
     """
     validator = MeasurementValidator(thresholds=thresholds)
 
@@ -125,7 +145,7 @@ def synthesize_evidence(
     rejected_count = total_count - accepted_count
     active_towers_count = sum(1 for t in towers_list if t["status"] == "active")
 
-    return {
+    report = {
         "scenario_id": scenario_id,
         "summary": {
             "total_measurements": total_count,
@@ -140,3 +160,8 @@ def synthesize_evidence(
         ],
         "rejections": rejected_details,
     }
+
+    evidence_hash = compute_evidence_hash(report)
+    report["evidence_hash"] = evidence_hash
+    report["hash"] = evidence_hash
+    return report
