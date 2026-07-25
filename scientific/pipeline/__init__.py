@@ -18,7 +18,7 @@ from scientific.pipeline.benchmarks import (
     parse_cgi,
 )
 from scientific.pipeline.confidence import compute_confidence
-from scientific.pipeline.evidence import synthesize_evidence
+from scientific.pipeline.evidence import compute_evidence_hash, synthesize_evidence
 from scientific.pipeline.kalman_tracker import KalmanTracker, track_positions
 from scientific.pipeline.movement import (
     MovementEvent,
@@ -48,12 +48,14 @@ __all__ = [
     "MovementSummary",
     "calculate_bearing_deg",
     "calculate_distance_m",
+    "calculate_evidence_hash",
     "calculate_grid_density",
     "calculate_neighbor_density",
     "calculate_radius_density",
     "calculate_speed_kmh",
     "classify_velocity",
     "compute_confidence",
+    "compute_evidence_hash",
     "compute_input_quality_scores",
     "detect_handover",
     "flag_impossible_velocity",
