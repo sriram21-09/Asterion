@@ -15,8 +15,13 @@ from scientific.validation.cdr_validator import (
     CDRValidationService,
     validate_cdr_batch,
 )
-from scientific.validation.measurement_validator import MeasurementValidator
-from scientific.validation.result_validator import ResultValidator, cross_validate
+from scientific.validation.measurement_validator import (
+    MeasurementValidator,
+)
+from scientific.validation.result_validator import (
+    ResultValidator,
+    cross_validate,
+)
 from scientific.validation.scenario_validator import (
     ScenarioValidator,
     validate_batch,
@@ -24,7 +29,9 @@ from scientific.validation.scenario_validator import (
     validate_scenario,
     validate_tower,
 )
-from scientific.validation.tower_validator import TowerValidator
+from scientific.validation.tower_validator import (
+    TowerValidator,
+)
 from scientific.validation.types import (
     CELLULAR_BANDS_MHZ,
     Severity,

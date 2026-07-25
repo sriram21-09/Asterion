@@ -273,6 +273,7 @@ class TestValidateBatch:
         s2 = Scenario(
             scenario_id="S002", name="Scenario 2", towers=[t1, t2, t3], measurements=[]
         )
+
         batch_results = validate_batch([s1, s2])
         assert len(batch_results) == 2
         assert "S001" in batch_results
@@ -324,6 +325,7 @@ class TestE2EPipelineRunner:
         config.simulation.algorithm = algorithm
         if algorithm in ("kalman", "hybrid"):
             config.simulation.measurement_count = 3
+
         result = run_pipeline(config)
         assert isinstance(result, PipelineResult)
         assert result.metadata["algorithm_selected"] == algorithm
@@ -338,6 +340,8 @@ class TestE2EPipelineRunner:
     def test_pipeline_perf_benchmark(self, sample_scenarios_data):
         total_time = 0.0
         runs_count = 0
+
+        # Run multiple iterations over the configurations to benchmark average performance
         for cfg_data in sample_scenarios_data:
             config = ScenarioConfig(**cfg_data)
             for _ in range(5):

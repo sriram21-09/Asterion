@@ -6,6 +6,7 @@ Result Validator & Cross Validation
 from __future__ import annotations
 
 import math
+from typing import Any
 
 from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.constants import METERS_PER_DEGREE_LAT, haversine_distance_m
@@ -50,7 +51,7 @@ class ResultValidator:
             )
             return validation_res
 
-        towers = []
+        towers: list[Any] = []
         if hasattr(scenario, "towers") and scenario.towers:
             towers = scenario.towers
         elif hasattr(scenario, "tower_placements") and scenario.tower_placements:

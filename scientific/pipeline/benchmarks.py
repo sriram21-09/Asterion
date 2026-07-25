@@ -305,7 +305,7 @@ def calculate_grid_density(
     Returns:
         A dictionary mapping (grid_latitude_center, grid_longitude_center) to tower count.
     """
-    grid = {}
+    grid: dict[tuple[float, float], int] = {}
     for t in towers:
         t_lat = (
             getattr(t, "latitude", None)

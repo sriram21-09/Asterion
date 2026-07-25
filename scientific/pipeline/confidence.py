@@ -8,6 +8,7 @@ measurement covariance.
 """
 
 import math
+from typing import Literal
 
 import numpy as np
 
@@ -134,6 +135,7 @@ def compute_confidence(
     confidence_score = max(0.0, min(1.0, confidence_score))
 
     # Map GDOP to confidence level based on ValidationThresholds
+    confidence_level: Literal["high", "medium", "low"]
     if gdop <= thresholds.gdop_excellent:
         confidence_level = "high"
     elif gdop <= thresholds.gdop_good:

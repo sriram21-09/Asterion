@@ -264,3 +264,17 @@ html.light .glass-card {
     border-color 250ms ease,
     color 150ms ease !important;
 }
+
+/* -------------------------
+   Leaflet Customizations
+   ------------------------- */
+@keyframes leaflet-dash-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+.leaflet-animated-path {
+  stroke-dasharray: 8 8 !important;
+  animation: leaflet-dash-flow 1.5s linear infinite !important;
+}

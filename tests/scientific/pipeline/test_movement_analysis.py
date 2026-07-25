@@ -33,11 +33,13 @@ class TestCalculateDistanceM:
         assert d == pytest.approx(0.0, abs=0.01)
 
     def test_mumbai_to_pune_reference(self):
+        """Well-known reference: Mumbai → Pune ≈ 120 km geodesic (straight-line)."""
         d = calculate_distance_m(*MUMBAI, *PUNE)
         assert d is not None
         assert 118_000 < d < 125_000
 
     def test_mumbai_to_delhi(self):
+        """Mumbai → Delhi ≈ 1150 km."""
         d = calculate_distance_m(*MUMBAI, *DELHI)
         assert d is not None
         assert 1_100_000 < d < 1_200_000
@@ -52,6 +54,7 @@ class TestCalculateDistanceM:
         assert calculate_distance_m(None, None, None, None) is None
 
     def test_equator_one_degree(self):
+        """One degree of longitude at the equator ≈ 111.32 km."""
         d = calculate_distance_m(0.0, 0.0, 0.0, 1.0)
         assert d is not None
         assert 110_000 < d < 112_000
@@ -80,6 +83,7 @@ class TestCalculateSpeedKmh:
         assert calculate_speed_kmh(500.0, None) is None
 
     def test_walking_speed(self):
+        # 1.4 m/s ≈ 5 km/h
         s = calculate_speed_kmh(1.4, 1.0)
         assert s == pytest.approx(5.04, rel=0.01)
 
@@ -328,6 +332,7 @@ class TestReconstructMovementEvents:
         assert summary.handover_count == 1
 
     def test_null_coordinates_handled(self):
+        """Records with None lat/lon should not crash."""
         records = [
             self._make_record(0, None, None, "A"),
             self._make_record(5, 19.076, 72.878, "B"),

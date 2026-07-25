@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from scientific.models.measurement import Measurement
+
 from scientific.models.tower import Tower
 from scientific.pipeline.confidence import compute_confidence
 from scientific.pipeline.evidence import synthesize_evidence

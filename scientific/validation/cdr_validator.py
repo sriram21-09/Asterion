@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 
 from scientific.config import DEFAULT_VALIDATION_THRESHOLDS, ValidationThresholds
 from scientific.models.cdr_record import CDRRecord
@@ -101,7 +102,7 @@ class CDRRecordValidator:
                     code="CDR_PARTIAL_COORDS",
                 )
             )
-        elif has_lat and has_lon:
+        elif lat is not None and lon is not None:
             lat_min, lat_max = self.thresholds.latitude_range
             lon_min, lon_max = self.thresholds.longitude_range
             if not (-90.0 <= lat <= 90.0) or not (-180.0 <= lon <= 180.0):
@@ -138,7 +139,7 @@ class CDRRecordValidator:
                     code="CDR_PARTIAL_LAST_COORDS",
                 )
             )
-        elif has_last_lat and has_last_lon:
+        elif last_lat is not None and last_lon is not None:
             lat_min, lat_max = self.thresholds.latitude_range
             lon_min, lon_max = self.thresholds.longitude_range
             if not (-90.0 <= last_lat <= 90.0) or not (-180.0 <= last_lon <= 180.0):
@@ -249,7 +250,7 @@ def validate_cdr_batch(
                 )
             seen_ids.add(record.id)
 
-    seen_records = {}
+    seen_records: dict[tuple[Any, ...], int] = {}
     for idx, record in enumerate(records):
         if record.target_number and record.timestamp:
             key = (record.target_number, record.timestamp, record.first_cgi)

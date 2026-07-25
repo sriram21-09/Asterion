@@ -608,6 +608,10 @@ def smooth_movement_path(
         process_noise_acc=process_noise_acc,
         default_measurement_noise_m=measurement_noise_m,
     )
+    assert (
+        first_with_coords.latitude is not None
+        and first_with_coords.longitude is not None
+    )
     tracker.initialize(
         lat=first_with_coords.latitude,
         lon=first_with_coords.longitude,
@@ -626,6 +630,7 @@ def smooth_movement_path(
 
         if evt is first_with_coords:
             # First valid event — use initial state
+            assert tracker.x is not None
             smoothed_coords.append((float(tracker.x[0]), float(tracker.x[1])))
             prev_ts = evt.timestamp
             continue
@@ -647,6 +652,7 @@ def smooth_movement_path(
             error_m=noise,
         )
 
+        assert tracker.x is not None
         smoothed_coords.append((float(tracker.x[0]), float(tracker.x[1])))
         prev_ts = evt.timestamp
 

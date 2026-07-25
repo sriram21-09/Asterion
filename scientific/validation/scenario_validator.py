@@ -168,7 +168,10 @@ class ScenarioValidator:
                     code="SCENARIO_PARTIAL_GROUND_TRUTH",
                 )
             )
-        elif has_gt_lat and has_gt_lon:
+        elif (
+            scenario.expected_device_lat is not None
+            and scenario.expected_device_lon is not None
+        ):
             lat_min, lat_max = self.thresholds.latitude_range
             lon_min, lon_max = self.thresholds.longitude_range
             if not (lat_min <= scenario.expected_device_lat <= lat_max) or not (
