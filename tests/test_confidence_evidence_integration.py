@@ -673,7 +673,9 @@ class TestEvidenceAPIConformance:
         )
         assert h1 != h3
 
-    def test_get_evidence_audit_service(self, db: Session, sample_case, sample_measurements):
+    def test_get_evidence_audit_service(
+        self, db: Session, sample_case, sample_measurements
+    ):
         """EvidenceGenerationService.get_audit produces a verified audit record."""
         from app.services.evidence_service import EvidenceGenerationService
 
@@ -684,7 +686,9 @@ class TestEvidenceAPIConformance:
         assert audit["solver_version"] == "1.0.0"
         assert len(audit["input_record_ids"]) == 6
 
-    def test_get_evidence_endpoint_success(self, db: Session, sample_case, sample_measurements):
+    def test_get_evidence_endpoint_success(
+        self, db: Session, sample_case, sample_measurements
+    ):
         """GET /api/v1/evidence/{case_id} returns evidence packet with reproducibility hash."""
         from main import app
 
@@ -723,4 +727,3 @@ class TestEvidenceAPIConformance:
         assert isinstance(data["input_record_ids"], list)
 
         app.dependency_overrides.clear()
-

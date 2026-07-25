@@ -66,7 +66,9 @@ def _parse_rejections(rejections_raw: list[dict]) -> list[EvidenceRejection]:
 )
 def get_evidence(
     case_id: str = Path(
-        ..., description="The Case ID or Case Code (e.g. 1 or CASE-001)", examples=["CASE-001"]
+        ...,
+        description="The Case ID or Case Code (e.g. 1 or CASE-001)",
+        examples=["CASE-001"],
     ),
     db: Session = Depends(get_db),
 ):
@@ -118,7 +120,9 @@ def get_evidence(
 )
 def get_evidence_audit(
     case_id: str = Path(
-        ..., description="The Case ID or Case Code (e.g. 1 or CASE-001)", examples=["CASE-001"]
+        ...,
+        description="The Case ID or Case Code (e.g. 1 or CASE-001)",
+        examples=["CASE-001"],
     ),
     db: Session = Depends(get_db),
 ):

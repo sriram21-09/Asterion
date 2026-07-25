@@ -186,10 +186,12 @@ class EvidenceAuditResponse(BaseModel):
         ..., description="Version of the solver algorithm used", examples=["1.0.0"]
     )
     input_record_ids: list[str] = Field(
-        ..., description="Sorted list of input measurement record IDs used in calculation"
+        ...,
+        description="Sorted list of input measurement record IDs used in calculation",
     )
     parameter_strings: str = Field(
-        ..., description="Canonical parameter string used to compute the reproducibility hash"
+        ...,
+        description="Canonical parameter string used to compute the reproducibility hash",
     )
     summary: EvidenceSummary = Field(
         ..., description="Summary statistics of validation results"
@@ -206,7 +208,4 @@ class EvidenceAuditResponse(BaseModel):
     audit_status: str = Field(
         "VERIFIED", description="Status of evidence audit (e.g. 'VERIFIED')"
     )
-    generated_at: str = Field(
-        ..., description="ISO 8601 timestamp of audit generation"
-    )
-
+    generated_at: str = Field(..., description="ISO 8601 timestamp of audit generation")
