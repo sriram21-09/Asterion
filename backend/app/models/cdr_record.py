@@ -20,11 +20,13 @@ class CDRRecord(BaseModel):
         ForeignKey("cases.id", ondelete="CASCADE"), nullable=True, index=True
     )
 
-    operator: Mapped[str] = mapped_column(String(50), nullable=False)
+    operator: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     target_number: Mapped[str | None] = mapped_column(
         String(50), nullable=True, index=True
     )
-    b_party_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    b_party_number: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, index=True
+    )
     call_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     service_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
@@ -35,16 +37,18 @@ class CDRRecord(BaseModel):
 
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
-    first_cgi: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    first_cgi: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, index=True
+    )
     first_bts_location: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     last_latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     last_longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
-    last_cgi: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    last_cgi: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     last_bts_location: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    imei: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    imsi: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    imei: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)
+    imsi: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)
     smsc_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
     roaming_network: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
