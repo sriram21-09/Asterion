@@ -33,7 +33,7 @@ class TestMissingValues:
 
     def test_measurement_missing_fields(self):
         # We construct measurements with invalid empty strings to bypass Pydantic min_length
-        m = Measurement.construct(
+        m = Measurement.model_construct(
             measurement_id="",
             tower_id="",
             timestamp=None,
@@ -49,7 +49,7 @@ class TestMissingValues:
         assert "MEAS_MISSING_RSSI" in error_codes
 
     def test_tower_missing_fields(self):
-        t = Tower.construct(
+        t = Tower.model_construct(
             tower_id="",
             latitude=None,
             longitude=None,
@@ -70,7 +70,7 @@ class TestMissingValues:
         assert "TOWER_MISSING_RADIUS" in error_codes
 
     def test_scenario_missing_fields(self):
-        s = Scenario.construct(
+        s = Scenario.model_construct(
             scenario_id="",
             name="",
             towers=None,
@@ -91,7 +91,7 @@ class TestCoordinateOperationalBounds:
     def test_default_wgs84_bounds(self):
         # Default WGS84 coordinates bounds are [-90, 90] and [-180, 180].
         # Pydantic validates these at model initialization. Let's test out of bounds via construct().
-        m = Measurement.construct(
+        m = Measurement.model_construct(
             measurement_id="M001",
             tower_id="T001",
             timestamp=datetime.now(UTC),
