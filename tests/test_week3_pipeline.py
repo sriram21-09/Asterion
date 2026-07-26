@@ -657,7 +657,9 @@ class TestRealOperatorDatasetPipelineRuns:
             filepath = dataset_dir / filename
             assert filepath.exists(), f"Missing dataset file {filename}"
 
-            case = Case(id=300 + idx, title=f"Real Op Case {expected_op}", status="open")
+            case = Case(
+                id=300 + idx, title=f"Real Op Case {expected_op}", status="open"
+            )
             db.add(case)
             db.commit()
 
@@ -702,9 +704,7 @@ class TestRealOperatorDatasetPipelineRuns:
 
             # 3. Movement Reconstruction & Path Smoothing
             case_code = f"CASE-{case.id:03d}"
-            mvt_res = MovementReconstructionService.reconstruct_movements(
-                db, case_code
-            )
+            mvt_res = MovementReconstructionService.reconstruct_movements(db, case_code)
             assert mvt_res["total_events"] >= len(db_records)
 
             dict_records = [
@@ -777,4 +777,3 @@ class TestRealOperatorDatasetPipelineRuns:
             )
             assert conf_res.confidence_level in ("high", "medium", "low")
             assert 0.0 <= conf_res.confidence_score <= 1.0
-

@@ -140,9 +140,7 @@ class MovementReconstructionService:
                 return ts.replace(tzinfo=UTC)
             return ts
 
-        raw_events.sort(
-            key=lambda e: _ts_sort_key(e.get("timestamp"))
-        )
+        raw_events.sort(key=lambda e: _ts_sort_key(e.get("timestamp")))
 
         # 5. Detect handover events (CGI transitions between consecutive events)
         events_with_handovers = MovementReconstructionService._detect_handovers(
@@ -195,7 +193,9 @@ class MovementReconstructionService:
 
         # Time span
         timestamps = [
-            r.timestamp.replace(tzinfo=UTC) if r.timestamp.tzinfo is None else r.timestamp
+            r.timestamp.replace(tzinfo=UTC)
+            if r.timestamp.tzinfo is None
+            else r.timestamp
             for r in movement_rows
             if r.timestamp is not None
         ]

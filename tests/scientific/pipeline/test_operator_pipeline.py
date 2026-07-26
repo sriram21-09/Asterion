@@ -40,7 +40,10 @@ from scientific.models.measurement import Measurement
 from scientific.models.tower import Tower
 from scientific.pipeline.confidence import compute_confidence
 from scientific.pipeline.evidence import compute_evidence_hash, synthesize_evidence
-from scientific.pipeline.movement import reconstruct_movement_events, smooth_movement_path
+from scientific.pipeline.movement import (
+    reconstruct_movement_events,
+    smooth_movement_path,
+)
 from scientific.pipeline.weighted_centroid import solve_weighted_centroid
 from scientific.validation.validators import CDRValidationService
 
@@ -73,7 +76,9 @@ def db() -> Session:
 DATASET_DIR = ROOT / "E-Rakshak CDR & Location Data Sets"
 
 
-def _run_full_operator_pipeline(db: Session, filename: str, expected_operator: str) -> dict:
+def _run_full_operator_pipeline(
+    db: Session, filename: str, expected_operator: str
+) -> dict:
     """Helper to run the end-to-end scientific pipeline on a specific operator file."""
     filepath = DATASET_DIR / filename
     assert filepath.exists(), f"Dataset file {filename} not found at {filepath}"
@@ -84,9 +89,9 @@ def _run_full_operator_pipeline(db: Session, filename: str, expected_operator: s
     # 1. Ingestion & Auto-detection
     service = CDRImportService()
     detected_op = service.detect_operator(file_bytes.decode("utf-8", errors="ignore"))
-    assert (
-        detected_op == expected_operator
-    ), f"Expected operator '{expected_operator}', but detected '{detected_op}'"
+    assert detected_op == expected_operator, (
+        f"Expected operator '{expected_operator}', but detected '{detected_op}'"
+    )
 
     case = Case(title=f"Test Case for {filename}", status="open")
     db.add(case)
@@ -173,7 +178,14 @@ def _run_full_operator_pipeline(db: Session, filename: str, expected_operator: s
         )
     towers = list(towers_dict.values())
     if not towers:
-        towers = [Tower(tower_id="T-DEFAULT", latitude=20.0, longitude=78.0, coverage_radius_m=1000.0)]
+        towers = [
+            Tower(
+                tower_id="T-DEFAULT",
+                latitude=20.0,
+                longitude=78.0,
+                coverage_radius_m=1000.0,
+            )
+        ]
 
     # 5. Evidence Synthesis & Cryptographic SHA-256 Hashing
     ev_report = synthesize_evidence(
@@ -237,7 +249,9 @@ class TestOperatorPipelineRuns:
     def test_all_operator_files_batch_run(self, db: Session):
         """Iterates over all CSV files in dataset directory and asserts zero exceptions."""
         csv_files = list(DATASET_DIR.glob("*.csv"))
-        assert len(csv_files) == 4, f"Expected 4 operator CSV files, found {len(csv_files)}"
+        assert len(csv_files) == 4, (
+            f"Expected 4 operator CSV files, found {len(csv_files)}"
+        )
 
         for f in csv_files:
             if "Airtel" in f.name:
