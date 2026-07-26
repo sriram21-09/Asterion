@@ -322,8 +322,11 @@ The core scientific and mathematical components are fully implemented and integr
 2. **Noise Injection Model** (`scientific/simulation/noise_model.py`): Models shadow fading using standard normal distributions.
 3. **Measurement Synthesizer** (`scientific/simulation/measurement_generator.py`): Produces synthetic measurements from scenarios.
 4. **Non-Linear Least Squares Solver (NLLS)** (`scientific/pipeline/multilateration.py`): Performs trilateration.
-5. **Weighted Centroid Fallback** (`scientific/pipeline/weighted_centroid.py`): Centroid estimation based on RSSI weights.
-6. **Kalman Position Tracker** (`scientific/pipeline/kalman_tracker.py`): Performs 2D constant-velocity smoothing.
-7. **GDOP & Covariance confidence estimator** (`scientific/pipeline/confidence.py`): Evaluates geometric errors.
-8. **Evidence Synthesis** (`scientific/pipeline/evidence.py`): Generates evidence packets and audit trails.
-9. **End-to-End Pipeline Orchestrator** (`scientific/pipeline/runner.py`): Orchestrates simulation, validation, localization, tracking, and confidence.
+5. **Quality-Weighted Centroid Fallback** (`scientific/pipeline/weighted_centroid.py`): Multi-factor quality-weighted centroid estimation incorporating RSSI, coordinate validity, tower density, and temporal freshness metrics.
+6. **Movement & Handover Reconstruction** (`scientific/pipeline/movement.py`): Reconstructs chronological movement events, detects cell-sector CGI handovers, calculates travel kinematics (speed, bearing, distance, dwell time), and flags implausible travel velocities (>350 km/h).
+7. **Kalman Position Tracker & Path Smoothing** (`scientific/pipeline/kalman_tracker.py`): Performs 2D constant-velocity smoothing with anomaly dampening and handover preservation.
+8. **GDOP & Covariance confidence estimator** (`scientific/pipeline/confidence.py`): Evaluates geometric errors and 1-sigma error ellipses.
+9. **Evidence Synthesis & Cryptographic Tamper-Proofing** (`scientific/pipeline/evidence.py`): Generates audit evidence packets and computes SHA-256 tamper-evident hashes.
+10. **End-to-End Pipeline Orchestrator** (`scientific/pipeline/runner.py`): Orchestrates simulation, validation, localization, tracking, evidence, and confidence.
+11. **Real Operator Dataset Pipeline Test Suite** (`tests/scientific/pipeline/test_operator_pipeline.py`): Verifies zero-exception pipeline runs across all major operator datasets (Airtel, BSNL, Reliance Jio, Vodafone Idea).
+

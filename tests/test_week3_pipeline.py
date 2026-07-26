@@ -631,3 +631,150 @@ class TestEndToEndCSVToLocationPipeline:
         assert abs(loc_res.estimated_latitude - 21.2930) < 0.02
         assert abs(loc_res.estimated_longitude - 72.8890) < 0.02
         assert loc_res.signals_used == 2
+
+
+# ---------------------------------------------------------------------------
+# 7. Test Pipeline Execution on Real Operator Files (Airtel, BSNL, Jio, Vi)
+# ---------------------------------------------------------------------------
+
+
+class TestRealOperatorDatasetPipelineRuns:
+    """Verifies that all 4 real operator CSV files run through the entire scientific pipeline without exceptions."""
+
+    def test_real_operator_files_pipeline_execution(self, db: Session):
+        dataset_dir = ROOT / "E-Rakshak CDR & Location Data Sets"
+        operator_files = [
+            ("9714499703_Airtel.csv", "airtel"),
+            ("9477523061_BSNL.csv", "bsnl"),
+            ("9877535365_Jio.csv", "jio"),
+            ("8980261614_Vi.csv", "vi"),
+        ]
+
+        import_service = CDRImportService()
+        val_service = CDRValidationService()
+
+        for idx, (filename, expected_op) in enumerate(operator_files, 1):
+            filepath = dataset_dir / filename
+            assert filepath.exists(), f"Missing dataset file {filename}"
+
+            case = Case(id=300 + idx, title=f"Real Op Case {expected_op}", status="open")
+            db.add(case)
+            db.commit()
+
+            with open(filepath, "rb") as fp:
+                file_bytes = fp.read()
+
+            # 1. Operator detection & Ingestion
+            detected_op = import_service.detect_operator(
+                file_bytes.decode("utf-8", errors="ignore")
+            )
+            assert detected_op == expected_op
+
+            import_res = import_service.process_upload(
+                file_name=filename,
+                file_bytes=file_bytes,
+                case_id=case.id,
+                operator="auto",
+                db=db,
+            )
+            assert import_res["summary"]["status"] == "completed"
+            assert import_res["summary"]["parsed_records"] > 0
+            assert import_res["summary"]["failed_records"] == 0
+
+            # 2. CDR Validation
+            db_records = db.query(CDRRecord).filter(CDRRecord.case_id == case.id).all()
+            sci_records = [
+                ScientificCDRRecord(
+                    id=r.id,
+                    operator=r.operator,
+                    target_number=r.target_number or "unknown",
+                    timestamp=r.timestamp.replace(tzinfo=UTC)
+                    if r.timestamp and r.timestamp.tzinfo is None
+                    else (r.timestamp or datetime.now(UTC)),
+                    latitude=r.latitude,
+                    longitude=r.longitude,
+                    first_cgi=r.first_cgi,
+                )
+                for r in db_records
+            ]
+            val_report = val_service.validate_batch(sci_records)
+            assert val_report.total_records == len(db_records)
+
+            # 3. Movement Reconstruction & Path Smoothing
+            case_code = f"CASE-{case.id:03d}"
+            mvt_res = MovementReconstructionService.reconstruct_movements(
+                db, case_code
+            )
+            assert mvt_res["total_events"] >= len(db_records)
+
+            dict_records = [
+                {
+                    "timestamp": r.timestamp,
+                    "latitude": r.latitude,
+                    "longitude": r.longitude,
+                    "first_cgi": r.first_cgi,
+                }
+                for r in db_records
+            ]
+            mvt_summary = reconstruct_movement_events(dict_records)
+            smoothed_summary = smooth_movement_path(mvt_summary)
+            assert smoothed_summary.total_events == len(dict_records)
+
+            # 4. Evidence Synthesis & SHA-256 Hashing
+            towers_dict = {}
+            measurements = []
+            now_utc = datetime.now(UTC)
+            for r in db_records:
+                if r.first_cgi and r.first_cgi not in towers_dict:
+                    towers_dict[r.first_cgi] = Tower(
+                        tower_id=r.first_cgi,
+                        latitude=r.latitude or 20.0,
+                        longitude=r.longitude or 78.0,
+                        coverage_radius_m=1000.0,
+                    )
+                meas_ts = r.timestamp if r.timestamp else now_utc
+                if meas_ts.tzinfo is None:
+                    meas_ts = meas_ts.replace(tzinfo=UTC)
+                measurements.append(
+                    Measurement(
+                        measurement_id=f"M-{r.id}",
+                        tower_id=r.first_cgi or "T-UNKNOWN",
+                        timestamp=meas_ts,
+                        latitude=r.latitude,
+                        longitude=r.longitude,
+                        rssi_dbm=-70.0,
+                    )
+                )
+            towers = list(towers_dict.values()) or [
+                Tower(
+                    tower_id="T-DEFAULT",
+                    latitude=20.0,
+                    longitude=78.0,
+                    coverage_radius_m=1000.0,
+                )
+            ]
+
+            evidence = synthesize_evidence(
+                scenario_id=f"SCN-REAL-{case.id}",
+                towers=towers,
+                measurements=measurements[:100],
+            )
+            hash_val = compute_evidence_hash(evidence)
+            assert len(hash_val) == 64
+
+            # 5. Weighted Centroid & Confidence
+            centroid_res = solve_weighted_centroid(
+                scenario_id=f"SCN-REAL-{case.id}",
+                towers=towers,
+                measurements=measurements[:100],
+            )
+            conf_res = compute_confidence(
+                scenario_id=f"SCN-REAL-{case.id}",
+                estimated_latitude=centroid_res.estimated_latitude,
+                estimated_longitude=centroid_res.estimated_longitude,
+                towers=towers,
+                measurements=measurements[:100],
+            )
+            assert conf_res.confidence_level in ("high", "medium", "low")
+            assert 0.0 <= conf_res.confidence_score <= 1.0
+
