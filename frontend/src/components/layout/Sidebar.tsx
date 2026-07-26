@@ -10,6 +10,7 @@ import {
   X,
   UploadCloud,
   MapPin,
+  FileSearch,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useNavigationStore } from '@/stores/useNavigationStore'
@@ -27,6 +28,7 @@ const navigation: NavItem[] = [
   { name: 'Investigation', path: '/investigation', icon: MapPin },
   { name: 'Scenarios', path: '/scenarios', icon: Layers },
   { name: 'Reports', path: '/reports', icon: FileText },
+  { name: 'Evidence', path: '/evidence', icon: FileSearch },
   { name: 'Settings', path: '/settings', icon: Settings },
 ]
 
