@@ -37,7 +37,9 @@ class CDRRecord(BaseModel):
 
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
-    first_cgi: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    first_cgi: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, index=True
+    )
     first_bts_location: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     last_latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
