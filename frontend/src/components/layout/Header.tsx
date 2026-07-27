@@ -3,6 +3,7 @@ import { Menu, Sun, Moon, User } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useNavigationStore } from '@/stores/useNavigationStore'
 import { useThemeStore } from '@/stores/useThemeStore'
+import { GlobalSearch } from './GlobalSearch'
 
 /** Map route paths to human-readable breadcrumb labels */
 const routeLabels: Record<string, string> = {
@@ -24,7 +25,7 @@ export default function Header() {
   return (
     <header
       id="app-header"
-      className="h-16 bg-surface-primary border-b border-border-primary flex items-center justify-between px-4 md:px-8 z-10 shrink-0"
+      className="h-16 bg-surface-primary border-b border-b-border-primary flex items-center justify-between px-4 md:px-8 z-10 shrink-0"
     >
       {/* Left: Mobile hamburger + Breadcrumb */}
       <div className="flex items-center space-x-4">
@@ -45,6 +46,11 @@ export default function Header() {
           <span className="text-content-tertiary hidden sm:inline">/</span>
           <span className="text-content-primary font-semibold">{currentLabel}</span>
         </nav>
+      </div>
+
+      {/* Center: Global Search Bar */}
+      <div className="hidden md:flex flex-1 max-w-md mx-8">
+        <GlobalSearch />
       </div>
 
       {/* Right: Theme toggle + Status + Profile */}
