@@ -305,9 +305,7 @@ class TestCrossTypeSearch:
         assert len(case_results) >= 1
 
     def test_no_results_found(self, client, seed_data):
-        resp = client.get(
-            "/api/v1/search", params={"q": "zzz_nonexistent_term_zzz"}
-        )
+        resp = client.get("/api/v1/search", params={"q": "zzz_nonexistent_term_zzz"})
         assert resp.status_code == 200
         data = resp.json()
         assert data["data"]["total"] == 0
@@ -339,11 +337,8 @@ class TestPagination:
 
     def test_offset_skips_results(self, client, seed_data):
         # Get total first
-        resp_all = client.get(
-            "/api/v1/search", params={"q": "404", "limit": 100}
-        )
+        resp_all = client.get("/api/v1/search", params={"q": "404", "limit": 100})
         total = resp_all.json()["data"]["total"]
-        all_results = resp_all.json()["data"]["results"]
 
         if total > 1:
             # Offset by 1, should skip the first result
@@ -356,9 +351,7 @@ class TestPagination:
             assert resp_offset.json()["data"]["total"] == total
 
     def test_offset_beyond_results(self, client, seed_data):
-        resp = client.get(
-            "/api/v1/search", params={"q": "404", "offset": 1000}
-        )
+        resp = client.get("/api/v1/search", params={"q": "404", "offset": 1000})
         assert resp.status_code == 200
         data = resp.json()["data"]
         assert data["results"] == []
