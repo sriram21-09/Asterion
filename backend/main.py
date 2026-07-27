@@ -15,6 +15,7 @@ from app.api.v1.routers.localization import router as localization_router
 from app.api.v1.routers.measurements import router as measurements_router
 from app.api.v1.routers.movement import router as movement_router
 from app.api.v1.routers.scenarios import router as scenarios_router
+from app.api.v1.routers.search import router as search_router
 from app.api.v1.routers.simulation import router as simulation_router
 from app.api.v1.routers.towers import router as towers_router
 from app.api.v1.routers.tracking import router as tracking_router
@@ -58,6 +59,7 @@ app.include_router(import_router, prefix=settings.api_prefix)
 app.include_router(towers_router, prefix=settings.api_prefix)
 app.include_router(movement_router, prefix=settings.api_prefix)
 app.include_router(dashboard_router, prefix=settings.api_prefix)
+app.include_router(search_router, prefix=settings.api_prefix)
 
 
 @app.get("/")
