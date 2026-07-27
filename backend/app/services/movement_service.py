@@ -132,10 +132,15 @@ class MovementReconstructionService:
                 }
             )
 
-        # 4. Sort chronologically by timestamp
-        raw_events.sort(
-            key=lambda e: e["timestamp"] or datetime.min.replace(tzinfo=UTC)
-        )
+        # 4. Sort chronologically by timestamp safely normalizing naive and aware datetimes
+        def _ts_sort_key(ts: datetime | None) -> datetime:
+            if ts is None:
+                return datetime.min.replace(tzinfo=UTC)
+            if ts.tzinfo is None:
+                return ts.replace(tzinfo=UTC)
+            return ts
+
+        raw_events.sort(key=lambda e: _ts_sort_key(e.get("timestamp")))
 
         # 5. Detect handover events (CGI transitions between consecutive events)
         events_with_handovers = MovementReconstructionService._detect_handovers(
@@ -187,16 +192,17 @@ class MovementReconstructionService:
         total_distance_m = sum(r.distance_from_prev_m or 0.0 for r in movement_rows)
 
         # Time span
-        timestamps = [r.timestamp for r in movement_rows if r.timestamp is not None]
+        timestamps = [
+            r.timestamp.replace(tzinfo=UTC)
+            if r.timestamp.tzinfo is None
+            else r.timestamp
+            for r in movement_rows
+            if r.timestamp is not None
+        ]
         time_span_hours = 0.0
         if len(timestamps) >= 2:
             first_ts = min(timestamps)
             last_ts = max(timestamps)
-            # Ensure both are tz-aware for subtraction
-            if first_ts.tzinfo is None:
-                first_ts = first_ts.replace(tzinfo=UTC)
-            if last_ts.tzinfo is None:
-                last_ts = last_ts.replace(tzinfo=UTC)
             time_span_hours = (last_ts - first_ts).total_seconds() / 3600.0
 
         events_response = []

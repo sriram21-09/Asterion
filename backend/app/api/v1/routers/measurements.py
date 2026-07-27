@@ -53,7 +53,7 @@ def validate_measurements(payload: ValidateMeasurementsRequest):
             detail=f"Validation failed: {result.rejected_count} measurements rejected.",
         )
         return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content=jsonable_encoder(response_body),
         )
     return APIResponse(success=True, data=result)
