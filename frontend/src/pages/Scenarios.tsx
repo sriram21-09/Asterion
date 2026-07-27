@@ -286,17 +286,17 @@ function MeasurementsCard({
   onEvidence,
   isFetchingEvidence,
 }: MeasurementsCardProps) {
-  if (measurements.length === 0 && !isGenerating) return null
-
-  const pipelineComplete = currentStage === 'complete' || currentStage === 'failed'
-  const showManualButtons = pipelineComplete && measurements.length > 0
-
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   
   useEffect(() => {
     setCurrentPage(1)
   }, [measurements])
+
+  if (measurements.length === 0 && !isGenerating) return null
+
+  const pipelineComplete = currentStage === 'complete' || currentStage === 'failed'
+  const showManualButtons = pipelineComplete && measurements.length > 0
 
   const totalPages = Math.max(1, Math.ceil(measurements.length / itemsPerPage))
   const currentMeasurements = measurements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
