@@ -29,6 +29,8 @@ import { TrackingPathTable } from '@/components/tracking/TrackingPathTable'
 import { ConfidenceScoreCard } from '@/components/confidence/ConfidenceScoreCard'
 import { EvidenceAuditCard } from '@/components/evidence/EvidenceAuditCard'
 import { Badge, SkeletonGrid, ErrorCard, Pagination } from '@/components/ui'
+import { CaseStatsGrid } from '@/components/cases/CaseStatsGrid'
+import { InvestigationHealthCard } from '@/components/cases/InvestigationHealthCard'
 import type { Measurement } from '@/types/scientific'
 
 export default function CaseDetails() {
@@ -39,11 +41,38 @@ export default function CaseDetails() {
   const { data: scenarios } = useScenarios()
 
   const { measurements, isGenerating, generateMeasurements, fetchMeasurements, clearResults } = useSimulationStore()
-  const { validateMeasurements, isValidating, clearValidation } = useValidationStore()
-  const { runLocalization, isRunning: isLocalizing, clearResults: clearLocalization } = useLocalizationStore()
-  const { runTracking, isRunning: isTracking, clearResults: clearTracking } = useTrackingStore()
-  const { runConfidence, isRunning: isAnalyzing, clearResults: clearConfidence } = useConfidenceStore()
-  const { fetchEvidence, isLoading: isFetchingEvidence, clearEvidence } = useEvidenceStore()
+  const { 
+    validateMeasurements, 
+    isValidating, 
+    clearValidation,
+    isValid,
+    validCount,
+    rejectedCount,
+  } = useValidationStore()
+  const { 
+    runLocalization, 
+    isRunning: isLocalizing, 
+    clearResults: clearLocalization,
+    result: localizationResult,
+  } = useLocalizationStore()
+  const { 
+    runTracking, 
+    isRunning: isTracking, 
+    clearResults: clearTracking,
+    result: trackingResult,
+  } = useTrackingStore()
+  const { 
+    runConfidence, 
+    isRunning: isAnalyzing, 
+    clearResults: clearConfidence,
+    result: confidenceResult,
+  } = useConfidenceStore()
+  const { 
+    fetchEvidence, 
+    isLoading: isFetchingEvidence, 
+    clearEvidence,
+    evidence,
+  } = useEvidenceStore()
 
   // Format the Case Code (e.g. CASE-001)
   const caseCode = `CASE-${String(numericId).padStart(3, '0')}`
@@ -182,6 +211,14 @@ export default function CaseDetails() {
         </div>
       </div>
 
+      {/* Overview Statistics Grid */}
+      <CaseStatsGrid 
+        measurements={measurements}
+        validCount={validCount}
+        rejectedCount={rejectedCount}
+        isValidated={isValid !== null}
+      />
+
       {/* Associated Scenario Card & Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 glass-card rounded-2xl p-6 border border-border-primary flex flex-col justify-between">
@@ -213,29 +250,23 @@ export default function CaseDetails() {
           )}
         </div>
 
-        {/* Quick Stats Panel */}
-        <div className="glass-card rounded-2xl p-6 border border-border-primary flex flex-col justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-content-primary mb-4">Pipeline Status</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-content-secondary">Measurements</span>
-                <span className="font-semibold text-content-primary">{measurements.length}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-content-secondary">Towers Detected</span>
-                <span className="font-semibold text-content-primary">
-                  {new Set(measurements.map(m => m.tower_id)).size}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-content-secondary">Engine Status</span>
-                <span className={`font-semibold ${measurements.length > 0 ? 'text-success' : 'text-content-tertiary'}`}>
-                  {measurements.length > 0 ? 'Ready' : 'Pending Simulation'}
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* Investigation Health Card */}
+        <div className="lg:col-span-1">
+          <InvestigationHealthCard
+            hasMeasurements={measurements.length > 0}
+            isGenerating={isGenerating}
+            isValidated={isValid !== null}
+            isValidating={isValidating}
+            hasTowersResolved={measurements.some(m => m.latitude !== null && m.longitude !== null)}
+            isLocalizing={isLocalizing}
+            hasMovement={trackingResult !== null && trackingResult.path.length > 0}
+            isTracking={isTracking}
+            hasLocalization={localizationResult !== null}
+            hasConfidence={confidenceResult !== null}
+            isAnalyzing={isAnalyzing}
+            hasEvidence={evidence !== null}
+            isFetchingEvidence={isFetchingEvidence}
+          />
         </div>
       </div>
 
