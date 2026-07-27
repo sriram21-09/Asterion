@@ -34,6 +34,16 @@ from scientific.pipeline.movement import (
 )
 from scientific.pipeline.multilateration import solve_multilateration
 from scientific.pipeline.runner import run_pipeline
+from scientific.pipeline.summary_generator import (
+    APPROVED_TERMS,
+    PROHIBITED_TERMS,
+    InvestigationSummaryGenerator,
+    generate_device_overview,
+    generate_movement_summary,
+    generate_timeline_summary,
+    generate_tower_summary,
+    validate_neutral_terminology,
+)
 from scientific.pipeline.weighted_centroid import (
     InputQualityScore,
     compute_input_quality_scores,
@@ -41,11 +51,14 @@ from scientific.pipeline.weighted_centroid import (
 )
 
 __all__ = [
+    "APPROVED_TERMS",
     "CGIResolver",
     "InputQualityScore",
+    "InvestigationSummaryGenerator",
     "KalmanTracker",
     "MovementEvent",
     "MovementSummary",
+    "PROHIBITED_TERMS",
     "calculate_bearing_deg",
     "calculate_distance_m",
     "calculate_evidence_hash",
@@ -59,6 +72,10 @@ __all__ = [
     "compute_input_quality_scores",
     "detect_handover",
     "flag_impossible_velocity",
+    "generate_device_overview",
+    "generate_movement_summary",
+    "generate_timeline_summary",
+    "generate_tower_summary",
     "normalize_densities",
     "parse_cgi",
     "reconstruct_movement_events",
@@ -68,4 +85,6 @@ __all__ = [
     "solve_weighted_centroid",
     "synthesize_evidence",
     "track_positions",
+    "validate_neutral_terminology",
 ]
+
