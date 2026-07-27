@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   Calendar,
@@ -28,7 +28,7 @@ import { LocalizationResultCard } from '@/components/localization/LocalizationRe
 import { TrackingPathTable } from '@/components/tracking/TrackingPathTable'
 import { ConfidenceScoreCard } from '@/components/confidence/ConfidenceScoreCard'
 import { EvidenceAuditCard } from '@/components/evidence/EvidenceAuditCard'
-import { Badge, SkeletonGrid, ErrorCard } from '@/components/ui'
+import { Badge, SkeletonGrid, ErrorCard, Pagination } from '@/components/ui'
 import type { Measurement } from '@/types/scientific'
 
 export default function CaseDetails() {
@@ -303,6 +303,16 @@ function MeasurementsCard({
 }: MeasurementsCardProps) {
   if (measurements.length === 0 && !isGenerating) return null
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [measurements])
+
+  const totalPages = Math.max(1, Math.ceil(measurements.length / itemsPerPage))
+  const currentMeasurements = measurements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
   return (
     <div className="rounded-2xl border border-border-primary bg-surface-primary shadow-sm overflow-hidden">
       {/* Card Header */}
@@ -423,7 +433,7 @@ function MeasurementsCard({
             </tr>
           </thead>
           <tbody>
-            {measurements.map((m, idx) => (
+            {currentMeasurements.map((m, idx) => (
               <tr
                 key={m.measurement_id}
                 className={`border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors ${
@@ -471,6 +481,15 @@ function MeasurementsCard({
           </tbody>
         </table>
       </div>
+      {totalPages > 1 && (
+        <div className="border-t border-border-primary bg-surface-secondary/20">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   )
 }

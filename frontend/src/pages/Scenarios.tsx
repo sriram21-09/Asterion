@@ -5,7 +5,7 @@ import { ScenarioTable } from '@/components/scenarios/ScenarioTable'
 import { ScenarioCard } from '@/components/scenarios/ScenarioCard'
 import { ScenarioForm } from '@/components/scenarios/ScenarioForm'
 import { EmptyState } from '@/components/scenarios/EmptyState'
-import { SkeletonGrid, ErrorCard, ConfirmDialog } from '@/components/ui'
+import { SkeletonGrid, ErrorCard, ConfirmDialog, Pagination } from '@/components/ui'
 import { useSimulationStore } from '@/stores/simulationStore'
 import { useValidationStore } from '@/stores/validationStore'
 import { useLocalizationStore } from '@/stores/localizationStore'
@@ -291,6 +291,16 @@ function MeasurementsCard({
   const pipelineComplete = currentStage === 'complete' || currentStage === 'failed'
   const showManualButtons = pipelineComplete && measurements.length > 0
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [measurements])
+
+  const totalPages = Math.max(1, Math.ceil(measurements.length / itemsPerPage))
+  const currentMeasurements = measurements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
   return (
     <div className="rounded-2xl border border-border-primary bg-surface-primary shadow-sm overflow-hidden">
       {/* Card Header */}
@@ -436,7 +446,7 @@ function MeasurementsCard({
             </tr>
           </thead>
           <tbody>
-            {measurements.map((m, idx) => (
+            {currentMeasurements.map((m, idx) => (
               <tr
                 key={m.measurement_id}
                 className={`border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors ${
@@ -484,6 +494,15 @@ function MeasurementsCard({
           </tbody>
         </table>
       </div>
+      {totalPages > 1 && (
+        <div className="border-t border-border-primary bg-surface-secondary/20">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   )
 }

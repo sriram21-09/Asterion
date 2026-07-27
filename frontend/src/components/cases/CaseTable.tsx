@@ -2,6 +2,8 @@ import type { Case } from '@/types/case';
 import { Eye, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
+import { useState } from 'react';
+import { Pagination } from '@/components/ui';
 
 interface CaseTableProps {
   cases: Case[];
@@ -10,6 +12,11 @@ interface CaseTableProps {
 }
 
 export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.max(1, Math.ceil(cases.length / itemsPerPage));
+  const currentCases = cases.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open':
@@ -38,7 +45,7 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
           </tr>
         </thead>
         <tbody>
-          {cases.map((c) => (
+          {currentCases.map((c) => (
             <tr
               key={c.id}
               className="border-b border-border-secondary hover:bg-surface-secondary/50 transition-colors"
@@ -81,6 +88,15 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
           ))}
         </tbody>
       </table>
+      {totalPages > 1 && (
+        <div className="border-t border-border-primary bg-surface-secondary/20">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 }
