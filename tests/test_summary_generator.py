@@ -37,7 +37,9 @@ def test_validate_neutral_terminology_valid():
     assert validate_neutral_terminology(None) is None
 
 
-@pytest.mark.parametrize("prohibited", ["suspect", "criminal", "perpetrator", "guilty party"])
+@pytest.mark.parametrize(
+    "prohibited", ["suspect", "criminal", "perpetrator", "guilty party"]
+)
 def test_validate_neutral_terminology_prohibited(prohibited):
     """Verify prohibited terms raise ValueError."""
     bad_text = f"The {prohibited} was moving north."
@@ -45,7 +47,9 @@ def test_validate_neutral_terminology_prohibited(prohibited):
         validate_neutral_terminology(bad_text)
 
 
-@pytest.mark.parametrize("prohibited_caps", ["SUSPECT", "Criminal", "PERPETRATOR", "Guilty Party"])
+@pytest.mark.parametrize(
+    "prohibited_caps", ["SUSPECT", "Criminal", "PERPETRATOR", "Guilty Party"]
+)
 def test_validate_neutral_terminology_case_insensitive(prohibited_caps):
     """Verify case-insensitive detection of prohibited terms."""
     bad_text = f"Identified {prohibited_caps} in CDR log."

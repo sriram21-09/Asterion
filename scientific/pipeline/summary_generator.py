@@ -2,7 +2,7 @@
 Investigation Summary Generator Module
 =======================================
 
-Template-based neutral investigation summary text generator adhering to 
+Template-based neutral investigation summary text generator adhering to
 strict terminology standards (Section 3F of the Master Execution Plan).
 
 Approved Terminology:
@@ -19,7 +19,7 @@ Prohibited Terms (Raises ValueError if detected):
 """
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 APPROVED_TERMS: set[str] = {
     "analyzed device",
@@ -143,16 +143,13 @@ class InvestigationSummaryGenerator:
             f"A total of {handover_count} network handover events (same site sector transitions) were identified."
         )
 
-
         if high_velocity_count > 0:
             movement += (
                 f" Additionally, {high_velocity_count} anomaly events with velocities exceeding physical thresholds "
                 f"(>350 km/h) were detected for the observed device and tagged as network roaming or handover artifacts."
             )
         else:
-            movement += (
-                " No physically implausible velocity anomalies (>350 km/h) were detected during the observed period."
-            )
+            movement += " No physically implausible velocity anomalies (>350 km/h) were detected during the observed period."
 
         if notes:
             movement += f"\nAdditional Notes: {notes}"
@@ -287,6 +284,7 @@ class InvestigationSummaryGenerator:
 
 
 # Module-level convenience functions
+
 
 def generate_device_overview(
     device_id: str,
