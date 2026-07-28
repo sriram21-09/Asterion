@@ -28,6 +28,8 @@ from app.schemas.dashboard import (
     TrackingSummary,
 )
 from fastapi import HTTPException
+from typing import Any
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -319,3 +321,135 @@ class DashboardService:
             confidence=confidence_summary,
             pipeline_status=pipeline_status,
         )
+
+    @staticmethod
+    def get_heatmap(
+        db: Session,
+        case_id: int,
+        w1: float | None = None,
+        w2: float | None = None,
+        w3: float | None = None,
+        w4: float | None = None,
+    ) -> dict[str, Any]:
+        """Calculate grid-based heatmap scores for the case.
+        
+        Design Decision:
+        The investigation heatmap is generated exclusively from MovementEvent records. 
+        Raw CDRRecord locations are not used directly because they represent network 
+        observations rather than reconstructed movement. Heatmap intensity is computed 
+        using MovementEvent-derived attributes such as dwell time, confidence, and 
+        handover events.
+        """
+        case = db.query(Case).filter(Case.id == case_id).first()
+        if not case:
+            raise HTTPException(
+                status_code=404, detail=f"Case with ID {case_id} not found"
+            )
+
+        # Fallback to default config weights
+        from app.core.config import settings
+        w1 = w1 if w1 is not None else settings.heatmap_weight_density
+        w2 = w2 if w2 is not None else settings.heatmap_weight_dwell_time
+        w3 = w3 if w3 is not None else settings.heatmap_weight_confidence
+        w4 = w4 if w4 is not None else settings.heatmap_weight_transitions
+
+        # Ensure sum of weights is > 0 to avoid division by zero
+        total_weight = w1 + w2 + w3 + w4
+        if total_weight <= 0:
+            w1, w2, w3, w4 = 0.25, 0.25, 0.25, 0.25
+            total_weight = 1.0
+            
+        w1, w2, w3, w4 = w1 / total_weight, w2 / total_weight, w3 / total_weight, w4 / total_weight
+
+        # Fetch MovementEvents with valid coordinates
+        events = (
+            db.query(MovementEvent)
+            .filter(
+                MovementEvent.case_id == case_id,
+                MovementEvent.latitude.isnot(None),
+                MovementEvent.longitude.isnot(None),
+            )
+            .all()
+        )
+
+        if not events:
+            return {"type": "FeatureCollection", "features": []}
+
+        # Grid resolution: round to 3 decimal places
+        grid = {}
+        for event in events:
+            lat = round(event.latitude, 3)
+            lon = round(event.longitude, 3)
+            key = (lat, lon)
+
+            if key not in grid:
+                grid[key] = {
+                    "density": 0,
+                    "dwell_time": 0.0,
+                    "confidence_sum": 0.0,
+                    "confidence_count": 0,
+                    "transitions": 0,
+                }
+
+            grid[key]["density"] += 1
+            grid[key]["dwell_time"] += event.dwell_time_seconds or 0.0
+            if event.confidence is not None:
+                grid[key]["confidence_sum"] += event.confidence
+                grid[key]["confidence_count"] += 1
+            if event.event_type == "handover":
+                grid[key]["transitions"] += 1
+
+        # Calculate raw scores
+        raw_scores = []
+        for (lat, lon), stats in grid.items():
+            conf_avg = (
+                stats["confidence_sum"] / stats["confidence_count"]
+                if stats["confidence_count"] > 0
+                else 0.0
+            )
+            raw_scores.append({
+                "lat": lat,
+                "lon": lon,
+                "density": stats["density"],
+                "dwell_time": stats["dwell_time"],
+                "confidence": conf_avg,
+                "transitions": stats["transitions"],
+            })
+
+        # Normalize metrics to [0, 1]
+        def normalize(key):
+            values = [s[key] for s in raw_scores]
+            min_v, max_v = min(values), max(values)
+            if max_v > min_v:
+                for s in raw_scores:
+                    s[f"{key}_norm"] = (s[key] - min_v) / (max_v - min_v)
+            else:
+                for s in raw_scores:
+                    s[f"{key}_norm"] = 1.0 if max_v > 0 else 0.0
+
+        for k in ["density", "dwell_time", "confidence", "transitions"]:
+            normalize(k)
+
+        features = []
+        for s in raw_scores:
+            intensity = (
+                w1 * s["density_norm"]
+                + w2 * s["dwell_time_norm"]
+                + w3 * s["confidence_norm"]
+                + w4 * s["transitions_norm"]
+            )
+            features.append({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [s["lon"], s["lat"]]
+                },
+                "properties": {
+                    "intensity": round(intensity, 4),
+                }
+            })
+
+        return {
+            "type": "FeatureCollection",
+            "features": features
+        }
