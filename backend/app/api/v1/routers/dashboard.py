@@ -46,7 +46,9 @@ def get_heatmap(
     w2: float | None = Query(None, description="Weight for Dwell Time"),
     w3: float | None = Query(None, description="Weight for Confidence"),
     w4: float | None = Query(None, description="Weight for Transitions"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    result = DashboardService.get_heatmap(db, case_id=case_id, w1=w1, w2=w2, w3=w3, w4=w4)
+    result = DashboardService.get_heatmap(
+        db, case_id=case_id, w1=w1, w2=w2, w3=w3, w4=w4
+    )
     return APIResponse(success=True, data=result)

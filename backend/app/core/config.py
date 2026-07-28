@@ -22,10 +22,18 @@ class Settings(BaseModel):
         )
     )
 
-    heatmap_weight_density: float = Field(default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_DENSITY", "1.0")))
-    heatmap_weight_dwell_time: float = Field(default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_DWELL_TIME", "1.0")))
-    heatmap_weight_confidence: float = Field(default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_CONFIDENCE", "1.0")))
-    heatmap_weight_transitions: float = Field(default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_TRANSITIONS", "1.0")))
+    heatmap_weight_density: float = Field(
+        default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_DENSITY", "1.0"))
+    )
+    heatmap_weight_dwell_time: float = Field(
+        default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_DWELL_TIME", "1.0"))
+    )
+    heatmap_weight_confidence: float = Field(
+        default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_CONFIDENCE", "1.0"))
+    )
+    heatmap_weight_transitions: float = Field(
+        default_factory=lambda: float(os.getenv("HEATMAP_WEIGHT_TRANSITIONS", "1.0"))
+    )
 
     @property
     def cors_origins(self) -> list[str]:

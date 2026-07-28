@@ -332,12 +332,12 @@ class DashboardService:
         w4: float | None = None,
     ) -> dict[str, Any]:
         """Calculate grid-based heatmap scores for the case.
-        
+
         Design Decision:
-        The investigation heatmap is generated exclusively from MovementEvent records. 
-        Raw CDRRecord locations are not used directly because they represent network 
-        observations rather than reconstructed movement. Heatmap intensity is computed 
-        using MovementEvent-derived attributes such as dwell time, confidence, and 
+        The investigation heatmap is generated exclusively from MovementEvent records.
+        Raw CDRRecord locations are not used directly because they represent network
+        observations rather than reconstructed movement. Heatmap intensity is computed
+        using MovementEvent-derived attributes such as dwell time, confidence, and
         handover events.
         """
         case = db.query(Case).filter(Case.id == case_id).first()
@@ -348,6 +348,7 @@ class DashboardService:
 
         # Fallback to default config weights
         from app.core.config import settings
+
         w1 = w1 if w1 is not None else settings.heatmap_weight_density
         w2 = w2 if w2 is not None else settings.heatmap_weight_dwell_time
         w3 = w3 if w3 is not None else settings.heatmap_weight_confidence
@@ -358,8 +359,13 @@ class DashboardService:
         if total_weight <= 0:
             w1, w2, w3, w4 = 0.25, 0.25, 0.25, 0.25
             total_weight = 1.0
-            
-        w1, w2, w3, w4 = w1 / total_weight, w2 / total_weight, w3 / total_weight, w4 / total_weight
+
+        w1, w2, w3, w4 = (
+            w1 / total_weight,
+            w2 / total_weight,
+            w3 / total_weight,
+            w4 / total_weight,
+        )
 
         # Fetch MovementEvents with valid coordinates
         events = (
@@ -407,14 +413,16 @@ class DashboardService:
                 if stats["confidence_count"] > 0
                 else 0.0
             )
-            raw_scores.append({
-                "lat": lat,
-                "lon": lon,
-                "density": stats["density"],
-                "dwell_time": stats["dwell_time"],
-                "confidence": conf_avg,
-                "transitions": stats["transitions"],
-            })
+            raw_scores.append(
+                {
+                    "lat": lat,
+                    "lon": lon,
+                    "density": stats["density"],
+                    "dwell_time": stats["dwell_time"],
+                    "confidence": conf_avg,
+                    "transitions": stats["transitions"],
+                }
+            )
 
         # Normalize metrics to [0, 1]
         def normalize(key):
@@ -438,18 +446,14 @@ class DashboardService:
                 + w3 * s["confidence_norm"]
                 + w4 * s["transitions_norm"]
             )
-            features.append({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [s["lon"], s["lat"]]
-                },
-                "properties": {
-                    "intensity": round(intensity, 4),
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [s["lon"], s["lat"]]},
+                    "properties": {
+                        "intensity": round(intensity, 4),
+                    },
                 }
-            })
+            )
 
-        return {
-            "type": "FeatureCollection",
-            "features": features
-        }
+        return {"type": "FeatureCollection", "features": features}
