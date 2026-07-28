@@ -273,7 +273,9 @@ def compute_heatmap(
     if not cell_metrics:
         return []
 
-    def _get(item: Any, key: str, alt_key: str | None = None, default: float = 0.0) -> Any:
+    def _get(
+        item: Any, key: str, alt_key: str | None = None, default: float = 0.0
+    ) -> Any:
         if isinstance(item, dict):
             val = item.get(key)
             if val is None and alt_key:
@@ -307,15 +309,17 @@ def compute_heatmap(
         raw_confidences[idx] = conf
         raw_transitions[idx] = trans
 
-        cell_meta.append({
-            "cell_id": cell_id,
-            "latitude": lat,
-            "longitude": lon,
-            "raw_density": dens,
-            "raw_dwell_time": dwell,
-            "raw_confidence": conf,
-            "raw_transitions": trans,
-        })
+        cell_meta.append(
+            {
+                "cell_id": cell_id,
+                "latitude": lat,
+                "longitude": lon,
+                "raw_density": dens,
+                "raw_dwell_time": dwell,
+                "raw_confidence": conf,
+                "raw_transitions": trans,
+            }
+        )
 
     norm_dens = normalize_density(raw_densities)
     norm_dwell = normalize_dwell_time(raw_dwell_times)
@@ -443,7 +447,9 @@ def aggregate_grid_heatmap(
 
         if prev_cell is not None:
             # Check if handover or transition event flag is present or cell boundary changed
-            is_handover = _get_val(r, "event_type") == "handover" or _get_val(r, "is_handover")
+            is_handover = _get_val(r, "event_type") == "handover" or _get_val(
+                r, "is_handover"
+            )
             if curr_cell != prev_cell or is_handover:
                 transitions_per_cell[curr_cell] += 1.0
                 transitions_per_cell[prev_cell] += 1.0
@@ -492,15 +498,17 @@ def aggregate_grid_heatmap(
         avg_conf = sum(conf_scores) / len(conf_scores) if conf_scores else 1.0
         trans_count = transitions_per_cell.get((g_lat, g_lon), 0.0)
 
-        cell_metrics_input.append({
-            "cell_id": f"cell_{g_lat:.4f}_{g_lon:.4f}",
-            "latitude": g_lat,
-            "longitude": g_lon,
-            "raw_density": density,
-            "raw_dwell_time": total_duration,
-            "raw_confidence": avg_conf,
-            "raw_transitions": trans_count,
-        })
+        cell_metrics_input.append(
+            {
+                "cell_id": f"cell_{g_lat:.4f}_{g_lon:.4f}",
+                "latitude": g_lat,
+                "longitude": g_lon,
+                "raw_density": density,
+                "raw_dwell_time": total_duration,
+                "raw_confidence": avg_conf,
+                "raw_transitions": trans_count,
+            }
+        )
 
     # 4. Compute normalized heatmap scores for all cells
     return compute_heatmap(cell_metrics_input, weights=weights)

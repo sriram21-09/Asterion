@@ -101,13 +101,17 @@ class TestHeatmapWeights:
         assert sum([hw.w1, hw.w2, hw.w3, hw.w4]) == pytest.approx(1.0)
 
     def test_custom_weights_normalization(self):
-        hw = HeatmapWeights(w_density=2.0, w_dwell_time=2.0, w_confidence=1.0, w_transitions=3.0)
+        hw = HeatmapWeights(
+            w_density=2.0, w_dwell_time=2.0, w_confidence=1.0, w_transitions=3.0
+        )
         norm_hw = hw.normalized()
         assert norm_hw.w1 == pytest.approx(2.0 / 8.0)
         assert norm_hw.w2 == pytest.approx(2.0 / 8.0)
         assert norm_hw.w3 == pytest.approx(1.0 / 8.0)
         assert norm_hw.w4 == pytest.approx(3.0 / 8.0)
-        assert sum([norm_hw.w1, norm_hw.w2, norm_hw.w3, norm_hw.w4]) == pytest.approx(1.0)
+        assert sum([norm_hw.w1, norm_hw.w2, norm_hw.w3, norm_hw.w4]) == pytest.approx(
+            1.0
+        )
 
     def test_zero_weights_fallback(self):
         hw = HeatmapWeights(0.0, 0.0, 0.0, 0.0)
@@ -154,8 +158,24 @@ class TestComputeHeatmap:
 
     def test_compute_heatmap_basic(self):
         cells = [
-            {"cell_id": "C1", "latitude": 21.1, "longitude": 72.8, "density": 10, "dwell_time": 100, "confidence": 1.0, "transitions": 1},
-            {"cell_id": "C2", "latitude": 21.2, "longitude": 72.9, "density": 30, "dwell_time": 300, "confidence": 0.6, "transitions": 5},
+            {
+                "cell_id": "C1",
+                "latitude": 21.1,
+                "longitude": 72.8,
+                "density": 10,
+                "dwell_time": 100,
+                "confidence": 1.0,
+                "transitions": 1,
+            },
+            {
+                "cell_id": "C2",
+                "latitude": 21.2,
+                "longitude": 72.9,
+                "density": 30,
+                "dwell_time": 300,
+                "confidence": 0.6,
+                "transitions": 5,
+            },
         ]
         results = compute_heatmap(cells)
         assert len(results) == 2
@@ -233,10 +253,30 @@ class TestSpatialGridAggregation:
         base_time = datetime(2026, 7, 28, 10, 0, 0, tzinfo=UTC)
         # Sequence of records moving back and forth between two cells
         records = [
-            {"latitude": 21.000, "longitude": 77.000, "timestamp": base_time, "duration": 10},
-            {"latitude": 21.100, "longitude": 77.100, "timestamp": base_time + timedelta(minutes=1), "duration": 10},
-            {"latitude": 21.000, "longitude": 77.000, "timestamp": base_time + timedelta(minutes=2), "duration": 10},
-            {"latitude": 21.100, "longitude": 77.100, "timestamp": base_time + timedelta(minutes=3), "duration": 10},
+            {
+                "latitude": 21.000,
+                "longitude": 77.000,
+                "timestamp": base_time,
+                "duration": 10,
+            },
+            {
+                "latitude": 21.100,
+                "longitude": 77.100,
+                "timestamp": base_time + timedelta(minutes=1),
+                "duration": 10,
+            },
+            {
+                "latitude": 21.000,
+                "longitude": 77.000,
+                "timestamp": base_time + timedelta(minutes=2),
+                "duration": 10,
+            },
+            {
+                "latitude": 21.100,
+                "longitude": 77.100,
+                "timestamp": base_time + timedelta(minutes=3),
+                "duration": 10,
+            },
         ]
         heatmap = aggregate_grid_heatmap(records, grid_size_deg=0.05)
         assert len(heatmap) == 2
@@ -271,7 +311,6 @@ class TestSpatialGridAggregation:
         assert cell.raw_density == 2.0
         # Norms: density=1.0, dwell=1.0, conf=1.0, trans=0.0 -> score = 0.35+0.30+0.20+0 = 0.85
         assert cell.score == pytest.approx(0.85)
-
 
     def test_invalid_records_ignored(self):
         records = [
