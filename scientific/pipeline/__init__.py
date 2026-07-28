@@ -19,6 +19,18 @@ from scientific.pipeline.benchmarks import (
 )
 from scientific.pipeline.confidence import compute_confidence
 from scientific.pipeline.evidence import compute_evidence_hash, synthesize_evidence
+from scientific.pipeline.heatmap import (
+    HeatmapCellScore,
+    HeatmapWeights,
+    aggregate_grid_heatmap,
+    calculate_cell_score,
+    compute_heatmap,
+    min_max_normalize,
+    normalize_confidence,
+    normalize_density,
+    normalize_dwell_time,
+    normalize_transitions,
+)
 from scientific.pipeline.kalman_tracker import KalmanTracker, track_positions
 from scientific.pipeline.movement import (
     MovementEvent,
@@ -53,13 +65,17 @@ from scientific.pipeline.weighted_centroid import (
 __all__ = [
     "APPROVED_TERMS",
     "CGIResolver",
+    "HeatmapCellScore",
+    "HeatmapWeights",
     "InputQualityScore",
     "InvestigationSummaryGenerator",
     "KalmanTracker",
     "MovementEvent",
     "MovementSummary",
     "PROHIBITED_TERMS",
+    "aggregate_grid_heatmap",
     "calculate_bearing_deg",
+    "calculate_cell_score",
     "calculate_distance_m",
     "calculate_evidence_hash",
     "calculate_grid_density",
@@ -69,6 +85,7 @@ __all__ = [
     "classify_velocity",
     "compute_confidence",
     "compute_evidence_hash",
+    "compute_heatmap",
     "compute_input_quality_scores",
     "detect_handover",
     "flag_impossible_velocity",
@@ -76,7 +93,12 @@ __all__ = [
     "generate_movement_summary",
     "generate_timeline_summary",
     "generate_tower_summary",
+    "min_max_normalize",
+    "normalize_confidence",
     "normalize_densities",
+    "normalize_density",
+    "normalize_dwell_time",
+    "normalize_transitions",
     "parse_cgi",
     "reconstruct_movement_events",
     "run_pipeline",
@@ -87,3 +109,4 @@ __all__ = [
     "track_positions",
     "validate_neutral_terminology",
 ]
+
