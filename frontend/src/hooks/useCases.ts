@@ -49,3 +49,19 @@ export const useDeleteCase = () => {
     },
   });
 };
+
+export const useUpdateCase = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: { status?: string; scenario_id?: number } }) =>
+      caseService.updateCase(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CACHE_KEY });
+      toast.success('Case status updated');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update case');
+    },
+  });
+};

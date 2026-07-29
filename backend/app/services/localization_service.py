@@ -182,6 +182,7 @@ class LocalizationService:
 
         # Run multilateration solver for each timestamp group
         results: list[ScientificResult] = []
+        db_results: list[LocalizationResultORM] = []
         sorted_times = sorted(measurements_by_time.keys())
         for t in sorted_times:
             group = measurements_by_time[t]
@@ -208,6 +209,9 @@ class LocalizationService:
                 signals_used=result.signals_used,
                 created_at=t,
             )
-            LocalizationRepository.create(db, db_result)
+            db_results.append(db_result)
+
+        if db_results:
+            LocalizationRepository.bulk_create(db, db_results)
 
         return results[-1]

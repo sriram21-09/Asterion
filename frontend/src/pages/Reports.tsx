@@ -14,8 +14,7 @@ export default function Reports() {
   }, [])
 
   const handleExport = (type: string) => {
-    toast.info(`Exporting ${type} report... (Mock action)`)
-    setTimeout(() => toast.success(`${type} exported successfully.`), 1500)
+    toast.info(`Exporting ${type} report... (Scheduled for Week 3/4 Roadmap)`)
   }
 
   if (loadingCases || loadingScenarios) {
@@ -39,7 +38,6 @@ export default function Reports() {
   const totalCases = cases?.length || 0
   const totalScenarios = scenarios?.length || 0
   
-  // Calculate how many cases have scenarios linked (roughly estimating "active" status for this mock report)
   const casesWithScenarios = cases?.filter(c => c.scenario_id != null).length || 0
   const completionRate = totalCases > 0 ? Math.round((casesWithScenarios / totalCases) * 100) : 0
 
@@ -134,7 +132,7 @@ export default function Reports() {
           </div>
           <h3 className="text-lg font-bold text-content-primary">Visual Analytics</h3>
           <p className="text-sm text-content-tertiary">
-            Interactive error mapping and variance charts are currently in development for the next module update.
+            Interactive error mapping and variance charts are currently in development for the Week 3/4 roadmap.
           </p>
         </section>
       </div>

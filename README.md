@@ -317,9 +317,9 @@ docker compose up --build
 | Service | URL |
 |---------|-----|
 | Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8000 |
-| API Docs (Swagger) | http://localhost:8000/docs |
-| Health Check | http://localhost:8000/api/v1/health |
+| Backend API | http://localhost:8222 |
+| API Docs (Swagger) | http://localhost:8222/docs |
+| Health Check | http://localhost:8222/api/v1/health |
 
 ### Option 2: Manual Setup
 
@@ -349,10 +349,10 @@ cp .env.example .env
 alembic upgrade head
 
 # Start the development server
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8222
 ```
 
-The backend will be available at `http://localhost:8000`.
+The backend will be available at `http://localhost:8222`.
 
 </details>
 
@@ -399,7 +399,7 @@ The frontend will be available at `http://localhost:3000`.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_API_BASE_URL` | `http://localhost:8000/api/v1` | Backend API base URL |
+| `VITE_API_BASE_URL` | `http://localhost:8222/api/v1` | Backend API base URL |
 
 </details>
 

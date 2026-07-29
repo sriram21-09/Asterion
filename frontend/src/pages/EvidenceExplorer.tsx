@@ -1,80 +1,22 @@
 import { useState, useEffect } from 'react'
 import { FileSearch, Hash, Cpu, CheckCircle2, XCircle, Clock, ShieldCheck, ChevronRight, Activity } from 'lucide-react'
 import { cn } from '@/lib/cn'
-
-interface EvidenceRun {
-  id: string
-  caseId: string
-  timestamp: string
-  solverVersion: string
-  algorithmDetails: string
-  reproducibilityHash: string
-  status: 'Verified' | 'Pending' | 'Failed'
-  description: string
-  parameters: Record<string, string>
-}
-
-const MOCK_EVIDENCE_RUNS: EvidenceRun[] = [
-  {
-    id: 'EV-8472-A',
-    caseId: 'CAS-2026-08',
-    timestamp: '2026-07-25T14:30:00Z',
-    solverVersion: 'v2.4.1-stable',
-    algorithmDetails: 'Multilateration with Extended Kalman Filter',
-    reproducibilityHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    status: 'Verified',
-    description: 'High confidence localization trace with dense urban propagation parameters.',
-    parameters: {
-      'Path Loss Exponent': '3.5',
-      'Shadow Fading': '8.0 dB',
-      'Iterations': '150',
-      'Convergence': '0.5m',
-    },
-  },
-  {
-    id: 'EV-8473-B',
-    caseId: 'CAS-2026-09',
-    timestamp: '2026-07-24T09:15:00Z',
-    solverVersion: 'v2.4.0-rc2',
-    algorithmDetails: 'Weighted Centroid Approximation',
-    reproducibilityHash: '8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4',
-    status: 'Pending',
-    description: 'Sparse rural dataset pending secondary validation pass.',
-    parameters: {
-      'Path Loss Exponent': '2.2',
-      'Shadow Fading': '4.0 dB',
-      'Iterations': '50',
-      'Convergence': '2.0m',
-    },
-  },
-  {
-    id: 'EV-8474-C',
-    caseId: 'CAS-2026-10',
-    timestamp: '2026-07-22T16:45:00Z',
-    solverVersion: 'v2.3.8-legacy',
-    algorithmDetails: 'Hybrid TDOA/RSS',
-    reproducibilityHash: 'a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e',
-    status: 'Failed',
-    description: 'Convergence failed due to anomalous multipath interference.',
-    parameters: {
-      'Path Loss Exponent': '4.0',
-      'Shadow Fading': '12.0 dB',
-      'Iterations': '200',
-      'Convergence': '0.1m',
-    },
-  },
-]
+import { useCases } from '@/hooks/useCases'
+import { useEvidenceAudit } from '@/hooks/useEvidenceAudit'
+import { LoadingSpinner } from '@/components/ui'
 
 export default function EvidenceExplorer() {
-  const [selectedRun, setSelectedRun] = useState<EvidenceRun | null>(null)
+  const { data: cases, isLoading: loadingCases } = useCases()
+  const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null)
+
+  const { data: evidenceAudit, isLoading: loadingEvidence } = useEvidenceAudit(selectedCaseId || undefined)
 
   useEffect(() => {
     document.title = 'Evidence Explorer — Asterion'
-    // Auto-select the first run
-    if (MOCK_EVIDENCE_RUNS.length > 0) {
-      setSelectedRun(MOCK_EVIDENCE_RUNS[0])
+    if (cases && cases.length > 0 && !selectedCaseId) {
+      setSelectedCaseId(cases[0].id)
     }
-  }, [])
+  }, [cases, selectedCaseId])
 
   return (
     <div className="space-y-6 animate-fade-in pb-12 min-h-[calc(100vh-80px)] flex flex-col">
@@ -101,144 +43,161 @@ export default function EvidenceExplorer() {
             </h2>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {MOCK_EVIDENCE_RUNS.map((run) => {
-              const isSelected = selectedRun?.id === run.id
-              return (
-                <div
-                  key={run.id}
-                  onClick={() => setSelectedRun(run)}
-                  className={cn(
-                    'p-4 rounded-xl border transition-all cursor-pointer group',
-                    isSelected
-                      ? 'bg-brand-primary/10 border-brand-primary shadow-sm'
-                      : 'bg-surface-secondary/30 border-border-secondary hover:border-brand-primary/40 hover:bg-surface-secondary',
-                  )}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className={cn("font-bold text-sm", isSelected ? 'text-brand-primary' : 'text-content-primary')}>
-                      {run.caseId}
-                    </h3>
-                    <StatusBadge status={run.status} />
+            {loadingCases ? (
+              <div className="flex justify-center p-8"><LoadingSpinner /></div>
+            ) : cases?.length === 0 ? (
+              <div className="text-content-tertiary text-center text-sm p-4">No cases found.</div>
+            ) : (
+              cases?.map((c) => {
+                const isSelected = selectedCaseId === c.id
+                return (
+                  <div
+                    key={c.id}
+                    onClick={() => setSelectedCaseId(c.id)}
+                    className={cn(
+                      'p-4 rounded-xl border transition-all cursor-pointer group',
+                      isSelected
+                        ? 'bg-brand-primary/10 border-brand-primary shadow-sm'
+                        : 'bg-surface-secondary/30 border-border-secondary hover:border-brand-primary/40 hover:bg-surface-secondary',
+                    )}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className={cn("font-bold text-sm", isSelected ? 'text-brand-primary' : 'text-content-primary')}>
+                        {c.referenceNumber || `CASE-${String(c.id).padStart(3, '0')}`}
+                      </h3>
+                      <StatusBadge status="Verified" />
+                    </div>
+                    <div className="text-xs text-content-tertiary font-mono mb-2 flex items-center gap-1.5">
+                      <Clock className="w-3 h-3" />
+                      {new Date(c.created_at).toLocaleString()}
+                    </div>
+                    <div className="flex items-center justify-between mt-3 text-xs">
+                      <span className="text-content-secondary flex items-center gap-1 line-clamp-1">
+                        <Cpu className="w-3.5 h-3.5" />
+                        {c.title}
+                      </span>
+                      <ChevronRight
+                        className={cn(
+                          'w-4 h-4 transition-transform',
+                          isSelected ? 'text-brand-primary translate-x-1' : 'text-content-tertiary group-hover:translate-x-0.5'
+                        )}
+                      />
+                    </div>
                   </div>
-                  <div className="text-xs text-content-tertiary font-mono mb-2 flex items-center gap-1.5">
-                    <Clock className="w-3 h-3" />
-                    {new Date(run.timestamp).toLocaleString()}
-                  </div>
-                  <div className="flex items-center justify-between mt-3 text-xs">
-                    <span className="text-content-secondary flex items-center gap-1">
-                      <Cpu className="w-3.5 h-3.5" />
-                      {run.solverVersion}
-                    </span>
-                    <ChevronRight
-                      className={cn(
-                        'w-4 h-4 transition-transform',
-                        isSelected ? 'text-brand-primary translate-x-1' : 'text-content-tertiary group-hover:translate-x-0.5'
-                      )}
-                    />
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })
+            )}
           </div>
         </div>
 
         {/* Right Column: Details Panel */}
         <div className="lg:col-span-8 bg-surface-primary border border-border-primary rounded-2xl flex flex-col overflow-hidden">
-          {selectedRun ? (
-            <>
-              <div className="p-6 border-b border-border-primary bg-surface-secondary/50 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold text-content-primary">
-                      {selectedRun.id}
-                    </h2>
-                    <StatusBadge status={selectedRun.status} />
-                  </div>
-                  <p className="text-sm text-content-secondary">
-                    Linked to Case: <span className="font-mono text-content-primary">{selectedRun.caseId}</span>
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-content-tertiary mb-1">Execution Time</div>
-                  <div className="text-sm font-medium text-content-primary font-mono">
-                    {new Date(selectedRun.timestamp).toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                {/* Hash Panel */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-content-tertiary uppercase tracking-wider flex items-center gap-2">
-                    <Hash className="w-4 h-4" />
-                    Reproducibility Hash (SHA-256)
-                  </h3>
-                  <div className="bg-surface-secondary border border-border-primary rounded-xl p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 border border-brand-primary/20">
-                      <ShieldCheck className="w-5 h-5 text-brand-primary" />
+          {selectedCaseId ? (
+            loadingEvidence ? (
+              <div className="flex-1 flex items-center justify-center"><LoadingSpinner size="lg" /></div>
+            ) : evidenceAudit ? (
+              <>
+                <div className="p-6 border-b border-border-primary bg-surface-secondary/50 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h2 className="text-2xl font-bold text-content-primary">
+                        {evidenceAudit.case_code} Evidence Run
+                      </h2>
+                      <StatusBadge status={evidenceAudit.audit_status === 'VERIFIED' ? 'Verified' : 'Pending'} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-content-secondary mb-1">Cryptographic checksum for verification</p>
-                      <code className="block text-xs font-mono text-brand-secondary bg-surface-primary px-3 py-2 rounded-lg border border-border-secondary truncate">
-                        {selectedRun.reproducibilityHash}
-                      </code>
+                    <p className="text-sm text-content-secondary">
+                      Linked to Case: <span className="font-mono text-content-primary">{evidenceAudit.case_code}</span>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-content-tertiary mb-1">Execution Time</div>
+                    <div className="text-sm font-medium text-content-primary font-mono">
+                      {new Date(evidenceAudit.generated_at).toLocaleString()}
                     </div>
                   </div>
                 </div>
 
-                {/* Solver & Algorithm Panel */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                  {/* Hash Panel */}
                   <div className="space-y-3">
                     <h3 className="text-sm font-semibold text-content-tertiary uppercase tracking-wider flex items-center gap-2">
-                      <Cpu className="w-4 h-4" />
-                      Solver Details
+                      <Hash className="w-4 h-4" />
+                      Reproducibility Hash (SHA-256)
                     </h3>
-                    <div className="bg-surface-base border border-border-primary rounded-xl p-4 space-y-4">
-                      <div>
-                        <div className="text-xs text-content-tertiary mb-1">Solver Version</div>
-                        <div className="text-sm font-medium text-content-primary font-mono">
-                          {selectedRun.solverVersion}
-                        </div>
+                    <div className="bg-surface-secondary border border-border-primary rounded-xl p-4 flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center shrink-0 border border-brand-primary/20">
+                        <ShieldCheck className="w-5 h-5 text-brand-primary" />
                       </div>
-                      <div>
-                        <div className="text-xs text-content-tertiary mb-1">Algorithm Strategy</div>
-                        <div className="text-sm font-medium text-content-primary">
-                          {selectedRun.algorithmDetails}
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-content-secondary mb-1">Cryptographic checksum for verification</p>
+                        <code className="block text-xs font-mono text-brand-secondary bg-surface-primary px-3 py-2 rounded-lg border border-border-secondary break-all">
+                          {evidenceAudit.reproducibility_hash}
+                        </code>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-content-tertiary uppercase tracking-wider flex items-center gap-2">
-                      <Activity className="w-4 h-4" />
-                      Execution Parameters
-                    </h3>
-                    <div className="bg-surface-base border border-border-primary rounded-xl p-4">
-                      <div className="space-y-3">
-                        {Object.entries(selectedRun.parameters).map(([key, value]) => (
-                          <div key={key} className="flex justify-between items-center text-sm border-b border-border-secondary pb-2 last:border-0 last:pb-0">
-                            <span className="text-content-secondary">{key}</span>
-                            <span className="font-mono text-content-primary font-medium">{value}</span>
+                  {/* Solver & Algorithm Panel */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-content-tertiary uppercase tracking-wider flex items-center gap-2">
+                        <Cpu className="w-4 h-4" />
+                        Solver Details
+                      </h3>
+                      <div className="bg-surface-base border border-border-primary rounded-xl p-4 space-y-4">
+                        <div>
+                          <div className="text-xs text-content-tertiary mb-1">Solver Version</div>
+                          <div className="text-sm font-medium text-content-primary font-mono">
+                            {evidenceAudit.solver_version}
                           </div>
-                        ))}
+                        </div>
+                        <div>
+                          <div className="text-xs text-content-tertiary mb-1">Algorithm Strategy</div>
+                          <div className="text-sm font-medium text-content-primary">
+                            NLLS with Extended Kalman Filter
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-content-tertiary uppercase tracking-wider flex items-center gap-2">
+                        <Activity className="w-4 h-4" />
+                        Execution Parameters
+                      </h3>
+                      <div className="bg-surface-base border border-border-primary rounded-xl p-4">
+                        <div className="space-y-3">
+                          {Object.entries(JSON.parse(evidenceAudit.parameter_strings)).map(([key, value]) => (
+                            <div key={key} className="flex justify-between items-center text-sm border-b border-border-secondary pb-2 last:border-0 last:pb-0">
+                              <span className="text-content-secondary">{key}</span>
+                              <span className="font-mono text-content-primary font-medium">{String(value)}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Description */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-content-tertiary uppercase tracking-wider">
-                    Execution Summary
-                  </h3>
-                  <div className="p-4 bg-surface-secondary rounded-xl border border-border-secondary text-sm text-content-secondary leading-relaxed">
-                    {selectedRun.description}
+                  {/* Description */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-content-tertiary uppercase tracking-wider">
+                      Execution Summary
+                    </h3>
+                    <div className="p-4 bg-surface-secondary rounded-xl border border-border-secondary text-sm text-content-secondary leading-relaxed">
+                      Generated {evidenceAudit.towers.length} tower configs, {evidenceAudit.input_record_ids.length} measurements. 
+                      Average Confidence Score: {evidenceAudit.confidence?.confidence_score}%
+                    </div>
                   </div>
-                </div>
 
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-content-tertiary p-8">
+                <XCircle className="w-16 h-16 mb-4 opacity-20 text-red-500" />
+                <p className="text-lg font-medium text-red-500">Evidence generation failed</p>
+                <p className="text-sm mt-1">This case might not have sufficient measurements.</p>
               </div>
-            </>
+            )
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-content-tertiary p-8">
               <FileSearch className="w-16 h-16 mb-4 opacity-20" />
@@ -252,7 +211,7 @@ export default function EvidenceExplorer() {
   )
 }
 
-function StatusBadge({ status }: { status: EvidenceRun['status'] }) {
+function StatusBadge({ status }: { status: 'Verified' | 'Pending' | 'Failed' }) {
   if (status === 'Verified') {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase tracking-wide">

@@ -63,7 +63,7 @@ docker compose up --build
 ```
 
 ### 2. Verify Backend Docs (Swagger)
-- Open [http://localhost:8000/docs](http://localhost:8000/docs).
+- Open [http://localhost:8222/docs](http://localhost:8222/docs).
 - Show standard endpoints for `/api/v1/cases` and `/api/v1/scenarios`.
 - Show that request/response schemas correspond to standard wrappers (`{"success": true, "data": ...}`).
 

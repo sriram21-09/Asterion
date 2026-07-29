@@ -37,7 +37,8 @@ export function ScenarioTable({ scenarios, onDelete, isDeleting, onRunSimulation
               <td className="px-6 py-4 text-content-tertiary">
                 {new Date(s.created_at).toLocaleDateString()}
               </td>
-              <td className="px-6 py-4 text-right space-x-2">
+              <td className="px-6 py-4">
+                <div className="flex justify-end gap-2">
                 <button
                   onClick={() => onRunSimulation(s.id, s.name)}
                   className="p-2 text-content-tertiary hover:text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-colors"
@@ -53,6 +54,7 @@ export function ScenarioTable({ scenarios, onDelete, isDeleting, onRunSimulation
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
+                </div>
               </td>
             </tr>
           ))}

@@ -15,9 +15,9 @@ export default defineConfig({
     port: 3000,
     host: true,
     proxy: {
-      // Proxy all /api/* requests to the FastAPI backend during dev
+      // Proxy all /api/* requests to the FastAPI backend
       '/api': {
-        target: 'http://localhost:8001',
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:8222',
         changeOrigin: true,
         rewrite: (path) => path,
       },

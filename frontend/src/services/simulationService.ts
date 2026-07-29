@@ -18,13 +18,15 @@ export const simulationService = {
    * POST /simulation/generate
    */
   generateMeasurements: async (
-    payload: GenerateSimulationRequest,
+    payload: GenerateSimulationRequest & { caseCode?: string },
   ): Promise<GenerateSimulationResponse> => {
-    // Derive case_code from scenario_id (e.g. 1 or SCN-CFG-001 -> CASE-001)
-    const idNum = typeof payload.scenario_id === 'number'
-      ? payload.scenario_id
-      : parseInt(String(payload.scenario_id).replace(/\D/g, ''), 10) || 1;
-    const caseCode = `CASE-${String(idNum).padStart(3, '0')}`;
+    let caseCode = payload.caseCode;
+    if (!caseCode) {
+      const idNum = typeof payload.scenario_id === 'number'
+        ? payload.scenario_id
+        : parseInt(String(payload.scenario_id).replace(/\D/g, ''), 10) || 1;
+      caseCode = `CASE-${String(idNum).padStart(3, '0')}`;
+    }
 
     const { data } = await api.post<GenerateSimulationResponse>(
       `/simulation/generate?case_code=${caseCode}`,

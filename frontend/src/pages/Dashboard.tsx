@@ -1,47 +1,14 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Briefcase, Layers, Radio, Eye, TrendingUp, Activity, MapPin } from 'lucide-react'
+import { Briefcase, Layers, Eye, Activity } from 'lucide-react'
 import { useCases } from '@/hooks/useCases'
 import { useScenarios } from '@/hooks/useScenarios'
-
-const platformModules = [
-  {
-    title: 'Case Management',
-    description:
-      'Create, edit, and organize telecom localization investigations. Link scenarios together to build structural evidence chains.',
-    icon: Briefcase,
-    timeline: 'Shipped ✓',
-    shipped: true,
-  },
-  {
-    title: 'Scenario Configurator',
-    description:
-      'Define mock transmitter layouts, set up sector bounds, configure signal parameters, and define device movement paths.',
-    icon: Layers,
-    timeline: 'Shipped ✓',
-    shipped: true,
-  },
-  {
-    title: 'Scientific Simulation Engine',
-    description:
-      'Generate synthetic RSSI measurement samples with adjustable noise values (Gaussian/multi-path fade) for tracking tests.',
-    icon: Radio,
-    timeline: 'Shipped ✓',
-    shipped: true,
-  },
-  {
-    title: 'Explainable Localization (NLLS)',
-    description:
-      'Execute multilateration algorithms (Non-Linear Least Squares) and track devices using Kalman filters with full mathematical overlays.',
-    icon: Eye,
-    timeline: 'Shipped ✓',
-    shipped: true,
-  },
-]
+import { useHealthCheck } from '@/hooks/useHealthCheck'
 
 export default function Dashboard() {
   const { data: cases } = useCases()
   const { data: scenarios } = useScenarios()
+  const { isSuccess: isOnline } = useHealthCheck()
 
   useEffect(() => {
     document.title = 'Dashboard — Asterion'
@@ -60,8 +27,7 @@ export default function Dashboard() {
       icon: Layers, 
       color: 'text-emerald-400' 
     },
-    { label: 'Localizations', value: '—', icon: MapPin, color: 'text-amber-400' },
-    { label: 'System', value: 'Online', icon: Activity, color: 'text-emerald-400' },
+    { label: 'System', value: isOnline ? 'Online' : 'Offline', icon: Activity, color: isOnline ? 'text-emerald-400' : 'text-red-500' },
   ]
 
   return (
@@ -71,9 +37,6 @@ export default function Dashboard() {
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-2xl space-y-4">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-muted text-brand-secondary border border-brand-primary/20">
-            v0.2.0 — Sprint Review
-          </span>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-content-primary leading-tight">
             Asterion Localization & Investigation Platform
           </h1>
@@ -86,7 +49,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {quickStats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -139,7 +102,7 @@ export default function Dashboard() {
                 <div>
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-xs font-semibold text-content-tertiary uppercase tracking-wider">
-                      {c.referenceNumber || `CAS-${String(c.id).padStart(3, '0')}`}
+                      {c.referenceNumber || `CASE-${String(c.id).padStart(3, '0')}`}
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border bg-green-500/10 text-green-500 border-green-500/20 uppercase tracking-widest">
                       {c.status}
@@ -172,62 +135,6 @@ export default function Dashboard() {
             No active investigations found. Go to Cases page to create one.
           </div>
         )}
-      </div>
-
-      {/* Feature Cards Grid */}
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-xl font-bold text-content-primary tracking-wide flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5 text-brand-secondary" />
-            <span>Platform Status & Capabilities</span>
-          </h2>
-          <p className="text-sm text-content-tertiary mt-1">
-            Platform modules across Week 1 and Week 2 sprint phases
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {platformModules.map((feature, idx) => {
-            const Icon = feature.icon
-            return (
-              <div
-                key={idx}
-                className={`bg-surface-primary border rounded-2xl p-6 transition-all duration-300 group ${
-                  feature.shipped
-                    ? 'border-success/20 hover:border-success/40 hover:shadow-xl hover:shadow-success/5'
-                    : 'border-border-primary hover:border-brand-primary/30 hover:shadow-xl hover:shadow-brand-primary/5'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className={`h-12 w-12 rounded-xl border flex items-center justify-center group-hover:bg-brand-muted transition-colors ${
-                    feature.shipped
-                      ? 'bg-success/10 border-success/20'
-                      : 'bg-surface-secondary border-border-secondary group-hover:border-brand-primary/20'
-                  }`}>
-                    <Icon className={`h-6 w-6 ${
-                      feature.shipped ? 'text-success' : 'text-brand-secondary group-hover:text-brand-primary'
-                    }`} />
-                  </div>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-lg border ${
-                    feature.shipped
-                      ? 'bg-success/10 border-success/20 text-success'
-                      : 'bg-surface-secondary border-border-secondary text-content-tertiary'
-                  }`}>
-                    {feature.timeline}
-                  </span>
-                </div>
-                <div className="mt-5 space-y-2">
-                  <h3 className="text-lg font-bold text-content-secondary group-hover:text-content-primary transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-content-tertiary leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            )
-          })}
-        </div>
       </div>
     </div>
   )

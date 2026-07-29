@@ -230,9 +230,44 @@ export default function CaseDetails() {
                 <p className="text-sm text-content-secondary">{associatedScenario.description || 'No description available.'}</p>
               </div>
             ) : (
-              <div className="flex items-center space-x-2 text-danger bg-danger/10 p-3 rounded-xl border border-danger/20 text-sm">
-                <AlertTriangle className="h-5 w-5" />
-                <span>No scenario associated. Assign a scenario to run localization.</span>
+              <div className="flex flex-col space-y-3">
+                <div className="flex items-center space-x-2 text-warning bg-warning/10 p-3 rounded-xl border border-warning/20 text-sm">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <span className="text-amber-500 font-medium">No scenario associated. Assign a scenario to unlock tracking and analysis.</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <select 
+                    id="scenario-select"
+                    className="flex-1 bg-surface-secondary border border-border-primary text-content-primary text-sm rounded-lg focus:ring-brand-primary focus:border-brand-primary block w-full p-2.5 outline-none"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Select a scenario...</option>
+                    {scenarios?.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={async () => {
+                      const select = document.getElementById('scenario-select') as HTMLSelectElement
+                      if (!select.value) return
+                      try {
+                        const response = await fetch(`http://localhost:8222/api/v1/cases/${numericId}/scenario`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ scenario_id: Number(select.value) })
+                        })
+                        if (response.ok) {
+                          window.location.reload()
+                        }
+                      } catch (e) {
+                        console.error(e)
+                      }
+                    }}
+                    className="px-4 py-2.5 bg-brand-primary text-white border border-brand-primary/20 rounded-lg text-sm font-semibold hover:bg-brand-primary/90 transition-all shadow-md"
+                  >
+                    Assign
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -276,7 +311,7 @@ export default function CaseDetails() {
         isGenerating={isGenerating} 
         onValidate={() => validateMeasurements(measurements)}
         isValidating={isValidating}
-        onLocalize={() => runLocalization(measurements)}
+        onLocalize={() => runLocalization(measurements, caseCode)}
         isLocalizing={isLocalizing}
         onTrack={() => runTracking(caseCode)}
         isTracking={isTracking}

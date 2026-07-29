@@ -1,10 +1,11 @@
 import axios, { AxiosError } from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8001/api/v1'
+// DEDICATED PORT: 8222. Please do not change this port config.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8222/api/v1'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10_000,
+  timeout: 120_000,
   headers: {
     'Content-Type': 'application/json',
   },

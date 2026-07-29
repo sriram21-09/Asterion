@@ -42,18 +42,4 @@ router = APIRouter(prefix="/measurements", tags=["measurements"])
 )
 def validate_measurements(payload: ValidateMeasurementsRequest):
     result = validate_measurements_batch(payload.measurements)
-    if not result.is_valid:
-        response_body = APIResponse(
-            success=False,
-            data=result,
-            error=ErrorDetail(
-                code="VALIDATION_ERROR",
-                message=f"Validation failed: {result.rejected_count} measurements rejected.",
-            ),
-            detail=f"Validation failed: {result.rejected_count} measurements rejected.",
-        )
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            content=jsonable_encoder(response_body),
-        )
     return APIResponse(success=True, data=result)
