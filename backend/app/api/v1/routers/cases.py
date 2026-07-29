@@ -1,9 +1,11 @@
 from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.case import CaseCreate, CaseResponse
+from app.schemas.comparison import CaseComparisonResponse
 from app.schemas.response import APIResponse
 from app.services.case_service import CaseService
-from fastapi import APIRouter, Depends, Query, status
+from app.services.comparison_service import ComparisonService
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/cases", tags=["cases"])
@@ -51,16 +53,22 @@ def health_check():
 
 @router.get(
     "/compare",
-    response_model=APIResponse[dict],
-    summary="Compare two cases side-by-side",
-    description="Compute comparative metrics (overlapping cell sectors, speed trends, spatial centroids, confidence averages).",
+    response_model=APIResponse[CaseComparisonResponse],
+    summary="Compare cases",
+    description="Compare multiple cases (overlapping towers, distance differences, confidence averages).",
 )
 def compare_cases(
-    case_id_a: int = Query(..., description="Primary case ID (Case A)"),
-    case_id_b: int = Query(..., description="Secondary case ID (Case B)"),
+    ids: str = Query(..., description="Comma-separated list of case IDs"),
     db: Session = Depends(get_db),
 ):
-    result = CaseService.compare_cases(db, case_id_a=case_id_a, case_id_b=case_id_b)
+    case_ids = []
+    for id_str in ids.split(","):
+        try:
+            case_ids.append(int(id_str.strip()))
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid case ID: {id_str}")
+
+    result = ComparisonService.compare_cases(db, case_ids)
     return APIResponse(success=True, data=result)
 
 

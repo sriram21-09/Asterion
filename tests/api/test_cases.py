@@ -195,18 +195,16 @@ class TestCaseAPI:
         res2 = client.post("/api/v1/cases/", json={"title": "Secondary Case B"})
         case_b_id = res2.json()["data"]["id"]
 
-        response = client.get(
-            f"/api/v1/cases/compare?case_id_a={case_a_id}&case_id_b={case_b_id}"
-        )
+        response = client.get(f"/api/v1/cases/compare?ids={case_a_id},{case_b_id}")
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
         comparison = data["data"]
-        assert "cell_overlap" in comparison
-        assert "speed_trends" in comparison
-        assert "spatial_comparison" in comparison
-        assert "overall_similarity_score" in comparison
+        assert "cases" in comparison
+        assert "overlapping_towers" in comparison
+        assert "max_distance_difference_m" in comparison
+        assert len(comparison["cases"]) == 2
 
     def test_compare_cases_not_found(self, client):
-        response = client.get("/api/v1/cases/compare?case_id_a=9999&case_id_b=8888")
+        response = client.get("/api/v1/cases/compare?ids=9999,8888")
         assert response.status_code == 404
