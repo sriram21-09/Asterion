@@ -15,12 +15,14 @@ class GenericXMLParser(BaseCDRParser):
 
     def detect(self, content_sample: str) -> bool:
         content_sample = content_sample.strip()
-        if not content_sample.startswith("<?xml") and not content_sample.startswith("<"):
+        if not content_sample.startswith("<?xml") and not content_sample.startswith(
+            "<"
+        ):
             return False
-            
+
         try:
             # Check if it's parseable XML
-            # Just parsing the snippet might fail if it's truncated, 
+            # Just parsing the snippet might fail if it's truncated,
             # so we just return True if it looks like XML tags
             return True
         except Exception:
@@ -29,12 +31,12 @@ class GenericXMLParser(BaseCDRParser):
     def _parse_dt(self, dt_str: str) -> datetime | None:
         if not dt_str:
             return None
-            
+
         try:
-            return datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+            return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
         except ValueError:
             pass
-            
+
         for fmt in (
             "%Y-%m-%dT%H:%M:%S",
             "%Y-%m-%d %H:%M:%S",
@@ -55,8 +57,8 @@ class GenericXMLParser(BaseCDRParser):
             root = ET.fromstring(content)
         except ET.ParseError:
             return [], 1
-            
-        # Try to find all elements that might be records. 
+
+        # Try to find all elements that might be records.
         # Typically, in XML, the root contains a list of children which are the records.
         # If the root only has one child, maybe that child is the list of records.
         elements = list(root)
@@ -69,7 +71,7 @@ class GenericXMLParser(BaseCDRParser):
                 # Also convert tags to lowercase for case-insensitive matching
                 data = {child.tag.lower(): child.text for child in el}
                 data.update({k.lower(): v for k, v in el.attrib.items()})
-                
+
                 if not data:
                     continue
 
@@ -79,29 +81,37 @@ class GenericXMLParser(BaseCDRParser):
                             return data[k]
                     return None
 
-                target_number = get_val("target_number", "calling_party", "caller", "from")
-                b_party_number = get_val("b_party_number", "called_party", "callee", "to")
-                
+                target_number = get_val(
+                    "target_number", "calling_party", "caller", "from"
+                )
+                b_party_number = get_val(
+                    "b_party_number", "called_party", "callee", "to"
+                )
+
                 ts_str = get_val("timestamp", "date", "time", "datetime")
                 timestamp = self._parse_dt(str(ts_str)) if ts_str else None
-                
+
                 dur_val = get_val("duration", "duration_sec")
                 duration = int(dur_val) if dur_val and str(dur_val).isdigit() else 0
-                
+
                 lat_val = get_val("latitude", "lat")
                 lon_val = get_val("longitude", "lon", "lng")
-                
+
                 lat = float(lat_val) if lat_val is not None else None
                 lon = float(lon_val) if lon_val is not None else None
-                
+
                 call_type = get_val("call_type", "type")
                 service_type = get_val("service_type", "service")
                 if not service_type:
-                    service_type = "SMS" if call_type and "SMS" in str(call_type).upper() else "Voice"
+                    service_type = (
+                        "SMS"
+                        if call_type and "SMS" in str(call_type).upper()
+                        else "Voice"
+                    )
 
                 first_cgi = get_val("first_cgi", "cgi", "cell_id")
                 last_cgi = get_val("last_cgi")
-                
+
                 imei = get_val("imei")
                 imsi = get_val("imsi")
 
@@ -124,7 +134,8 @@ class GenericXMLParser(BaseCDRParser):
                     "imei": str(imei) if imei else None,
                     "imsi": str(imsi) if imsi else None,
                     "smsc_number": str(get_val("smsc_number", "smsc")) or None,
-                    "roaming_network": str(get_val("roaming_network", "roaming")) or None,
+                    "roaming_network": str(get_val("roaming_network", "roaming"))
+                    or None,
                     "raw_data": {"xml_tag": el.tag},
                 }
                 records.append(record)

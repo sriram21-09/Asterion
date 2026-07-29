@@ -10,15 +10,13 @@ Current endpoints:
     against domain business rules and return structured results.
 """
 
-from app.schemas.response import APIResponse, ErrorDetail
+from app.schemas.response import APIResponse
 from app.schemas.validation import (
     ValidateMeasurementsRequest,
     ValidateMeasurementsResponse,
 )
 from app.services.validation_service import validate_measurements_batch
-from fastapi import APIRouter, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Response, status
 
 router = APIRouter(prefix="/measurements", tags=["measurements"])
 
@@ -40,6 +38,13 @@ router = APIRouter(prefix="/measurements", tags=["measurements"])
         },
     },
 )
-def validate_measurements(payload: ValidateMeasurementsRequest):
+def validate_measurements(payload: ValidateMeasurementsRequest, response: Response):
     result = validate_measurements_batch(payload.measurements)
+    if not result.is_valid:
+        response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        return APIResponse(
+            success=False,
+            data=result,
+            error={"code": "VALIDATION_ERROR", "message": "Measurement validation failed"},
+        )
     return APIResponse(success=True, data=result)

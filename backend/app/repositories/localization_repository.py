@@ -17,7 +17,9 @@ class LocalizationRepository:
         return result
 
     @staticmethod
-    def bulk_create(db: Session, results: list[LocalizationResult]) -> list[LocalizationResult]:
+    def bulk_create(
+        db: Session, results: list[LocalizationResult]
+    ) -> list[LocalizationResult]:
         """Persist multiple localization results efficiently in a single transaction."""
         db.add_all(results)
         db.commit()

@@ -19,7 +19,6 @@ from app.services.parsers import (
 from app.models.case import Case
 from app.models.measurement import Measurement
 from app.models.movement_event import MovementEvent
-import uuid
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
@@ -142,38 +141,42 @@ class CDRImportService:
             measurements = []
             movement_events = []
             now = datetime.now(timezone.utc)
-            
+
             for i, data in enumerate(records_data):
                 lat = data.get("latitude")
                 lon = data.get("longitude")
                 ts = data.get("timestamp") or now
-                
+
                 # Mock missing coordinates near Bangalore so map displays work
                 if not lat or not lon:
                     lat = 12.971 + (i * 0.001)
                     lon = 77.594 + (i * 0.001)
-                
-                measurements.append(Measurement(
-                    case_id=case_id,
-                    scenario_id=None,
-                    measurement_code=f"IMP-{i}",
-                    timestamp=ts,
-                    rssi_dbm=-75.0,
-                    latitude=lat,
-                    longitude=lon,
-                    uncertainty_m=50.0
-                ))
 
-                movement_events.append(MovementEvent(
-                    case_id=case_id,
-                    timestamp=ts,
-                    latitude=lat,
-                    longitude=lon,
-                    event_type="movement",
-                    sequence_number=i,
-                    speed_kmh=15.0,
-                    confidence=0.85
-                ))
+                measurements.append(
+                    Measurement(
+                        case_id=case_id,
+                        scenario_id=None,
+                        measurement_code=f"IMP-{job.id}-{i}",
+                        timestamp=ts,
+                        rssi_dbm=-75.0,
+                        latitude=lat,
+                        longitude=lon,
+                        uncertainty_m=50.0,
+                    )
+                )
+
+                movement_events.append(
+                    MovementEvent(
+                        case_id=case_id,
+                        timestamp=ts,
+                        latitude=lat,
+                        longitude=lon,
+                        event_type="movement",
+                        sequence_number=i,
+                        speed_kmh=15.0,
+                        confidence=0.85,
+                    )
+                )
 
             db.bulk_save_objects(measurements)
             db.bulk_save_objects(movement_events)
