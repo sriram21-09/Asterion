@@ -102,10 +102,6 @@ function createWarning(
   };
 }
 
-function deriveCaseCode(scenarioId: number): string {
-  return `CASE-${String(scenarioId).padStart(3, '0')}`;
-}
-
 // ── Initial State ───────────────────────────────────────────────────────
 
 const INITIAL_STATE = {
@@ -127,7 +123,30 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
     // ── Run Full Pipeline ─────────────────────────────────────────────
     runFullPipeline: async (scenarioId, scenarioName) => {
       const pipelineStart = performance.now();
-      const caseCode = deriveCaseCode(scenarioId);
+      
+      let caseCode = `CASE-${String(scenarioId).padStart(3, '0')}`;
+      try {
+        const { caseService } = await import('@/services/case.service');
+        const { api } = await import('@/lib/api');
+        
+        const cases = await caseService.getCases();
+        const matchedCase = cases.find(c => c.scenario_id === scenarioId);
+        
+        if (matchedCase) {
+          caseCode = matchedCase.referenceNumber || `CASE-${String(matchedCase.id).padStart(3, '0')}`;
+        } else {
+          const newCase = await caseService.createCase({
+             title: `Case for ${scenarioName}`,
+             description: `Auto-generated case for scenario #${scenarioId}`,
+             status: 'open'
+          });
+          await api.put(`/cases/${newCase.id}/scenario`, { scenario_id: scenarioId });
+          caseCode = newCase.referenceNumber || `CASE-${String(newCase.id).padStart(3, '0')}`;
+        }
+      } catch (err) {
+        console.warn('Failed to resolve or create case for scenario. Using fallback caseCode.', err);
+      }
+      
       const collectedWarnings: PipelineWarning[] = [];
 
       // Reset state
@@ -209,6 +228,7 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
         await simulationStore.generateMeasurements({
           scenario_id: String(scenarioId),
           name: scenarioName,
+          caseCode, // Pass the dynamically resolved or created caseCode
           tower_placements: [],
           simulation: {
             algorithm: 'multilateration',
@@ -291,7 +311,7 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
 
         const localizationStore = useLocalizationStore.getState();
         try {
-          await localizationStore.runLocalization(measurements);
+          await localizationStore.runLocalization(measurements, caseCode);
           const locState = useLocalizationStore.getState();
 
           if (locState.result) {

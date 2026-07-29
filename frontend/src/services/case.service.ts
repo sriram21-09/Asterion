@@ -4,7 +4,7 @@ import type { Case, CreateCaseDTO } from '@/types/case';
 const mapCaseResponse = (raw: any): Case => {
   return {
     id: Number(raw.id),
-    referenceNumber: raw.reference_number || raw.referenceNumber || `CAS-${String(raw.id).padStart(3, '0')}`,
+    referenceNumber: raw.reference_number || raw.referenceNumber || `CASE-${String(raw.id).padStart(3, '0')}`,
     title: raw.title,
     description: raw.description || undefined,
     status: raw.status,
@@ -39,5 +39,10 @@ export const caseService = {
 
   deleteCase: async (id: number): Promise<void> => {
     await api.delete(`/cases/${id}`);
+  },
+
+  updateCase: async (id: number, payload: { status?: string; scenario_id?: number }): Promise<Case> => {
+    const { data } = await api.patch<any>(`/cases/${id}`, payload);
+    return mapCaseResponse(data);
   },
 };

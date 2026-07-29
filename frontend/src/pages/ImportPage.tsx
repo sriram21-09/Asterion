@@ -1,7 +1,9 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from 'react'
-import { UploadCloud, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ShieldAlert, Database, AlertTriangle } from 'lucide-react'
+import { UploadCloud, FileSpreadsheet, CheckCircle, AlertCircle, Trash2, ShieldAlert, Database, AlertTriangle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/cn'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 
 interface UploadedFile {
   file: File
@@ -12,8 +14,10 @@ interface UploadedFile {
 
 export default function ImportPage() {
   const [isDragging, setIsDragging] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [files, setFiles] = useState<UploadedFile[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -28,7 +32,7 @@ export default function ImportPage() {
   const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     setIsDragging(false)
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.csv'))
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.csv') || f.name.endsWith('.txt'))
     await processFiles(droppedFiles)
   }
 
@@ -42,9 +46,13 @@ export default function ImportPage() {
   const detectOperator = async (file: File): Promise<string> => {
     return new Promise((resolve) => {
       const name = file.name.toLowerCase()
-      if (name.includes('vodafone')) return resolve('Vodafone')
+      if (name.includes('vodafone') || name.includes('vi')) return resolve('Vodafone')
       if (name.includes('o2') || name.includes('telefonica')) return resolve('O2')
       if (name.includes('telekom') || name.includes('t-mobile')) return resolve('Telekom')
+      if (name.includes('phantomnet')) return resolve('PhantomNet')
+      if (name.includes('bsnl')) return resolve('BSNL')
+      if (name.includes('airtel')) return resolve('Airtel')
+      if (name.includes('jio')) return resolve('Jio')
 
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -56,6 +64,14 @@ export default function ImportPage() {
           resolve('Telekom')
         } else if (firstLine.includes('o2') || firstLine.includes('telefonica')) {
           resolve('O2')
+        } else if (firstLine.includes('phantomnet')) {
+          resolve('PhantomNet')
+        } else if (firstLine.includes('bsnl')) {
+          resolve('BSNL')
+        } else if (firstLine.includes('airtel')) {
+          resolve('Airtel')
+        } else if (firstLine.includes('jio')) {
+          resolve('Jio')
         } else {
           resolve('Unknown')
         }
@@ -79,7 +95,7 @@ export default function ImportPage() {
       setFiles(prev => prev.map(f => {
         if (f.file.name === newFile.file.name) {
           if (operator === 'Unknown') {
-            return { ...f, operator, status: 'error', errorMessage: 'Could not auto-detect operator format.' }
+            return { ...f, operator: 'Generic Format', status: 'ready' }
           }
           return { ...f, operator, status: 'ready' }
         }
@@ -90,6 +106,37 @@ export default function ImportPage() {
 
   const removeFile = (fileName: string) => {
     setFiles(prev => prev.filter(f => f.file.name !== fileName))
+  }
+
+  const handleProcessImports = async () => {
+    setIsUploading(true)
+    let hasError = false
+    
+    for (const f of files) {
+      if (f.status !== 'ready') continue
+      
+      const formData = new FormData()
+      formData.append('file', f.file)
+      formData.append('operator', f.operator === 'Generic Format' ? 'auto' : f.operator)
+      
+      try {
+        const response = await fetch('http://localhost:8222/api/v1/import/upload', {
+          method: 'POST',
+          body: formData,
+        })
+        if (!response.ok) throw new Error('Upload failed')
+      } catch (e) {
+        toast.error(`Failed to upload ${f.file.name}`)
+        hasError = true
+      }
+    }
+    
+    setIsUploading(false)
+    if (!hasError) {
+      toast.success('Successfully imported data and created case(s)!')
+      setFiles([])
+      navigate('/cases')
+    }
   }
 
   return (
@@ -125,7 +172,7 @@ export default function ImportPage() {
               type="file"
               ref={fileInputRef}
               onChange={handleFileInput}
-              accept=".csv"
+              accept=".csv,.txt"
               multiple
               className="hidden"
             />
@@ -141,7 +188,7 @@ export default function ImportPage() {
               Drag & Drop CSV files here
             </h3>
             <p className="text-content-tertiary max-w-sm mb-8">
-              Supports standard CSV exports from Vodafone, Telekom, and O2.
+              Supports standard CSV and TXT exports from Vodafone, Telekom, O2, BSNL, Airtel, and Jio.
             </p>
             
             <Button variant="primary" onClick={(e) => {
@@ -300,8 +347,14 @@ export default function ImportPage() {
           
           {files.length > 0 && files.every(f => f.status === 'ready') && (
             <div className="pt-4 animate-fade-in">
-              <Button variant="primary" className="w-full">
-                Process Imports
+              <Button 
+                variant="primary" 
+                className="w-full"
+                onClick={handleProcessImports}
+                disabled={isUploading}
+                leftIcon={isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : undefined}
+              >
+                {isUploading ? 'Processing...' : 'Process Imports'}
               </Button>
             </div>
           )}

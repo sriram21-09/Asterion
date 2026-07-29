@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 import { useState } from 'react';
 import { Pagination } from '@/components/ui';
+import { useUpdateCase } from '@/hooks/useCases';
 
 interface CaseTableProps {
   cases: Case[];
@@ -13,6 +14,7 @@ interface CaseTableProps {
 
 export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const updateCase = useUpdateCase();
   const itemsPerPage = 10;
   const totalPages = Math.max(1, Math.ceil(cases.length / itemsPerPage));
   const currentCases = cases.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -55,14 +57,20 @@ export function CaseTable({ cases, onDelete, isDeleting }: CaseTableProps) {
               </td>
               <td className="px-6 py-4">{c.title}</td>
               <td className="px-6 py-4">
-                <span
+                <select
+                  value={c.status}
+                  onChange={(e) => updateCase.mutate({ id: c.id, payload: { status: e.target.value } })}
                   className={cn(
-                    'px-2.5 py-1 rounded-full text-xs font-medium border uppercase tracking-wider',
+                    'px-2.5 py-1 rounded-full text-xs font-bold border uppercase tracking-wider bg-surface-secondary/40 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all',
                     getStatusColor(c.status)
                   )}
                 >
-                  {c.status.replace('_', ' ')}
-                </span>
+                  <option value="open" className="bg-surface-primary text-content-primary">OPEN</option>
+                  <option value="review" className="bg-surface-primary text-content-primary">REVIEW</option>
+                  <option value="pending" className="bg-surface-primary text-content-primary">PENDING</option>
+                  <option value="archived" className="bg-surface-primary text-content-primary">ARCHIVED</option>
+                  <option value="closed" className="bg-surface-primary text-content-primary">CLOSED</option>
+                </select>
               </td>
               <td className="px-6 py-4 text-content-tertiary">
                 {new Date(c.created_at).toLocaleDateString()}

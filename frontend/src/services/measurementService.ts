@@ -59,10 +59,10 @@ export const measurementService = {
   validateMeasurements: async (
     payload: ValidateMeasurementsRequest,
   ): Promise<ValidateMeasurementsResponse> => {
-    const { data } = await api.post<ValidateMeasurementsResponse>(
+    const { data } = await api.post<any>(
       '/measurements/validate',
       payload,
     );
-    return data;
+    return data as ValidateMeasurementsResponse;
   },
 };

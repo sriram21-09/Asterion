@@ -50,11 +50,11 @@ class TestDockerComposeStructure:
         assert "frontend" in compose_config["services"]
 
     def test_backend_port_mapping(self, compose_config):
-        """backend exposes port 8000."""
+        """backend exposes port 8222."""
         backend = compose_config["services"]["backend"]
         assert "ports" in backend
-        port_found = any("8000" in str(p) for p in backend["ports"])
-        assert port_found, "Backend must expose port 8000"
+        port_found = any("8222" in str(p) for p in backend["ports"])
+        assert port_found, "Backend must expose port 8222"
 
     def test_frontend_port_mapping(self, compose_config):
         """frontend exposes port 3000."""

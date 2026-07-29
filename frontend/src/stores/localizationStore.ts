@@ -46,6 +46,7 @@ interface LocalizationState {
    */
   runLocalization: (
     measurements: Measurement[],
+    caseCode?: string,
     algorithm?: string,
     expectedLat?: number | null,
     expectedLon?: number | null,
@@ -69,14 +70,17 @@ const INITIAL_STATE = {
 export const useLocalizationStore = create<LocalizationState>()((set) => ({
   ...INITIAL_STATE,
 
-  runLocalization: async (measurements, algorithm, expectedLat, expectedLon) => {
+  runLocalization: async (measurements, passedCaseCode, algorithm, expectedLat, expectedLon) => {
     set({ isRunning: true, error: null });
 
-    const { scenarioId } = useSimulationStore.getState();
-    const idNum = scenarioId
-      ? parseInt(String(scenarioId).replace(/\D/g, ''), 10) || 1
-      : 1;
-    const caseCode = `CASE-${String(idNum).padStart(3, '0')}`;
+    let caseCode = passedCaseCode;
+    if (!caseCode) {
+      const { scenarioId } = useSimulationStore.getState();
+      const idNum = scenarioId
+        ? parseInt(String(scenarioId).replace(/\D/g, ''), 10) || 1
+        : 1;
+      caseCode = `CASE-${String(idNum).padStart(3, '0')}`;
+    }
 
     const startTime = performance.now();
 

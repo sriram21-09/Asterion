@@ -30,7 +30,7 @@ def test_override_settings():
         "DATABASE_URL": "sqlite:///./test.db",
         "LOG_LEVEL": "DEBUG",
         "DEBUG": "True",
-        "CORS_ORIGINS": "http://localhost:3000,http://localhost:8000",
+        "CORS_ORIGINS": "http://localhost:3000,http://localhost:8222",
     }
     with mock.patch.dict(os.environ, custom_env, clear=True):
         if "app.core.config" in sys.modules:
@@ -46,5 +46,5 @@ def test_override_settings():
         assert settings.debug is True
         assert settings.cors_origins == [
             "http://localhost:3000",
-            "http://localhost:8000",
+            "http://localhost:8222",
         ]

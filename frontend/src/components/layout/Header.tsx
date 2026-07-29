@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn'
 import { useNavigationStore } from '@/stores/useNavigationStore'
 import { useThemeStore } from '@/stores/useThemeStore'
 import { GlobalSearch } from './GlobalSearch'
+import { useHealthCheck } from '@/hooks/useHealthCheck'
 
 /** Map route paths to human-readable breadcrumb labels */
 const routeLabels: Record<string, string> = {
@@ -18,6 +19,7 @@ export default function Header() {
   const location = useLocation()
   const { toggleSidebar, sidebarOpen } = useNavigationStore()
   const { theme, toggleTheme } = useThemeStore()
+  const { isSuccess: isOnline } = useHealthCheck()
 
   const currentLabel = routeLabels[location.pathname] ?? 'Page'
   const isDark = theme === 'dark'
@@ -88,9 +90,9 @@ export default function Header() {
 
         {/* System Status */}
         <div className="hidden md:flex items-center space-x-2">
-          <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-          <span className="text-xs text-content-tertiary font-semibold tracking-wider uppercase">
-            Online
+          <div className={cn("h-2 w-2 rounded-full", isOnline ? "bg-success animate-pulse" : "bg-red-500")} />
+          <span className={cn("text-xs font-semibold tracking-wider uppercase", isOnline ? "text-content-tertiary" : "text-red-500")}>
+            {isOnline ? 'Online' : 'Offline'}
           </span>
         </div>
 

@@ -118,7 +118,7 @@ class MeasurementService:
             db_m = MeasurementORM(
                 case_id=case.id,
                 scenario_id=case.scenario_id,
-                measurement_code=s_meas.measurement_id,
+                measurement_code=f"{case_code}-{s_meas.measurement_id}",
                 timestamp=s_meas.timestamp,
                 rssi_dbm=s_meas.rssi_dbm,
                 latitude=s_meas.latitude,

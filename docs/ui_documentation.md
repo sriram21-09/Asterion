@@ -42,7 +42,7 @@ The Asterion frontend is a single-page React application providing the investiga
 
 ```bash
 cd frontend
-cp .env.example .env          # set VITE_API_URL if backend is not on port 8000
+cp .env.example .env          # set VITE_API_URL if backend is not on port 8222
 npm install
 npm run dev                   # starts on http://localhost:3000
 ```
@@ -64,7 +64,7 @@ npm run lint                  # oxlint — zero-warning policy
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_URL` | `http://localhost:8000/api/v1` | Full base URL for the backend API |
+| `VITE_API_URL` | `http://localhost:8222/api/v1` | Full base URL for the backend API |
 
 ---
 

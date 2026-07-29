@@ -6,7 +6,6 @@ import {
   FileText,
   Layers,
   Radio,
-  User,
   X,
   UploadCloud,
   MapPin,
@@ -93,17 +92,13 @@ export default function Sidebar() {
                 id={`nav-${item.name.toLowerCase()}`}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  'relative flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium',
-                  'transition-all duration-200 group overflow-hidden',
+                  'relative flex items-center space-x-3 px-4 py-3 rounded-r-xl text-sm font-medium',
+                  'transition-all duration-200 group border-l-4',
                   active
-                    ? 'bg-brand-primary/15 text-brand-primary'
-                    : 'text-content-tertiary hover:bg-surface-secondary hover:text-content-primary',
+                    ? 'bg-brand-primary/15 text-brand-primary border-brand-primary'
+                    : 'text-content-tertiary hover:bg-surface-secondary hover:text-content-primary border-transparent',
                 )}
               >
-                {/* Active left accent bar */}
-                {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-brand-primary" />
-                )}
 
                 <Icon
                   className={cn(
@@ -128,22 +123,7 @@ export default function Sidebar() {
           <X className="h-4 w-4" />
         </button>
 
-        {/* User Profile Footer */}
-        <div className="p-3 border-t border-border-primary shrink-0">
-          <div className="flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-surface-secondary transition-colors cursor-pointer group">
-            <div className="h-9 w-9 rounded-full bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center shrink-0">
-              <User className="h-4 w-4 text-brand-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-content-secondary truncate group-hover:text-content-primary transition-colors">
-                Researcher Mode
-              </p>
-              <p className="text-xs text-content-tertiary truncate">
-                Asterion Platform
-              </p>
-            </div>
-          </div>
-        </div>
+
       </aside>
     </>
   )

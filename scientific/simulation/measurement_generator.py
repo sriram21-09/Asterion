@@ -49,7 +49,7 @@ class MeasurementGenerator:
             )
 
         measurements = []
-        base_time = datetime.now(UTC)
+        base_time = datetime.now(UTC) - timedelta(hours=1)
         ms_count = self.config.simulation.measurement_count
         enable_noise = self.config.simulation.enable_noise
 

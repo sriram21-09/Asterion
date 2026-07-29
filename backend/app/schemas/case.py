@@ -14,6 +14,11 @@ class CaseCreate(CaseBase):
     pass
 
 
+class CaseUpdate(BaseModel):
+    scenario_id: int | None = None
+    status: str | None = None
+
+
 class CaseResponse(CaseBase):
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,11 +1,12 @@
 from app.core.config import settings
 from app.database.session import get_db
-from app.schemas.case import CaseCreate, CaseResponse
+from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
 from app.schemas.comparison import CaseComparisonResponse
 from app.schemas.response import APIResponse
 from app.services.case_service import CaseService
 from app.services.comparison_service import ComparisonService
 from fastapi import APIRouter, Depends, Query, status, HTTPException
+from app.models.case import Case
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/cases", tags=["cases"])
@@ -81,6 +82,44 @@ def compare_cases(
 def get_case(id: int, db: Session = Depends(get_db)):
     result = CaseService.get_case(db, case_id=id)
     return APIResponse(success=True, data=result)
+
+
+@router.patch(
+    "/{id}",
+    response_model=APIResponse[CaseResponse],
+    summary="Update case status or scenario",
+    description="Updates the status or scenario assigned to an existing case.",
+)
+def update_case(id: int, update: CaseUpdate, db: Session = Depends(get_db)):
+    case = db.query(Case).filter(Case.id == id).first()
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    if update.status is not None:
+        case.status = update.status
+    if update.scenario_id is not None:
+        case.scenario_id = update.scenario_id
+    db.commit()
+    db.refresh(case)
+    return APIResponse(success=True, data=CaseResponse.model_validate(case))
+
+
+@router.put(
+    "/{id}/scenario",
+    response_model=APIResponse[CaseResponse],
+    summary="Update case scenario",
+    description="Assigns a scenario to an existing case.",
+)
+def update_case_scenario(id: int, update: CaseUpdate, db: Session = Depends(get_db)):
+    case = db.query(Case).filter(Case.id == id).first()
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    if update.scenario_id is not None:
+        case.scenario_id = update.scenario_id
+    if update.status is not None:
+        case.status = update.status
+    db.commit()
+    db.refresh(case)
+    return APIResponse(success=True, data=CaseResponse.model_validate(case))
 
 
 @router.delete(

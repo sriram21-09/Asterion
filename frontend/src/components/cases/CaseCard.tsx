@@ -2,6 +2,7 @@ import type { Case } from '@/types/case';
 import { Eye, Trash2, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
+import { useUpdateCase } from '@/hooks/useCases';
 
 interface CaseCardProps {
   caseData: Case;
@@ -10,6 +11,7 @@ interface CaseCardProps {
 }
 
 export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
+  const updateCase = useUpdateCase();
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open':
@@ -36,14 +38,20 @@ export function CaseCard({ caseData: c, onDelete, isDeleting }: CaseCardProps) {
             {c.title}
           </h3>
         </div>
-        <span
+        <select
+          value={c.status}
+          onChange={(e) => updateCase.mutate({ id: c.id, payload: { status: e.target.value } })}
           className={cn(
-            'px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-widest shrink-0',
+            'px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-widest shrink-0 bg-surface-secondary/40 cursor-pointer focus:outline-none focus:ring-1 focus:ring-brand-primary transition-all',
             getStatusColor(c.status)
           )}
         >
-          {c.status.replace('_', ' ')}
-        </span>
+          <option value="open" className="bg-surface-primary text-content-primary">OPEN</option>
+          <option value="review" className="bg-surface-primary text-content-primary">REVIEW</option>
+          <option value="pending" className="bg-surface-primary text-content-primary">PENDING</option>
+          <option value="archived" className="bg-surface-primary text-content-primary">ARCHIVED</option>
+          <option value="closed" className="bg-surface-primary text-content-primary">CLOSED</option>
+        </select>
       </div>
       
       <p className="text-sm text-content-secondary line-clamp-2 mb-6 flex-grow">

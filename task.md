@@ -73,14 +73,20 @@ This tracker outlines the day-by-day developer tasks for Sriram (Project Lead / 
   - [x] Implement GDOP-based geometric analysis and covariance-derived uncertainty calculations in `scientific/pipeline/confidence.py`
   - [x] Implement audit evidence builder inside `scientific/pipeline/evidence.py`
   - [x] Test confidence bounds on collinear vs. equilateral geometries
+  - [x] Verify project roadmap/plan for upcoming reporting tasks (PDF, etc.)
 - [x] **Sriram (Project Lead):**
   - [x] Create `confidence_results` database schema (linking to `cases` and `localization_results.id`) and migrations
   - [x] Implement repository layers and services for confidence and case evidence retrieval
   - [x] Create routes `POST /confidence/run` and `GET /evidence/{case_id}`
+  - [x] Enhance `backend/seed_db.py` to insert synthetic `Tower`, `Measurement`, `LocalizationResult`, `TrackingResult`, and `ConfidenceResult` records.
+  - [x] Run `seed_db.py` to populate database.
 - [x] **Dinesh (Frontend):**
   - [x] Implement API client layers for confidence and evidence
   - [x] Create a static Confidence Badge Card showing level, score, and error ellipses
   - [x] Create a static Evidence Summary Card showing accepted vs. rejected lists
+  - [x] Update `frontend/src/pages/EvidenceExplorer.tsx` to fetch real evidence data instead of using `MOCK_EVIDENCE_RUNS`.
+  - [x] Update `frontend/src/pages/InvestigationDashboard.tsx` to fetch real tracking data instead of using mock timeline events.
+  - [x] Update `frontend/src/pages/Reports.tsx` to reflect real metrics and handle placeholders based on the roadmap.
 
 ---
 

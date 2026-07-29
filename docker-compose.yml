@@ -4,17 +4,17 @@ services:
       context: .
       dockerfile: docker/Dockerfile.backend
     ports:
-      - "8001:8000"
+      - "8222:8222"
     environment:
       - ENV=development
-      - PORT=8000
+      - PORT=8222
     volumes:
       - ./backend:/app
       - ./datasets:/app/datasets
       - ./scientific:/app/scientific
     restart: always
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8222/api/v1/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,9 +31,10 @@ services:
       - /app/node_modules
     environment:
       # Browser-side API URL (client requests from host browser to host-mapped port)
-      - VITE_API_URL=http://localhost:8001/api/v1
-      # Server-side / SSR API URL (container-to-container via Docker network)
-      - VITE_API_BASE_URL=http://backend:8000/api/v1
+      - VITE_API_URL=http://localhost:8222/api/v1
+      # Server-side / Proxy API URL (container-to-container via Docker network)
+      - VITE_API_BASE_URL=http://backend:8222/api/v1
+      - VITE_BACKEND_URL=http://backend:8222
     depends_on:
       backend:
         condition: service_healthy

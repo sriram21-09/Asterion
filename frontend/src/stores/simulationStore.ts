@@ -49,7 +49,7 @@ interface SimulationState {
   setSimulationParams: (params: Partial<SimulationParameters>) => void;
   setPropagationDefaults: (defaults: Partial<PropagationDefaults>) => void;
   setEnvironmentType: (env: EnvironmentType) => void;
-  generateMeasurements: (request: GenerateSimulationRequest) => Promise<void>;
+  generateMeasurements: (request: GenerateSimulationRequest & { caseCode?: string }) => Promise<void>;
   fetchMeasurements: (caseCode: string) => Promise<void>;
   clearResults: () => void;
   resetParams: () => void;
@@ -94,7 +94,7 @@ export const useSimulationStore = create<SimulationState>()(
         try {
           const response = await simulationService.generateMeasurements(request);
           
-          const rawList = Array.isArray(response) ? response : (response as any).measurements || [];
+          const rawList = Array.isArray(response) ? response : (response as any).data || (response as any).measurements || [];
           const measurementsList = rawList.map((m: any, idx: number) => {
             // Map measurement_code to measurement_id
             // Extract tower_id if present (e.g. MEAS-SCNXXX-TYYY-ZZZZ), otherwise fallback to round-robin
@@ -125,7 +125,7 @@ export const useSimulationStore = create<SimulationState>()(
             };
           });
 
-          const scenarioId = Array.isArray(response) ? (response[0]?.scenario_code || null) : (response as any).scenario_id || null;
+          const scenarioId = rawList.length > 0 ? (rawList[0]?.scenario_code || rawList[0]?.scenario_id || null) : null;
           const measurementCount = measurementsList.length;
           const towerCount = new Set(measurementsList.map((m: any) => m.tower_id)).size;
 
@@ -155,7 +155,7 @@ export const useSimulationStore = create<SimulationState>()(
         try {
           const response = await simulationService.getMeasurements(caseCode);
           
-          const rawList = Array.isArray(response) ? response : (response as any).measurements || [];
+          const rawList = Array.isArray(response) ? response : (response as any).data || (response as any).measurements || [];
           const measurementsList = rawList.map((m: any, idx: number) => {
             const parts = (m.measurement_code || '').split('-');
             let towerId = null;
@@ -184,7 +184,7 @@ export const useSimulationStore = create<SimulationState>()(
             };
           });
 
-          const scenarioId = Array.isArray(response) ? (response[0]?.scenario_code || null) : (response as any).scenario_id || null;
+          const scenarioId = rawList.length > 0 ? (rawList[0]?.scenario_code || rawList[0]?.scenario_id || null) : null;
           const measurementCount = measurementsList.length;
           const towerCount = new Set(measurementsList.map((m: any) => m.tower_id)).size;
 
