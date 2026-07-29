@@ -17,6 +17,16 @@ from scientific.pipeline.benchmarks import (
     normalize_densities,
     parse_cgi,
 )
+from scientific.pipeline.case_comparison import (
+    CaseComparisonResult,
+    CellOverlapMetrics,
+    SpatialCentroidComparison,
+    SpeedTrendMetrics,
+    calculate_cell_overlap,
+    calculate_spatial_centroid_comparison,
+    calculate_speed_trends,
+    compare_cases,
+)
 from scientific.pipeline.confidence import compute_confidence
 from scientific.pipeline.evidence import compute_evidence_hash, synthesize_evidence
 from scientific.pipeline.heatmap import (
@@ -65,6 +75,8 @@ from scientific.pipeline.weighted_centroid import (
 __all__ = [
     "APPROVED_TERMS",
     "CGIResolver",
+    "CaseComparisonResult",
+    "CellOverlapMetrics",
     "HeatmapCellScore",
     "HeatmapWeights",
     "InputQualityScore",
@@ -73,16 +85,22 @@ __all__ = [
     "MovementEvent",
     "MovementSummary",
     "PROHIBITED_TERMS",
+    "SpatialCentroidComparison",
+    "SpeedTrendMetrics",
     "aggregate_grid_heatmap",
     "calculate_bearing_deg",
+    "calculate_cell_overlap",
     "calculate_cell_score",
     "calculate_distance_m",
     "calculate_evidence_hash",
     "calculate_grid_density",
     "calculate_neighbor_density",
     "calculate_radius_density",
+    "calculate_spatial_centroid_comparison",
     "calculate_speed_kmh",
+    "calculate_speed_trends",
     "classify_velocity",
+    "compare_cases",
     "compute_confidence",
     "compute_evidence_hash",
     "compute_heatmap",
