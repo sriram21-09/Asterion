@@ -7,7 +7,6 @@ from app.services.case_service import CaseService
 from app.services.comparison_service import ComparisonService
 from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -68,7 +67,7 @@ def compare_cases(
             case_ids.append(int(id_str.strip()))
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Invalid case ID: {id_str}")
-    
+
     result = ComparisonService.compare_cases(db, case_ids)
     return APIResponse(success=True, data=result)
 
