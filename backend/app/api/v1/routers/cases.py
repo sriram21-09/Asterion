@@ -1,9 +1,12 @@
 from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.case import CaseCreate, CaseResponse
+from app.schemas.comparison import CaseComparisonResponse
 from app.schemas.response import APIResponse
 from app.services.case_service import CaseService
-from fastapi import APIRouter, Depends, Query, status
+from app.services.comparison_service import ComparisonService
+from fastapi import APIRouter, Depends, Query, status, HTTPException
+from sqlalchemy.orm import Session
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/cases", tags=["cases"])
@@ -47,6 +50,27 @@ def health_check():
         "service": "cases-api",
         "version": settings.app_version,
     }
+
+
+@router.get(
+    "/compare",
+    response_model=APIResponse[CaseComparisonResponse],
+    summary="Compare cases",
+    description="Compare multiple cases (overlapping towers, distance differences, confidence averages).",
+)
+def compare_cases(
+    ids: str = Query(..., description="Comma-separated list of case IDs"),
+    db: Session = Depends(get_db),
+):
+    case_ids = []
+    for id_str in ids.split(","):
+        try:
+            case_ids.append(int(id_str.strip()))
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid case ID: {id_str}")
+    
+    result = ComparisonService.compare_cases(db, case_ids)
+    return APIResponse(success=True, data=result)
 
 
 @router.get(
