@@ -187,3 +187,25 @@ class TestCaseAPI:
         assert duration_str.endswith("s")
         # Ensure it is a valid float duration
         assert float(duration_str[:-1]) >= 0.0
+
+    def test_compare_cases_success(self, client):
+        res1 = client.post("/api/v1/cases/", json={"title": "Primary Case A"})
+        case_a_id = res1.json()["data"]["id"]
+
+        res2 = client.post("/api/v1/cases/", json={"title": "Secondary Case B"})
+        case_b_id = res2.json()["data"]["id"]
+
+        response = client.get(f"/api/v1/cases/compare?case_id_a={case_a_id}&case_id_b={case_b_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        comparison = data["data"]
+        assert "cell_overlap" in comparison
+        assert "speed_trends" in comparison
+        assert "spatial_comparison" in comparison
+        assert "overall_similarity_score" in comparison
+
+    def test_compare_cases_not_found(self, client):
+        response = client.get("/api/v1/cases/compare?case_id_a=9999&case_id_b=8888")
+        assert response.status_code == 404
+

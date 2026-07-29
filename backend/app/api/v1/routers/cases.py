@@ -50,6 +50,22 @@ def health_check():
 
 
 @router.get(
+    "/compare",
+    response_model=APIResponse[dict],
+    summary="Compare two cases side-by-side",
+    description="Compute comparative metrics (overlapping cell sectors, speed trends, spatial centroids, confidence averages).",
+)
+def compare_cases(
+    case_id_a: int = Query(..., description="Primary case ID (Case A)"),
+    case_id_b: int = Query(..., description="Secondary case ID (Case B)"),
+    db: Session = Depends(get_db),
+):
+    result = CaseService.compare_cases(db, case_id_a=case_id_a, case_id_b=case_id_b)
+    return APIResponse(success=True, data=result)
+
+
+
+@router.get(
     "/{id}",
     response_model=APIResponse[CaseResponse],
     summary="Retrieve a case by ID",
