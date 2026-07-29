@@ -3,7 +3,6 @@ Unit Tests for Scientific Case Comparison Analysis Engine
 ================================--------------------------
 """
 
-import pytest
 from datetime import datetime, UTC
 from scientific.pipeline.case_comparison import (
     CaseComparisonResult,
@@ -147,12 +146,32 @@ def test_calculate_spatial_centroid_comparison_empty():
 
 def test_compare_cases_orchestrator():
     recs_a = [
-        {"latitude": 19.076, "longitude": 72.878, "first_cgi": "CGI-1", "confidence": 0.9},
-        {"latitude": 19.080, "longitude": 72.880, "first_cgi": "CGI-2", "confidence": 0.95},
+        {
+            "latitude": 19.076,
+            "longitude": 72.878,
+            "first_cgi": "CGI-1",
+            "confidence": 0.9,
+        },
+        {
+            "latitude": 19.080,
+            "longitude": 72.880,
+            "first_cgi": "CGI-2",
+            "confidence": 0.95,
+        },
     ]
     recs_b = [
-        {"latitude": 19.076, "longitude": 72.878, "first_cgi": "CGI-1", "confidence": 0.85},
-        {"latitude": 19.085, "longitude": 72.885, "first_cgi": "CGI-3", "confidence": 0.8},
+        {
+            "latitude": 19.076,
+            "longitude": 72.878,
+            "first_cgi": "CGI-1",
+            "confidence": 0.85,
+        },
+        {
+            "latitude": 19.085,
+            "longitude": 72.885,
+            "first_cgi": "CGI-3",
+            "confidence": 0.8,
+        },
     ]
 
     res = compare_cases(recs_a, recs_b, case_a_id="CASE-001", case_b_id="CASE-002")

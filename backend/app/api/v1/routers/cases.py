@@ -64,7 +64,6 @@ def compare_cases(
     return APIResponse(success=True, data=result)
 
 
-
 @router.get(
     "/{id}",
     response_model=APIResponse[CaseResponse],

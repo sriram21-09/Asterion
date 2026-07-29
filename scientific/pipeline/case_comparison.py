@@ -387,11 +387,23 @@ def calculate_spatial_centroid_comparison(
     # Bounding Box Overlap Ratio (Intersection over Union)
     bbox_iou = 0.0
     if coords_a and coords_b:
-        min_lat_a, max_lat_a = min([c[0] for c in coords_a]), max([c[0] for c in coords_a])
-        min_lon_a, max_lon_a = min([c[1] for c in coords_a]), max([c[1] for c in coords_a])
+        min_lat_a, max_lat_a = (
+            min([c[0] for c in coords_a]),
+            max([c[0] for c in coords_a]),
+        )
+        min_lon_a, max_lon_a = (
+            min([c[1] for c in coords_a]),
+            max([c[1] for c in coords_a]),
+        )
 
-        min_lat_b, max_lat_b = min([c[0] for c in coords_b]), max([c[0] for c in coords_b])
-        min_lon_b, max_lon_b = min([c[1] for c in coords_b]), max([c[1] for c in coords_b])
+        min_lat_b, max_lat_b = (
+            min([c[0] for c in coords_b]),
+            max([c[0] for c in coords_b]),
+        )
+        min_lon_b, max_lon_b = (
+            min([c[1] for c in coords_b]),
+            max([c[1] for c in coords_b]),
+        )
 
         lat_inter = max(0.0, min(max_lat_a, max_lat_b) - max(min_lat_a, min_lat_b))
         lon_inter = max(0.0, min(max_lon_a, max_lon_b) - max(min_lon_a, min_lon_b))
@@ -452,9 +464,7 @@ def compare_cases(
     m_b = case_b_movements if case_b_movements is not None else case_b_records
     speed_trends = calculate_speed_trends(m_a, m_b)
 
-    spatial_comp = calculate_spatial_centroid_comparison(
-        case_a_records, case_b_records
-    )
+    spatial_comp = calculate_spatial_centroid_comparison(case_a_records, case_b_records)
 
     conf_scores_a = _extract_confidence_scores(case_a_records)
     conf_scores_b = _extract_confidence_scores(case_b_records)
