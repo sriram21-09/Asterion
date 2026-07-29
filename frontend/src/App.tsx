@@ -9,6 +9,7 @@ import Settings from './pages/Settings'
 import ImportPage from './pages/ImportPage'
 import InvestigationDashboard from './pages/InvestigationDashboard'
 import EvidenceExplorer from './pages/EvidenceExplorer'
+import CaseComparison from './pages/CaseComparison'
 import NotFound from './pages/NotFound'
 import ErrorPage from './pages/ErrorPage'
 
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="import" element={<ImportPage />} />
           <Route path="investigation" element={<InvestigationDashboard />} />
           <Route path="evidence" element={<EvidenceExplorer />} />
+          <Route path="comparison" element={<CaseComparison />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>
