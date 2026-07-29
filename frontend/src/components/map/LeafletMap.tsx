@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, LayersControl, LayerGroup, Circle } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { HeatmapLayer } from './HeatmapLayer'
 
 export type ConfidenceTier = 'Known' | 'Estimated' | 'Unknown'
 
@@ -19,6 +20,7 @@ interface LeafletMapProps {
   center?: [number, number]
   zoom?: number
   pathCoordinates?: [number, number][]
+  heatmapPoints?: [number, number, number][]
 }
 
 // Custom icons based on confidence tier
@@ -55,7 +57,7 @@ function MapUpdater({ center, zoom }: { center: [number, number], zoom: number }
   return null
 }
 
-export function LeafletMap({ towers, center = [12.9716, 77.5946], zoom = 13, pathCoordinates }: LeafletMapProps) {
+export function LeafletMap({ towers, center = [12.9716, 77.5946], zoom = 13, pathCoordinates, heatmapPoints }: LeafletMapProps) {
   return (
     <div className="w-full h-full min-h-[400px] rounded-xl overflow-hidden border border-border-primary">
       <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', minHeight: '400px' }}>
@@ -68,6 +70,15 @@ export function LeafletMap({ towers, center = [12.9716, 77.5946], zoom = 13, pat
               url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             />
           </LayersControl.BaseLayer>
+
+          {/* Heatmap Layer */}
+          <LayersControl.Overlay checked name="Heatmap Density">
+            <LayerGroup>
+              {heatmapPoints && heatmapPoints.length > 0 ? (
+                <HeatmapLayer points={heatmapPoints} radius={25} blur={15} />
+              ) : null}
+            </LayerGroup>
+          </LayersControl.Overlay>
 
           {/* Smoothed Path (Kalman) */}
           <LayersControl.Overlay checked name="Smoothed Path (Kalman)">

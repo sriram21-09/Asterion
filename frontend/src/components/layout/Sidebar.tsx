@@ -11,6 +11,7 @@ import {
   UploadCloud,
   MapPin,
   FileSearch,
+  GitCompare,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useNavigationStore } from '@/stores/useNavigationStore'
@@ -29,6 +30,7 @@ const navigation: NavItem[] = [
   { name: 'Scenarios', path: '/scenarios', icon: Layers },
   { name: 'Reports', path: '/reports', icon: FileText },
   { name: 'Evidence', path: '/evidence', icon: FileSearch },
+  { name: 'Comparison', path: '/comparison', icon: GitCompare },
   { name: 'Settings', path: '/settings', icon: Settings },
 ]
 
