@@ -336,8 +336,8 @@ const LeafletHeatLayer = (L.Layer ? L.Layer : (L as any).Class).extend({
     if (L.DomUtil.setTransform) {
       L.DomUtil.setTransform(this._canvas, offset, scale)
     } else {
-      this._canvas.style[L.DomUtil.TRANSFORM] =
-        L.DomUtil.getTranslateString(offset) + ' scale(' + scale + ')'
+      this._canvas.style[(L.DomUtil as any).TRANSFORM] =
+        'translate(' + offset.x + 'px,' + offset.y + 'px) scale(' + scale + ')'
     }
   }
 })

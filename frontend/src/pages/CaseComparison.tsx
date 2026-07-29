@@ -4,7 +4,7 @@ import { useCases } from '@/hooks/useCases'
 import { useScenarios } from '@/hooks/useScenarios'
 import { simulationService } from '@/services/simulationService'
 import { evidenceService } from '@/services/evidenceService'
-import { Button, LoadingSpinner, ErrorCard, Badge } from '@/components/ui'
+import { LoadingSpinner, ErrorCard, Badge } from '@/components/ui'
 import { toast } from 'sonner'
 import type { Case } from '@/types/case'
 
@@ -72,11 +72,11 @@ export default function CaseComparison() {
           
           try {
             measurementsA = await simulationService.getMeasurements(codeA)
-          } catch (_) {}
+          } catch { /* ignored */ }
 
           try {
             evidenceA = await evidenceService.getEvidence(codeA)
-          } catch (_) {}
+          } catch { /* ignored */ }
 
           const validCount = measurementsA.filter(m => m.rssi_dbm >= -110).length
           const totalCount = measurementsA.length
@@ -101,11 +101,11 @@ export default function CaseComparison() {
           
           try {
             measurementsB = await simulationService.getMeasurements(codeB)
-          } catch (_) {}
+          } catch { /* ignored */ }
 
           try {
             evidenceB = await evidenceService.getEvidence(codeB)
-          } catch (_) {}
+          } catch { /* ignored */ }
 
           const validCount = measurementsB.filter(m => m.rssi_dbm >= -110).length
           const totalCount = measurementsB.length
