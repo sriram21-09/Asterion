@@ -45,6 +45,9 @@ def validate_measurements(payload: ValidateMeasurementsRequest, response: Respon
         return APIResponse(
             success=False,
             data=result,
-            error={"code": "VALIDATION_ERROR", "message": "Measurement validation failed"},
+            error={
+                "code": "VALIDATION_ERROR",
+                "message": "Measurement validation failed",
+            },
         )
     return APIResponse(success=True, data=result)
