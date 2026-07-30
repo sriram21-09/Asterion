@@ -274,7 +274,7 @@ def compute_heatmap(
         return []
 
     def _get(
-        item: Any, key: str, alt_key: str | None = None, default: float = 0.0
+        item: Any, key: str, alt_key: str | None = None, default: Any = 0.0
     ) -> Any:
         if isinstance(item, dict):
             val = item.get(key)
