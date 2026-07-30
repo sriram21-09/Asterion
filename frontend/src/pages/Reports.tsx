@@ -13,8 +13,49 @@ export default function Reports() {
     document.title = 'Reports — Asterion'
   }, [])
 
-  const handleExport = (type: string) => {
-    toast.info(`Exporting ${type} report... (Scheduled for Week 3/4 Roadmap)`)
+  const REPORT_TYPES = {
+    FULL: 'full',
+    EVIDENCE: 'evidence_audit',
+    VALIDATION: 'validation_error',
+  }
+
+  const handleExport = async (type: string) => {
+    let backendReportType = REPORT_TYPES.FULL
+    if (type === 'Evidence Audit') backendReportType = REPORT_TYPES.EVIDENCE
+    if (type === 'Validation Error') backendReportType = REPORT_TYPES.VALIDATION
+    if (type !== 'PDF' && type !== 'Execution Summary' && type !== 'Evidence Audit' && type !== 'Validation Error') {
+      toast.info(`Exporting ${type} report... (Scheduled for Week 3/4 Roadmap)`)
+      return
+    }
+
+    if (!cases || cases.length === 0) {
+      toast.error('No cases available to generate a report.')
+      return
+    }
+
+    // Try to pick the most recently updated/active case, or fallback to the first one
+    // In a real app with global state, we'd check `useInvestigationStore().activeCaseId`
+    const sortedCases = [...cases].sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
+    const caseId = sortedCases[0].id
+    
+    try {
+      toast.loading('Generating PDF report...', { id: 'pdf-gen' })
+      
+      const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8222/api/v1'
+      
+      const res = await fetch(`${baseUrl}/reports/${caseId}/generate?report_type=${backendReportType}`, { method: 'POST' })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || 'Failed to generate report')
+      }
+      
+      toast.success('Report generated successfully!', { id: 'pdf-gen' })
+      
+      window.open(`${baseUrl}/reports/${caseId}/download`, '_blank')
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message || 'Failed to generate PDF report', { id: 'pdf-gen' })
+    }
   }
 
   if (loadingCases || loadingScenarios) {
