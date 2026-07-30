@@ -127,9 +127,7 @@ def sample_localization_result():
 class TestValidationSummary:
     """Tests for format_validation_summary()."""
 
-    def test_validation_summary_structure(
-        self, formatter, sample_records_by_operator
-    ):
+    def test_validation_summary_structure(self, formatter, sample_records_by_operator):
         """Output keys match expected schema, per-operator rows present."""
         result = formatter.format_validation_summary(sample_records_by_operator)
 
@@ -145,9 +143,7 @@ class TestValidationSummary:
             assert "records_rejected" in row
             assert "warnings_count" in row
 
-    def test_validation_summary_totals(
-        self, formatter, sample_records_by_operator
-    ):
+    def test_validation_summary_totals(self, formatter, sample_records_by_operator):
         """Aggregated totals are mathematically correct."""
         result = formatter.format_validation_summary(sample_records_by_operator)
         totals = result["totals"]
@@ -229,9 +225,7 @@ class TestTowerIntelligenceSummary:
 class TestMovementReconstructionSummary:
     """Tests for format_movement_reconstruction_summary()."""
 
-    def test_movement_reconstruction_summary(
-        self, formatter, sample_movement_summary
-    ):
+    def test_movement_reconstruction_summary(self, formatter, sample_movement_summary):
         """Distance, speed, handover count match MovementSummary input."""
         result = formatter.format_movement_reconstruction_summary(
             sample_movement_summary
@@ -507,11 +501,5 @@ class TestConvenienceFunction:
 
         # Both should have same top-level structure
         assert set(result_class.keys()) == set(result_func.keys())
-        assert (
-            result_class["validation_summary"]
-            == result_func["validation_summary"]
-        )
-        assert (
-            result_class["tower_intelligence"]
-            == result_func["tower_intelligence"]
-        )
+        assert result_class["validation_summary"] == result_func["validation_summary"]
+        assert result_class["tower_intelligence"] == result_func["tower_intelligence"]
