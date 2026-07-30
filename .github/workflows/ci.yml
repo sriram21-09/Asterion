@@ -25,9 +25,10 @@ jobs:
     - name: Run backend tests
       env:
         PYTHONPATH: ..
-        DATABASE_URL: sqlite:///../asterion.db
+        DATABASE_URL: sqlite:///./asterion.db
       run: |
         cd backend
+        alembic upgrade head
         pytest
 
   # ── Root-level integration & scientific tests ─────────────────────────
