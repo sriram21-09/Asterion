@@ -69,7 +69,9 @@ class TestCoordinateAccuracy:
     def test_basic_accuracy_evaluation(self):
         """Per-tower error distances are computed correctly."""
         results = evaluate_coordinate_accuracy(
-            REFERENCE_TOWERS, COMPUTED_TOWERS, threshold_m=500.0,
+            REFERENCE_TOWERS,
+            COMPUTED_TOWERS,
+            threshold_m=500.0,
         )
 
         assert len(results) == 5
@@ -82,7 +84,9 @@ class TestCoordinateAccuracy:
     def test_exact_match_zero_error(self):
         """Identical reference and computed coordinates yield zero error."""
         results = evaluate_coordinate_accuracy(
-            REFERENCE_TOWERS, COMPUTED_TOWERS, threshold_m=500.0,
+            REFERENCE_TOWERS,
+            COMPUTED_TOWERS,
+            threshold_m=500.0,
         )
 
         # BLR-005 has identical coordinates
@@ -93,7 +97,9 @@ class TestCoordinateAccuracy:
     def test_threshold_pass_fail(self):
         """Towers above threshold are correctly flagged."""
         results = evaluate_coordinate_accuracy(
-            REFERENCE_TOWERS, COMPUTED_TOWERS, threshold_m=500.0,
+            REFERENCE_TOWERS,
+            COMPUTED_TOWERS,
+            threshold_m=500.0,
         )
 
         # BLR-004 has ~553m offset → should exceed 500m threshold
@@ -122,13 +128,17 @@ class TestCoordinateAccuracy:
         """Custom threshold changes pass/fail classification."""
         # With tight 50m threshold, fewer towers pass
         results_tight = evaluate_coordinate_accuracy(
-            REFERENCE_TOWERS, COMPUTED_TOWERS, threshold_m=50.0,
+            REFERENCE_TOWERS,
+            COMPUTED_TOWERS,
+            threshold_m=50.0,
         )
         passed_tight = sum(1 for r in results_tight if r.is_within_threshold)
 
         # With loose 1000m threshold, more towers pass
         results_loose = evaluate_coordinate_accuracy(
-            REFERENCE_TOWERS, COMPUTED_TOWERS, threshold_m=1000.0,
+            REFERENCE_TOWERS,
+            COMPUTED_TOWERS,
+            threshold_m=1000.0,
         )
         passed_loose = sum(1 for r in results_loose if r.is_within_threshold)
 
@@ -137,7 +147,9 @@ class TestCoordinateAccuracy:
     def test_error_distances_positive(self):
         """All computed error distances are non-negative."""
         results = evaluate_coordinate_accuracy(
-            REFERENCE_TOWERS, COMPUTED_TOWERS, threshold_m=500.0,
+            REFERENCE_TOWERS,
+            COMPUTED_TOWERS,
+            threshold_m=500.0,
         )
         for r in results:
             assert r.error_distance_m >= 0.0
@@ -145,7 +157,9 @@ class TestCoordinateAccuracy:
     def test_reference_and_computed_coords_preserved(self):
         """Original reference and computed coords are stored in results."""
         results = evaluate_coordinate_accuracy(
-            REFERENCE_TOWERS, COMPUTED_TOWERS, threshold_m=500.0,
+            REFERENCE_TOWERS,
+            COMPUTED_TOWERS,
+            threshold_m=500.0,
         )
         blr001 = next(r for r in results if r.tower_id == "BLR-001")
         assert blr001.reference_latitude == 12.9716
@@ -273,7 +287,11 @@ class TestUnknownTowerPctByOperator:
         """Operator with all resolved towers → 0.0%."""
         data = [
             {"tower_id": "T-1", "resolution_method": "exact", "operator": "TestOp"},
-            {"tower_id": "T-2", "resolution_method": "prefix_lac", "operator": "TestOp"},
+            {
+                "tower_id": "T-2",
+                "resolution_method": "prefix_lac",
+                "operator": "TestOp",
+            },
         ]
         result = calculate_unknown_tower_pct_by_operator(data)
         assert result["TestOp"] == 0.0
@@ -404,8 +422,7 @@ class TestDeterminism:
     def test_unknown_pct_deterministic(self):
         """calculate_unknown_tower_pct_by_operator returns identical results across 5 runs."""
         results = [
-            calculate_unknown_tower_pct_by_operator(TOWER_DATA)
-            for _ in range(5)
+            calculate_unknown_tower_pct_by_operator(TOWER_DATA) for _ in range(5)
         ]
         assert all(r == results[0] for r in results)
 
@@ -413,10 +430,7 @@ class TestDeterminism:
         """calculate_kalman_improvement_factor returns identical results across 5 runs."""
         raw = [100.0, 200.0, 150.0]
         smoothed = [50.0, 80.0, 60.0]
-        results = [
-            calculate_kalman_improvement_factor(raw, smoothed)
-            for _ in range(5)
-        ]
+        results = [calculate_kalman_improvement_factor(raw, smoothed) for _ in range(5)]
         assert all(r == results[0] for r in results)
 
     def test_full_benchmarks_deterministic(self):
@@ -436,11 +450,17 @@ class TestDeterminism:
         for i in range(1, 5):
             assert results[i].validation_pass_rate == results[0].validation_pass_rate
             assert results[i].tower_resolution_rate == results[0].tower_resolution_rate
-            assert results[i].kalman_improvement_factor == results[0].kalman_improvement_factor
+            assert (
+                results[i].kalman_improvement_factor
+                == results[0].kalman_improvement_factor
+            )
             assert results[i].mean_error_m == results[0].mean_error_m
             assert results[i].median_error_m == results[0].median_error_m
             assert results[i].max_error_m == results[0].max_error_m
-            assert results[i].accuracy_within_threshold_pct == results[0].accuracy_within_threshold_pct
+            assert (
+                results[i].accuracy_within_threshold_pct
+                == results[0].accuracy_within_threshold_pct
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -529,7 +549,10 @@ class TestRunPipelineBenchmarks:
 
         assert metrics_tight.accuracy_threshold_m == 50.0
         assert metrics_loose.accuracy_threshold_m == 1000.0
-        assert metrics_loose.accuracy_within_threshold_pct >= metrics_tight.accuracy_within_threshold_pct
+        assert (
+            metrics_loose.accuracy_within_threshold_pct
+            >= metrics_tight.accuracy_within_threshold_pct
+        )
 
     def test_benchmark_metrics_is_frozen(self):
         """BenchmarkMetrics instances are immutable (frozen dataclass)."""

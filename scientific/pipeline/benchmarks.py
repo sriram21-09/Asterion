@@ -645,7 +645,9 @@ def run_pipeline_benchmarks(
 
     # 5. Coordinate accuracy evaluation
     accuracy_results = evaluate_coordinate_accuracy(
-        _reference, _computed, accuracy_threshold_m,
+        _reference,
+        _computed,
+        accuracy_threshold_m,
     )
 
     # 6. Aggregate accuracy statistics
@@ -675,4 +677,3 @@ def run_pipeline_benchmarks(
         accuracy_within_threshold_pct=within_pct,
         accuracy_threshold_m=accuracy_threshold_m,
     )
-
