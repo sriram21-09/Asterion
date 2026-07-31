@@ -55,6 +55,10 @@ from scientific.pipeline.movement import (
     smooth_movement_path,
 )
 from scientific.pipeline.multilateration import solve_multilateration
+from scientific.pipeline.report_formatter import (
+    ReportFormatter,
+    format_full_report,
+)
 from scientific.pipeline.runner import run_pipeline
 from scientific.pipeline.summary_generator import (
     APPROVED_TERMS,
@@ -85,6 +89,7 @@ __all__ = [
     "MovementEvent",
     "MovementSummary",
     "PROHIBITED_TERMS",
+    "ReportFormatter",
     "SpatialCentroidComparison",
     "SpeedTrendMetrics",
     "aggregate_grid_heatmap",
@@ -107,6 +112,7 @@ __all__ = [
     "compute_input_quality_scores",
     "detect_handover",
     "flag_impossible_velocity",
+    "format_full_report",
     "generate_device_overview",
     "generate_movement_summary",
     "generate_timeline_summary",
