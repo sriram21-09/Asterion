@@ -4,7 +4,7 @@ import { useCases } from '@/hooks/useCases'
 import { useScenarios } from '@/hooks/useScenarios'
 import { Button, LoadingSpinner, ErrorCard } from '@/components/ui'
 import { toast } from 'sonner'
-import { reportService, ReportPreviewData } from '@/services/reportService'
+import { reportService, type ReportPreviewData } from '@/services/reportService'
 
 export default function Reports() {
   const { data: cases, isLoading: loadingCases, error: caseError } = useCases()

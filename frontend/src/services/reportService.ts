@@ -32,7 +32,7 @@ class ReportService {
   /**
    * Generates a report and returns preview data for the sections
    */
-  async generateReport(caseId: string, reportType: string = 'full'): Promise<ReportPreviewData> {
+  async generateReport(caseId: number, reportType: string = 'full'): Promise<ReportPreviewData> {
     const response = await axios.post(`${API_URL}/reports/${caseId}/generate`, null, {
       params: { report_type: reportType }
     })
@@ -42,7 +42,7 @@ class ReportService {
   /**
    * Downloads the generated PDF report
    */
-  async downloadReport(caseId: string): Promise<Blob> {
+  async downloadReport(caseId: number): Promise<Blob> {
     const response = await axios.get(`${API_URL}/reports/${caseId}/download`, {
       responseType: 'blob'
     })
