@@ -1,12 +1,22 @@
 """
-Tower Density & CGI Resolution Fallbacks Engine
-===============================================
+Tower Density, CGI Resolution Fallbacks & Pipeline Validation Benchmarks
+========================================================================
 
-Implements lookup fallback systems to resolve Cell Global Identity (CGI) entries
-and spatial density metrics for cell towers within the Asterion scientific pipeline.
+Implements lookup fallback systems to resolve Cell Global Identity (CGI) entries,
+spatial density metrics for cell towers, and pipeline validation benchmark routines
+within the Asterion scientific pipeline.
+
+Benchmark capabilities:
+    - Coordinate accuracy evaluation against known reference towers
+    - Validation pass rate (validated records / total records)
+    - Tower resolution rate (Known + Estimated / total towers)
+    - Unknown tower percentage per operator
+    - Kalman improvement factor (raw vs. smoothed path error comparison)
 """
 
 import re
+import statistics
+from dataclasses import dataclass, field
 from typing import Any
 
 from scientific.constants import haversine_distance_m
@@ -346,3 +356,323 @@ def normalize_densities(densities: dict[Any, float]) -> dict[Any, float]:
         else:
             normalized[k] = (v - min_val) / range_val
     return normalized
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Pipeline Validation Benchmarks
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+@dataclass(frozen=True)
+class CoordinateAccuracyResult:
+    """Per-tower coordinate accuracy evaluation against a known reference.
+
+    Attributes:
+        tower_id: Identifier of the evaluated tower.
+        reference_latitude: Known ground-truth latitude (WGS84).
+        reference_longitude: Known ground-truth longitude (WGS84).
+        computed_latitude: Pipeline-computed latitude (WGS84).
+        computed_longitude: Pipeline-computed longitude (WGS84).
+        error_distance_m: Haversine distance between reference and computed (meters).
+        is_within_threshold: True if error_distance_m ≤ threshold.
+    """
+
+    tower_id: str
+    reference_latitude: float
+    reference_longitude: float
+    computed_latitude: float
+    computed_longitude: float
+    error_distance_m: float
+    is_within_threshold: bool
+
+
+@dataclass(frozen=True)
+class BenchmarkMetrics:
+    """Aggregated pipeline validation benchmark results.
+
+    All metrics are deterministic and reproducible given identical inputs.
+
+    Attributes:
+        validation_pass_rate: Fraction of validated records (0.0–1.0).
+        tower_resolution_rate: Fraction of Known + Estimated towers (0.0–1.0).
+        unknown_tower_pct_by_operator: Per-operator unknown tower percentage.
+        kalman_improvement_factor: Ratio of mean raw error to mean smoothed error (≥ 1.0).
+        coordinate_accuracy_results: Per-tower accuracy evaluations.
+        mean_error_m: Mean coordinate error across evaluated towers (meters).
+        median_error_m: Median coordinate error across evaluated towers (meters).
+        max_error_m: Maximum coordinate error across evaluated towers (meters).
+        accuracy_within_threshold_pct: Percentage of towers within accuracy threshold.
+        accuracy_threshold_m: The threshold used for within-threshold calculation (meters).
+    """
+
+    validation_pass_rate: float
+    tower_resolution_rate: float
+    unknown_tower_pct_by_operator: dict[str, float] = field(default_factory=dict)
+    kalman_improvement_factor: float = 1.0
+    coordinate_accuracy_results: list[CoordinateAccuracyResult] = field(
+        default_factory=list,
+    )
+    mean_error_m: float = 0.0
+    median_error_m: float = 0.0
+    max_error_m: float = 0.0
+    accuracy_within_threshold_pct: float = 0.0
+    accuracy_threshold_m: float = 500.0
+
+
+def evaluate_coordinate_accuracy(
+    reference_towers: list[dict[str, Any]],
+    computed_towers: list[dict[str, Any]],
+    threshold_m: float = 500.0,
+) -> list[CoordinateAccuracyResult]:
+    """Evaluate computed tower coordinates against known reference coordinates.
+
+    Each reference tower is matched to a computed tower by ``tower_id``.
+    The Haversine distance between reference and computed coordinates is
+    calculated as the error distance.
+
+    Args:
+        reference_towers: List of dicts with keys:
+            ``tower_id``, ``latitude``, ``longitude``.
+        computed_towers: List of dicts with keys:
+            ``tower_id``, ``latitude``, ``longitude``.
+        threshold_m: Accuracy threshold in meters (default 500.0).
+
+    Returns:
+        A list of :class:`CoordinateAccuracyResult` for each matched pair.
+    """
+    computed_map: dict[str, dict[str, Any]] = {
+        str(t.get("tower_id", "")): t for t in computed_towers
+    }
+
+    results: list[CoordinateAccuracyResult] = []
+
+    for ref in reference_towers:
+        tid = str(ref.get("tower_id", ""))
+        if tid not in computed_map:
+            continue
+
+        comp = computed_map[tid]
+
+        ref_lat = float(ref["latitude"])
+        ref_lon = float(ref["longitude"])
+        comp_lat = float(comp["latitude"])
+        comp_lon = float(comp["longitude"])
+
+        error_m = haversine_distance_m(ref_lat, ref_lon, comp_lat, comp_lon)
+
+        results.append(
+            CoordinateAccuracyResult(
+                tower_id=tid,
+                reference_latitude=ref_lat,
+                reference_longitude=ref_lon,
+                computed_latitude=comp_lat,
+                computed_longitude=comp_lon,
+                error_distance_m=round(error_m, 4),
+                is_within_threshold=error_m <= threshold_m,
+            )
+        )
+
+    return results
+
+
+def calculate_validation_pass_rate(
+    validated_records: int,
+    total_records: int,
+) -> float:
+    """Calculate the validation pass rate as a fraction.
+
+    Args:
+        validated_records: Number of records that passed validation.
+        total_records: Total number of records processed.
+
+    Returns:
+        Validation pass rate in ``[0.0, 1.0]``. Returns ``0.0`` if
+        total_records is zero.
+    """
+    if total_records <= 0:
+        return 0.0
+    return round(validated_records / total_records, 6)
+
+
+def calculate_tower_resolution_rate(
+    tower_data: list[dict[str, Any]],
+) -> float:
+    """Calculate the tower resolution rate (Known + Estimated / total).
+
+    Resolution methods are classified as:
+        - **Known**: ``exact``
+        - **Estimated**: ``prefix_lac``, ``prefix_mnc``, ``prefix_mcc``
+        - **Unknown**: ``unresolved`` or missing
+
+    Args:
+        tower_data: List of tower dicts with ``resolution_method`` key.
+
+    Returns:
+        Tower resolution rate in ``[0.0, 1.0]``. Returns ``0.0`` if
+        the tower list is empty.
+    """
+    if not tower_data:
+        return 0.0
+
+    resolved_count = 0
+    for tower in tower_data:
+        method = str(tower.get("resolution_method", "unresolved")).lower()
+        if method in ("exact", "prefix_lac", "prefix_mnc", "prefix_mcc"):
+            resolved_count += 1
+
+    return round(resolved_count / len(tower_data), 6)
+
+
+def calculate_unknown_tower_pct_by_operator(
+    tower_data: list[dict[str, Any]],
+) -> dict[str, float]:
+    """Calculate the unknown tower percentage for each operator.
+
+    Args:
+        tower_data: List of tower dicts with ``operator`` and
+            ``resolution_method`` keys.
+
+    Returns:
+        A dictionary mapping operator name to the percentage of
+        unresolved towers (0.0–100.0).
+    """
+    if not tower_data:
+        return {}
+
+    # Group towers by operator
+    operator_totals: dict[str, int] = {}
+    operator_unknown: dict[str, int] = {}
+
+    for tower in tower_data:
+        operator = str(tower.get("operator", "Unknown"))
+        method = str(tower.get("resolution_method", "unresolved")).lower()
+
+        operator_totals[operator] = operator_totals.get(operator, 0) + 1
+
+        if method not in ("exact", "prefix_lac", "prefix_mnc", "prefix_mcc"):
+            operator_unknown[operator] = operator_unknown.get(operator, 0) + 1
+
+    result: dict[str, float] = {}
+    for operator, total in operator_totals.items():
+        unknown = operator_unknown.get(operator, 0)
+        result[operator] = round((unknown / total) * 100.0, 2)
+
+    return result
+
+
+def calculate_kalman_improvement_factor(
+    raw_errors: list[float],
+    smoothed_errors: list[float],
+) -> float:
+    """Calculate the Kalman improvement factor from raw vs. smoothed errors.
+
+    The improvement factor is defined as::
+
+        factor = mean(raw_errors) / mean(smoothed_errors)
+
+    A factor > 1.0 indicates the Kalman filter improved accuracy.
+    The factor is floored at 1.0 — if smoothing worsened accuracy,
+    the factor is clamped to 1.0 to indicate no improvement.
+
+    Args:
+        raw_errors: List of raw path error distances (meters).
+        smoothed_errors: List of smoothed path error distances (meters).
+
+    Returns:
+        Kalman improvement factor (≥ 1.0). Returns ``1.0`` if either
+        list is empty or the smoothed mean is zero.
+    """
+    if not raw_errors or not smoothed_errors:
+        return 1.0
+
+    mean_raw = statistics.mean(raw_errors)
+    mean_smoothed = statistics.mean(smoothed_errors)
+
+    if mean_smoothed <= 0.0:
+        return 1.0
+
+    factor = mean_raw / mean_smoothed
+    return round(max(1.0, factor), 6)
+
+
+def run_pipeline_benchmarks(
+    *,
+    validated_records: int = 0,
+    total_records: int = 0,
+    tower_data: list[dict[str, Any]] | None = None,
+    reference_towers: list[dict[str, Any]] | None = None,
+    computed_towers: list[dict[str, Any]] | None = None,
+    raw_errors: list[float] | None = None,
+    smoothed_errors: list[float] | None = None,
+    accuracy_threshold_m: float = 500.0,
+) -> BenchmarkMetrics:
+    """Orchestrate all pipeline benchmark calculations.
+
+    This is the primary entry point for running the complete benchmark
+    suite.  All calculations are deterministic and reproducible.
+
+    Args:
+        validated_records: Number of records that passed validation.
+        total_records: Total number of records processed.
+        tower_data: Tower resolution data with ``resolution_method`` and
+            ``operator`` keys.
+        reference_towers: Known reference tower coordinates.
+        computed_towers: Pipeline-computed tower coordinates.
+        raw_errors: Raw path error distances (meters) for Kalman comparison.
+        smoothed_errors: Smoothed path error distances (meters) for Kalman comparison.
+        accuracy_threshold_m: Coordinate accuracy threshold in meters.
+
+    Returns:
+        A :class:`BenchmarkMetrics` instance with all computed metrics.
+    """
+    _tower_data = tower_data or []
+    _reference = reference_towers or []
+    _computed = computed_towers or []
+    _raw_errors = raw_errors or []
+    _smoothed_errors = smoothed_errors or []
+
+    # 1. Validation pass rate
+    pass_rate = calculate_validation_pass_rate(validated_records, total_records)
+
+    # 2. Tower resolution rate
+    resolution_rate = calculate_tower_resolution_rate(_tower_data)
+
+    # 3. Unknown tower percentage by operator
+    unknown_pct = calculate_unknown_tower_pct_by_operator(_tower_data)
+
+    # 4. Kalman improvement factor
+    kalman_factor = calculate_kalman_improvement_factor(_raw_errors, _smoothed_errors)
+
+    # 5. Coordinate accuracy evaluation
+    accuracy_results = evaluate_coordinate_accuracy(
+        _reference, _computed, accuracy_threshold_m,
+    )
+
+    # 6. Aggregate accuracy statistics
+    error_distances = [r.error_distance_m for r in accuracy_results]
+
+    if error_distances:
+        mean_err = round(statistics.mean(error_distances), 4)
+        median_err = round(statistics.median(error_distances), 4)
+        max_err = round(max(error_distances), 4)
+        within_count = sum(1 for r in accuracy_results if r.is_within_threshold)
+        within_pct = round((within_count / len(accuracy_results)) * 100.0, 2)
+    else:
+        mean_err = 0.0
+        median_err = 0.0
+        max_err = 0.0
+        within_pct = 0.0
+
+    return BenchmarkMetrics(
+        validation_pass_rate=pass_rate,
+        tower_resolution_rate=resolution_rate,
+        unknown_tower_pct_by_operator=unknown_pct,
+        kalman_improvement_factor=kalman_factor,
+        coordinate_accuracy_results=accuracy_results,
+        mean_error_m=mean_err,
+        median_error_m=median_err,
+        max_error_m=max_err,
+        accuracy_within_threshold_pct=within_pct,
+        accuracy_threshold_m=accuracy_threshold_m,
+    )
+
