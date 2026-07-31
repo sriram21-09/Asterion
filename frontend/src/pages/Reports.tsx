@@ -1,13 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FileText, Download, BarChart2, Activity, ShieldCheck, Database, Calendar } from 'lucide-react'
 import { useCases } from '@/hooks/useCases'
 import { useScenarios } from '@/hooks/useScenarios'
 import { Button, LoadingSpinner, ErrorCard } from '@/components/ui'
 import { toast } from 'sonner'
+import { reportService, ReportPreviewData } from '@/services/reportService'
 
 export default function Reports() {
   const { data: cases, isLoading: loadingCases, error: caseError } = useCases()
   const { data: scenarios, isLoading: loadingScenarios, error: scenarioError } = useScenarios()
+
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [previewData, setPreviewData] = useState<ReportPreviewData | null>(null)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     document.title = 'Reports — Asterion'
@@ -34,27 +39,53 @@ export default function Reports() {
     }
 
     // Try to pick the most recently updated/active case, or fallback to the first one
-    // In a real app with global state, we'd check `useInvestigationStore().activeCaseId`
     const sortedCases = [...cases].sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
     const caseId = sortedCases[0].id
     
     try {
+      setIsGenerating(true)
       toast.loading('Generating PDF report...', { id: 'pdf-gen' })
       
-      const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8222/api/v1'
-      
-      const res = await fetch(`${baseUrl}/reports/${caseId}/generate?report_type=${backendReportType}`, { method: 'POST' })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.detail || 'Failed to generate report')
-      }
+      const data = await reportService.generateReport(caseId, backendReportType)
+      // Set preview data even if backend returns empty due to stubbed responses
+      setPreviewData(data || {})
       
       toast.success('Report generated successfully!', { id: 'pdf-gen' })
-      
-      window.open(`${baseUrl}/reports/${caseId}/download`, '_blank')
     } catch (error: any) {
       console.error(error)
       toast.error(error.message || 'Failed to generate PDF report', { id: 'pdf-gen' })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleDownload = async () => {
+    if (!cases || cases.length === 0) return
+    const sortedCases = [...cases].sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
+    const caseId = sortedCases[0].id
+
+    try {
+      setDownloading(true)
+      toast.loading('Downloading PDF...', { id: 'pdf-dl' })
+      
+      const blob = await reportService.downloadReport(caseId)
+      
+      // Create a link element, use it to download the blob, and then remove it
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `Asterion_Report_${caseId}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success('Download complete!', { id: 'pdf-dl' })
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Failed to download PDF report', { id: 'pdf-dl' })
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -97,10 +128,11 @@ export default function Reports() {
         <div className="flex space-x-3">
           <Button 
             variant="secondary"
-            onClick={() => handleExport('PDF')}
-            leftIcon={<Download className="w-4 h-4" />}
+            onClick={() => handleExport('Execution Summary')}
+            leftIcon={isGenerating ? <LoadingSpinner size="sm" /> : <FileText className="w-4 h-4" />}
+            disabled={isGenerating}
           >
-            Export PDF
+            Generate Report
           </Button>
           <Button 
             onClick={() => handleExport('CSV')}
@@ -166,15 +198,86 @@ export default function Reports() {
           </div>
         </section>
 
-        {/* Visual Analytics Placeholder */}
-        <section className="bg-surface-primary border border-border-primary rounded-2xl p-6 flex flex-col justify-center items-center text-center space-y-4">
-          <div className="h-24 w-24 rounded-full bg-brand-primary/10 flex items-center justify-center">
-            <BarChart2 className="h-12 w-12 text-brand-primary" />
+        {/* Report Preview Panel */}
+        <section className="bg-surface-primary border border-border-primary rounded-2xl p-6 flex flex-col space-y-4 shadow-sm">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-bold text-content-primary">Report Preview</h3>
+            {previewData && (
+              <Button 
+                onClick={handleDownload} 
+                disabled={downloading}
+                leftIcon={downloading ? <LoadingSpinner size="sm" className="text-current" /> : <Download className="w-4 h-4" />}
+                variant="primary"
+                size="sm"
+                className="shadow-sm"
+              >
+                Download PDF
+              </Button>
+            )}
           </div>
-          <h3 className="text-lg font-bold text-content-primary">Visual Analytics</h3>
-          <p className="text-sm text-content-tertiary">
-            Interactive error mapping and variance charts are currently in development for the Week 3/4 roadmap.
-          </p>
+          
+          {isGenerating ? (
+            <div className="flex flex-col items-center justify-center py-16 space-y-4">
+              <LoadingSpinner size="lg" className="text-brand-primary" />
+              <p className="text-sm text-content-tertiary">Compiling report sections...</p>
+            </div>
+          ) : previewData ? (
+            <div className="space-y-4 flex-1 overflow-y-auto pr-1 animate-fade-in">
+              <div className="bg-surface-secondary rounded-xl p-4 border border-border-secondary">
+                <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center">
+                  <FileText className="w-4 h-4 mr-2 text-brand-secondary"/> Metadata
+                </h4>
+                <div className="text-xs text-content-tertiary grid grid-cols-2 gap-3">
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Case ID:</span> {previewData.metadata?.case_id || 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Type:</span> {previewData.metadata?.report_type || 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Generated:</span> {previewData.metadata?.generated_at ? new Date(previewData.metadata.generated_at).toLocaleString() : 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Status:</span> <span className="text-emerald-500 font-medium">{previewData.metadata?.status || 'Ready'}</span></span>
+                </div>
+              </div>
+              
+              <div className="bg-surface-secondary rounded-xl p-4 border border-border-secondary">
+                <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center">
+                  <ShieldCheck className="w-4 h-4 mr-2 text-emerald-500"/> Validation Summary
+                </h4>
+                <div className="text-xs text-content-tertiary grid grid-cols-3 gap-3">
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Total:</span> {previewData.validation_summary?.total_measurements ?? 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Rejected:</span> {previewData.validation_summary?.rejected ?? 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Pass Rate:</span> {previewData.validation_summary?.pass_rate ? `${previewData.validation_summary.pass_rate}%` : 'N/A'}</span>
+                </div>
+              </div>
+              
+              <div className="bg-surface-secondary rounded-xl p-4 border border-border-secondary">
+                <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center">
+                  <Activity className="w-4 h-4 mr-2 text-blue-500"/> Tower Report
+                </h4>
+                <div className="text-xs text-content-tertiary grid grid-cols-2 gap-3">
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Towers Involved:</span> {previewData.tower_report?.towers_involved ?? 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Sector Coverage:</span> {previewData.tower_report?.sector_coverage ? `${previewData.tower_report.sector_coverage}%` : 'N/A'}</span>
+                </div>
+              </div>
+              
+              <div className="bg-surface-secondary rounded-xl p-4 border border-border-secondary">
+                <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center">
+                  <BarChart2 className="w-4 h-4 mr-2 text-amber-500"/> Movement & Evidence
+                </h4>
+                <div className="text-xs text-content-tertiary grid grid-cols-3 gap-3">
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Distance:</span> {previewData.movement?.estimated_distance_km ? `${previewData.movement.estimated_distance_km} km` : 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Points:</span> {previewData.movement?.points_tracked ?? 'N/A'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Confidence:</span> {previewData.evidence?.confidence_score ? `${previewData.evidence.confidence_score}%` : 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+             <div className="flex flex-col items-center justify-center text-center space-y-4 py-16 h-full border-2 border-dashed border-border-primary rounded-xl">
+               <div className="h-16 w-16 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                 <FileText className="h-8 w-8 text-brand-primary" />
+               </div>
+               <div>
+                 <p className="text-sm font-medium text-content-primary">No report generated</p>
+                 <p className="text-xs text-content-tertiary mt-1">Select a template to generate a preview</p>
+               </div>
+             </div>
+          )}
         </section>
       </div>
     </div>
