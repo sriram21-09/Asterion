@@ -9,7 +9,9 @@ class BenchmarkMetric(BaseModel):
     metric_name: str = Field(..., description="Name of the benchmark metric")
     value: float = Field(..., description="Calculated value for the case")
     threshold: float = Field(..., description="Configured threshold for passing")
-    passed: bool = Field(..., description="Whether the metric meets or exceeds the threshold")
+    passed: bool = Field(
+        ..., description="Whether the metric meets or exceeds the threshold"
+    )
 
 
 class BenchmarkResponse(BaseModel):
@@ -43,11 +45,15 @@ class BenchmarkResponse(BaseModel):
                         "value": 1.5,
                         "threshold": 1.2,
                         "passed": True,
-                    }
-                ]
+                    },
+                ],
             }
         }
     )
 
-    case_passed: bool = Field(..., description="True if all configured benchmark metrics passed")
-    metrics: List[BenchmarkMetric] = Field(..., description="List of individual benchmark metrics")
+    case_passed: bool = Field(
+        ..., description="True if all configured benchmark metrics passed"
+    )
+    metrics: List[BenchmarkMetric] = Field(
+        ..., description="List of individual benchmark metrics"
+    )

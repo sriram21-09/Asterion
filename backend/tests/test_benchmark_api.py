@@ -113,19 +113,19 @@ def test_get_benchmark(setup_benchmark_case):
     res = client.get(f"/api/v1/validation/benchmark/{case_id}")
     assert res.status_code == 200
     data = res.json()
-    
+
     assert "metrics" in data
     assert "case_passed" in data
-    
+
     metrics = {m["metric_name"]: m for m in data["metrics"]}
-    
+
     # 1 valid, 1 invalid -> 50%
     assert metrics["Validation Pass Rate"]["value"] == 50.0
-    
+
     # 1 with lat/lon, 1 without -> 50%
     assert metrics["Tower Resolution Rate"]["value"] == 50.0
     assert metrics["Unknown Tower Percentage"]["value"] == 50.0
-    
+
     # 50.0 / 25.0 -> 2.0
     assert metrics["Kalman Improvement Factor"]["value"] == 2.0
 

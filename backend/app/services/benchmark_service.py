@@ -21,7 +21,9 @@ class BenchmarkService:
             raise HTTPException(status_code=404, detail="Case not found")
 
         # 1. Validation Pass Rate
-        measurements = db.query(Measurement).filter(Measurement.case_id == case_id).all()
+        measurements = (
+            db.query(Measurement).filter(Measurement.case_id == case_id).all()
+        )
         if measurements:
             m_inputs = [
                 MeasurementInput(
@@ -42,12 +44,19 @@ class BenchmarkService:
             validation_pass_rate = 100.0
 
         # 2. Tower Resolution Rate & Unknown Tower Percentage
-        total_cdrs = db.query(func.count(CDRRecord.id)).filter(CDRRecord.case_id == case_id).scalar() or 0
+        total_cdrs = (
+            db.query(func.count(CDRRecord.id))
+            .filter(CDRRecord.case_id == case_id)
+            .scalar()
+            or 0
+        )
         if total_cdrs > 0:
-            resolved_cdrs = db.query(func.count(CDRRecord.id)).filter(
-                CDRRecord.case_id == case_id,
-                CDRRecord.latitude.isnot(None)
-            ).scalar() or 0
+            resolved_cdrs = (
+                db.query(func.count(CDRRecord.id))
+                .filter(CDRRecord.case_id == case_id, CDRRecord.latitude.isnot(None))
+                .scalar()
+                or 0
+            )
             tower_resolution_rate = (resolved_cdrs / total_cdrs) * 100.0
             unknown_tower_percentage = 100.0 - tower_resolution_rate
         else:
@@ -55,13 +64,19 @@ class BenchmarkService:
             unknown_tower_percentage = 0.0
 
         # 3. Kalman Improvement Factor
-        avg_loc_error = db.query(func.avg(LocalizationResult.error_m)).filter(
-            LocalizationResult.case_id == case_id
-        ).scalar() or 0.0
+        avg_loc_error = (
+            db.query(func.avg(LocalizationResult.error_m))
+            .filter(LocalizationResult.case_id == case_id)
+            .scalar()
+            or 0.0
+        )
 
-        avg_track_error = db.query(func.avg(TrackingResult.error_m)).filter(
-            TrackingResult.case_id == case_id
-        ).scalar() or 0.0
+        avg_track_error = (
+            db.query(func.avg(TrackingResult.error_m))
+            .filter(TrackingResult.case_id == case_id)
+            .scalar()
+            or 0.0
+        )
 
         if avg_track_error > 0:
             kalman_improvement_factor = float(avg_loc_error / avg_track_error)
@@ -70,37 +85,46 @@ class BenchmarkService:
 
         metrics = []
 
-        metrics.append(BenchmarkMetric(
-            metric_name="Validation Pass Rate",
-            value=round(validation_pass_rate, 2),
-            threshold=settings.benchmark_min_validation_pass_rate,
-            passed=validation_pass_rate >= settings.benchmark_min_validation_pass_rate
-        ))
+        metrics.append(
+            BenchmarkMetric(
+                metric_name="Validation Pass Rate",
+                value=round(validation_pass_rate, 2),
+                threshold=settings.benchmark_min_validation_pass_rate,
+                passed=validation_pass_rate
+                >= settings.benchmark_min_validation_pass_rate,
+            )
+        )
 
-        metrics.append(BenchmarkMetric(
-            metric_name="Tower Resolution Rate",
-            value=round(tower_resolution_rate, 2),
-            threshold=settings.benchmark_min_tower_resolution_rate,
-            passed=tower_resolution_rate >= settings.benchmark_min_tower_resolution_rate
-        ))
+        metrics.append(
+            BenchmarkMetric(
+                metric_name="Tower Resolution Rate",
+                value=round(tower_resolution_rate, 2),
+                threshold=settings.benchmark_min_tower_resolution_rate,
+                passed=tower_resolution_rate
+                >= settings.benchmark_min_tower_resolution_rate,
+            )
+        )
 
-        metrics.append(BenchmarkMetric(
-            metric_name="Unknown Tower Percentage",
-            value=round(unknown_tower_percentage, 2),
-            threshold=settings.benchmark_max_unknown_tower_percentage,
-            passed=unknown_tower_percentage <= settings.benchmark_max_unknown_tower_percentage
-        ))
+        metrics.append(
+            BenchmarkMetric(
+                metric_name="Unknown Tower Percentage",
+                value=round(unknown_tower_percentage, 2),
+                threshold=settings.benchmark_max_unknown_tower_percentage,
+                passed=unknown_tower_percentage
+                <= settings.benchmark_max_unknown_tower_percentage,
+            )
+        )
 
-        metrics.append(BenchmarkMetric(
-            metric_name="Kalman Improvement Factor",
-            value=round(kalman_improvement_factor, 2),
-            threshold=settings.benchmark_min_kalman_improvement_factor,
-            passed=kalman_improvement_factor >= settings.benchmark_min_kalman_improvement_factor
-        ))
+        metrics.append(
+            BenchmarkMetric(
+                metric_name="Kalman Improvement Factor",
+                value=round(kalman_improvement_factor, 2),
+                threshold=settings.benchmark_min_kalman_improvement_factor,
+                passed=kalman_improvement_factor
+                >= settings.benchmark_min_kalman_improvement_factor,
+            )
+        )
 
         case_passed = all(m.passed for m in metrics)
 
-        return BenchmarkResponse(
-            case_passed=case_passed,
-            metrics=metrics
-        )
+        return BenchmarkResponse(case_passed=case_passed, metrics=metrics)

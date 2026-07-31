@@ -36,16 +36,24 @@ class Settings(BaseModel):
     )
 
     benchmark_min_validation_pass_rate: float = Field(
-        default_factory=lambda: float(os.getenv("BENCHMARK_MIN_VALIDATION_PASS_RATE", "90.0"))
+        default_factory=lambda: float(
+            os.getenv("BENCHMARK_MIN_VALIDATION_PASS_RATE", "90.0")
+        )
     )
     benchmark_min_tower_resolution_rate: float = Field(
-        default_factory=lambda: float(os.getenv("BENCHMARK_MIN_TOWER_RESOLUTION_RATE", "80.0"))
+        default_factory=lambda: float(
+            os.getenv("BENCHMARK_MIN_TOWER_RESOLUTION_RATE", "80.0")
+        )
     )
     benchmark_max_unknown_tower_percentage: float = Field(
-        default_factory=lambda: float(os.getenv("BENCHMARK_MAX_UNKNOWN_TOWER_PERCENTAGE", "20.0"))
+        default_factory=lambda: float(
+            os.getenv("BENCHMARK_MAX_UNKNOWN_TOWER_PERCENTAGE", "20.0")
+        )
     )
     benchmark_min_kalman_improvement_factor: float = Field(
-        default_factory=lambda: float(os.getenv("BENCHMARK_MIN_KALMAN_IMPROVEMENT_FACTOR", "1.2"))
+        default_factory=lambda: float(
+            os.getenv("BENCHMARK_MIN_KALMAN_IMPROVEMENT_FACTOR", "1.2")
+        )
     )
 
     @property
