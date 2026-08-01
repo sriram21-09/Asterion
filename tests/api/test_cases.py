@@ -50,13 +50,6 @@ def client(db_session):
 class TestCaseAPI:
     """API tests for Case endpoints, exception handling, and middleware."""
 
-    def test_cases_router_health(self, client):
-        response = client.get("/api/v1/cases/health")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "healthy"
-        assert data["service"] == "cases-api"
-
     def test_create_case_success(self, client):
         response = client.post(
             "/api/v1/cases/",
@@ -180,7 +173,7 @@ class TestCaseAPI:
         assert "not found" in data["error"]["message"].lower()
 
     def test_logging_middleware_adds_process_time_header(self, client):
-        response = client.get("/api/v1/cases/health")
+        response = client.get("/api/v1/cases/")
         assert response.status_code == 200
         assert "X-Process-Time" in response.headers
         duration_str = response.headers["X-Process-Time"]

@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from app.database.session import get_db
 from app.services.report_service import ReportService
 from app.repositories.case_repository import CaseRepository
+from app.schemas.response import APIResponse
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -16,15 +17,18 @@ class ReportResponse(BaseModel):
     report_path: str
 
 
-@router.post("/{case_id}/generate", response_model=ReportResponse)
+@router.post("/{case_id}/generate", response_model=APIResponse[ReportResponse])
 def generate_report(
     case_id: int, report_type: str = "full", db: Session = Depends(get_db)
 ):
     """Generate a PDF investigation report for the specified case."""
     try:
         report_path = ReportService.generate_pdf_report(db, case_id, report_type)
-        return ReportResponse(
-            message="Report generated successfully", report_path=report_path
+        return APIResponse(
+            success=True,
+            data=ReportResponse(
+                message="Report generated successfully", report_path=report_path
+            ),
         )
     except HTTPException as e:
         raise e

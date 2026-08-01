@@ -1,4 +1,3 @@
-from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.dashboard import DashboardSummary
 from app.schemas.response import APIResponse
@@ -8,19 +7,6 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
-
-
-@router.get(
-    "/health",
-    summary="Dashboard router health check",
-    description="Returns the health status of the dashboard component.",
-)
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "dashboard-api",
-        "version": settings.app_version,
-    }
 
 
 @router.get(

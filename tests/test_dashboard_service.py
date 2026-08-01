@@ -46,14 +46,6 @@ def client(test_db_session):
     app.dependency_overrides.clear()
 
 
-def test_dashboard_health(client):
-    response = client.get("/api/v1/dashboard/health")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "healthy"
-    assert data["service"] == "dashboard-api"
-
-
 def test_get_case_summary_non_existent(test_db_session):
     with pytest.raises(Exception) as exc_info:
         DashboardService.get_case_summary(test_db_session, case_id=99999)

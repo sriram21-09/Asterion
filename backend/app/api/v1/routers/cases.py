@@ -1,4 +1,3 @@
-from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
 from app.schemas.comparison import CaseComparisonResponse
@@ -37,19 +36,6 @@ def list_cases(
 ):
     result = CaseService.list_cases(db, page=page, page_size=page_size)
     return APIResponse(success=True, data=result)
-
-
-@router.get(
-    "/health",
-    summary="Case router health check",
-    description="Returns the health status of the cases component.",
-)
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "cases-api",
-        "version": settings.app_version,
-    }
 
 
 @router.get(

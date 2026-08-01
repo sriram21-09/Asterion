@@ -5,12 +5,14 @@ from app.database.session import get_db
 from app.schemas.benchmark import BenchmarkResponse
 from app.services.benchmark_service import BenchmarkService
 
+from app.schemas.response import APIResponse
+
 router = APIRouter(prefix="/validation", tags=["Validation"])
 
 
 @router.get(
     "/benchmark/{case_id}",
-    response_model=BenchmarkResponse,
+    response_model=APIResponse[BenchmarkResponse],
     summary="Get pipeline validation benchmark metrics",
     description="Calculates and returns benchmark metrics for a specific case.",
 )
@@ -19,4 +21,5 @@ def get_benchmark(
     db: Session = Depends(get_db),
 ):
     """Retrieve benchmark metrics for a given case."""
-    return BenchmarkService.calculate_benchmarks(case_id, db)
+    result = BenchmarkService.calculate_benchmarks(case_id, db)
+    return APIResponse(success=True, data=result)

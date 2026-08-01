@@ -112,8 +112,9 @@ def test_get_benchmark(setup_benchmark_case):
     case_id = setup_benchmark_case
     res = client.get(f"/api/v1/validation/benchmark/{case_id}")
     assert res.status_code == 200
-    data = res.json()
-
+    res_data = res.json()
+    assert res_data["success"] is True
+    data = res_data["data"]
     assert "metrics" in data
     assert "case_passed" in data
 
