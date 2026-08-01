@@ -140,11 +140,8 @@ def verify_benchmark_compliance(
     )
 
     # 3. Per-operator unknown tower percentage
-    operator_checks_pass = True
     for operator, pct in metrics.unknown_tower_pct_by_operator.items():
         op_pass = pct <= cfg.max_unknown_tower_pct_per_operator
-        if not op_pass:
-            operator_checks_pass = False
         checks.append(
             {
                 "name": f"unknown_tower_pct_{operator}",
@@ -163,8 +160,7 @@ def verify_benchmark_compliance(
         {
             "name": "kalman_improvement_factor",
             "passed": (
-                metrics.kalman_improvement_factor
-                >= cfg.min_kalman_improvement_factor
+                metrics.kalman_improvement_factor >= cfg.min_kalman_improvement_factor
             ),
             "actual": metrics.kalman_improvement_factor,
             "threshold": cfg.min_kalman_improvement_factor,
@@ -197,8 +193,7 @@ def verify_benchmark_compliance(
         {
             "name": "accuracy_threshold_alignment",
             "passed": (
-                metrics.accuracy_threshold_m
-                == cfg.coordinate_accuracy_threshold_m
+                metrics.accuracy_threshold_m == cfg.coordinate_accuracy_threshold_m
             ),
             "actual": metrics.accuracy_threshold_m,
             "threshold": cfg.coordinate_accuracy_threshold_m,

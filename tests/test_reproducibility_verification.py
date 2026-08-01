@@ -43,8 +43,8 @@ TOWERS_TRIANGULAR = [
 
 MEASUREMENTS_BASE = [
     Measurement(
-        measurement_id=f"M00{i+1}",
-        tower_id=f"T00{i+1}",
+        measurement_id=f"M00{i + 1}",
+        tower_id=f"T00{i + 1}",
         timestamp=datetime(2026, 7, 1, 10, i, tzinfo=UTC),
         rssi_dbm=-70.0 - i * 5,
         latitude=12.9720,
@@ -146,7 +146,12 @@ class TestSHA256Reproducibility:
     def test_evidence_hash_excludes_hash_fields(self):
         """Hash computation excludes evidence_hash, hash, sha256_hash keys."""
         base = {"scenario_id": "SCN-001", "total": 5}
-        with_hash = {**base, "evidence_hash": "abc123", "hash": "xyz", "sha256_hash": "def"}
+        with_hash = {
+            **base,
+            "evidence_hash": "abc123",
+            "hash": "xyz",
+            "sha256_hash": "def",
+        }
 
         assert compute_evidence_hash(base) == compute_evidence_hash(with_hash)
 
@@ -180,10 +185,14 @@ class TestSHA256Reproducibility:
         """Different parameter strings produce different reproducibility hashes."""
         ids = ["MEAS-001", "MEAS-002"]
         h1 = self._generate_reproducibility_hash(
-            "1.0.0", ids, {"scenario_id": "SCN-001"},
+            "1.0.0",
+            ids,
+            {"scenario_id": "SCN-001"},
         )
         h2 = self._generate_reproducibility_hash(
-            "1.0.0", ids, {"scenario_id": "SCN-999"},
+            "1.0.0",
+            ids,
+            {"scenario_id": "SCN-999"},
         )
         assert h1 != h2
 
@@ -221,16 +230,22 @@ class TestConfidenceScoreBounds:
             measurements=MEASUREMENTS_BASE,
         )
         self._assert_bounded(result)
-        assert result.confidence_score > 0.0, "Well-spread towers should give positive score"
+        assert result.confidence_score > 0.0, (
+            "Well-spread towers should give positive score"
+        )
 
     def test_bounded_single_tower(self):
         """Single tower (insufficient geometry) → score = 0.0."""
         towers = [Tower(tower_id="T001", latitude=12.97, longitude=77.59)]
-        meas = [Measurement(
-            measurement_id="M001", tower_id="T001",
-            timestamp=datetime(2026, 7, 1, 10, 0, tzinfo=UTC),
-            rssi_dbm=-70.0, uncertainty_m=50.0,
-        )]
+        meas = [
+            Measurement(
+                measurement_id="M001",
+                tower_id="T001",
+                timestamp=datetime(2026, 7, 1, 10, 0, tzinfo=UTC),
+                rssi_dbm=-70.0,
+                uncertainty_m=50.0,
+            )
+        ]
         result = compute_confidence("SCN-1T", 12.97, 77.59, towers, meas)
         self._assert_bounded(result)
         assert result.confidence_score == 0.0
@@ -244,9 +259,11 @@ class TestConfidenceScoreBounds:
         ]
         meas = [
             Measurement(
-                measurement_id=f"M{i}", tower_id=f"T00{i+1}",
+                measurement_id=f"M{i}",
+                tower_id=f"T00{i + 1}",
                 timestamp=datetime(2026, 7, 1, 10, i, tzinfo=UTC),
-                rssi_dbm=-70.0, uncertainty_m=50.0,
+                rssi_dbm=-70.0,
+                uncertainty_m=50.0,
             )
             for i in range(3)
         ]
@@ -265,9 +282,11 @@ class TestConfidenceScoreBounds:
         ]
         meas = [
             Measurement(
-                measurement_id=f"M{i}", tower_id=f"T{i:03d}",
+                measurement_id=f"M{i}",
+                tower_id=f"T{i:03d}",
                 timestamp=datetime(2026, 7, 1, 10, i, tzinfo=UTC),
-                rssi_dbm=-65.0, uncertainty_m=40.0,
+                rssi_dbm=-65.0,
+                uncertainty_m=40.0,
             )
             for i in range(10)
         ]
@@ -283,9 +302,11 @@ class TestConfidenceScoreBounds:
         ]
         meas = [
             Measurement(
-                measurement_id=f"M{i}", tower_id=f"T00{i+1}",
+                measurement_id=f"M{i}",
+                tower_id=f"T00{i + 1}",
                 timestamp=datetime(2026, 7, 1, 10, i, tzinfo=UTC),
-                rssi_dbm=-100.0, uncertainty_m=500.0,
+                rssi_dbm=-100.0,
+                uncertainty_m=500.0,
             )
             for i in range(3)
         ]
@@ -295,14 +316,16 @@ class TestConfidenceScoreBounds:
     def test_bounded_coincident_towers(self):
         """Multiple towers at same location → score ∈ [0, 1]."""
         towers = [
-            Tower(tower_id=f"T00{i+1}", latitude=12.970, longitude=77.590)
+            Tower(tower_id=f"T00{i + 1}", latitude=12.970, longitude=77.590)
             for i in range(3)
         ]
         meas = [
             Measurement(
-                measurement_id=f"M{i}", tower_id=f"T00{i+1}",
+                measurement_id=f"M{i}",
+                tower_id=f"T00{i + 1}",
                 timestamp=datetime(2026, 7, 1, 10, i, tzinfo=UTC),
-                rssi_dbm=-70.0, uncertainty_m=50.0,
+                rssi_dbm=-70.0,
+                uncertainty_m=50.0,
             )
             for i in range(3)
         ]
@@ -313,11 +336,19 @@ class TestConfidenceScoreBounds:
         """Confidence level is always one of 'high', 'medium', 'low'."""
         configs = [
             (TOWERS_TRIANGULAR, MEASUREMENTS_BASE, 12.972, 77.595),
-            ([Tower(tower_id="T1", latitude=12.97, longitude=77.59)],
-             [Measurement(measurement_id="M1", tower_id="T1",
-                          timestamp=datetime(2026, 7, 1, tzinfo=UTC),
-                          rssi_dbm=-70.0)],
-             12.97, 77.59),
+            (
+                [Tower(tower_id="T1", latitude=12.97, longitude=77.59)],
+                [
+                    Measurement(
+                        measurement_id="M1",
+                        tower_id="T1",
+                        timestamp=datetime(2026, 7, 1, tzinfo=UTC),
+                        rssi_dbm=-70.0,
+                    )
+                ],
+                12.97,
+                77.59,
+            ),
         ]
         for towers, meas, lat, lon in configs:
             result = compute_confidence("SCN-LVL", lat, lon, towers, meas)
@@ -485,7 +516,10 @@ class TestExtendedDeterminism:
         for i in range(1, 10):
             assert results[i].validation_pass_rate == results[0].validation_pass_rate
             assert results[i].tower_resolution_rate == results[0].tower_resolution_rate
-            assert results[i].kalman_improvement_factor == results[0].kalman_improvement_factor
+            assert (
+                results[i].kalman_improvement_factor
+                == results[0].kalman_improvement_factor
+            )
             assert results[i].mean_error_m == results[0].mean_error_m
             assert results[i].median_error_m == results[0].median_error_m
             assert results[i].max_error_m == results[0].max_error_m
