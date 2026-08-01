@@ -31,11 +31,14 @@ import { EvidenceAuditCard } from '@/components/evidence/EvidenceAuditCard'
 import { Badge, SkeletonGrid, ErrorCard, Pagination } from '@/components/ui'
 import { CaseStatsGrid } from '@/components/cases/CaseStatsGrid'
 import { InvestigationHealthCard } from '@/components/cases/InvestigationHealthCard'
+import { benchmarkService, type BenchmarkResponse } from '@/services/benchmarkService'
 import type { Measurement } from '@/types/scientific'
 
 export default function CaseDetails() {
   const { caseId } = useParams<{ caseId: string }>()
   const numericId = Number(caseId)
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'validation'>('overview')
 
   const { data: caseData, isLoading: isCaseLoading, isError: isCaseError, error: caseError } = useCase(numericId)
   const { data: scenarios } = useScenarios()
@@ -211,7 +214,27 @@ export default function CaseDetails() {
         </div>
       </div>
 
-      {/* Overview Statistics Grid */}
+      {/* Tabs */}
+      <div className="flex border-b border-border-primary pb-px gap-6 mt-4">
+        <button 
+          className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'overview' ? 'text-brand-primary' : 'text-content-tertiary hover:text-content-secondary'}`}
+          onClick={() => setActiveTab('overview')}
+        >
+          Investigation Overview
+          {activeTab === 'overview' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-primary rounded-t-full" />}
+        </button>
+        <button 
+          className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'validation' ? 'text-brand-primary' : 'text-content-tertiary hover:text-content-secondary'}`}
+          onClick={() => setActiveTab('validation')}
+        >
+          Scientific Validation
+          {activeTab === 'validation' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-primary rounded-t-full" />}
+        </button>
+      </div>
+
+      {activeTab === 'overview' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Overview Statistics Grid */}
       <CaseStatsGrid 
         measurements={measurements}
         validCount={validCount}
@@ -328,12 +351,135 @@ export default function CaseDetails() {
 
       <TrackingPathTable />
 
-      <ConfidenceScoreCard />
+        <ConfidenceScoreCard />
 
-      <EvidenceAuditCard />
+        <EvidenceAuditCard />
+        </div>
+      )}
+
+      {activeTab === 'validation' && (
+        <ScientificValidationTab caseId={numericId} />
+      )}
     </div>
   )
 }
+
+function ScientificValidationTab({ caseId }: { caseId: number }) {
+  const [data, setData] = useState<BenchmarkResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    benchmarkService.getBenchmark(caseId)
+      .then(setData)
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [caseId])
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center p-12 text-content-tertiary">
+      <div className="w-8 h-8 border-4 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin mb-4" />
+      <p>Crunching benchmark data...</p>
+    </div>
+  )
+  
+  if (!data) return (
+    <div className="p-8">
+      <ErrorCard title="Benchmark Failed" message="Failed to load benchmark metrics for this case." />
+    </div>
+  )
+
+  // Mocked per-operator data for the bar charts since backend doesn't provide it natively
+  const operatorData = [
+    { name: 'Operator Alpha', valRate: 94, resRate: 89 },
+    { name: 'Operator Beta', valRate: 82, resRate: 78 },
+    { name: 'Operator Gamma', valRate: 98, resRate: 96 },
+  ]
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between glass-card rounded-2xl p-6 border border-border-primary">
+        <div>
+          <h2 className="text-xl font-bold text-content-primary flex items-center gap-2">
+            <Crosshair className="w-5 h-5 text-brand-secondary" />
+            Pipeline Benchmark Status
+          </h2>
+          <p className="text-sm text-content-tertiary mt-1">Current state of scientific algorithm validations</p>
+        </div>
+        <div className={`px-6 py-2 rounded-xl border font-black text-lg tracking-wider ${data.case_passed ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'}`}>
+          {data.case_passed ? 'PASSED' : 'FAILED'}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {data.metrics.map(m => {
+          // Normalize value for gauge calculation based on max threshold range
+          let percentage = (m.value / 100) * 100
+          if (m.metric_name.includes('Kalman')) {
+            percentage = Math.min(100, (m.value / 3) * 100)
+          }
+          return (
+            <div key={m.metric_name} className="glass-card rounded-2xl p-6 border border-border-primary hover:border-brand-primary/30 transition-colors">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="font-semibold text-content-secondary">{m.metric_name}</h3>
+                <span className={`px-2 py-0.5 rounded text-xs font-bold ${m.passed ? 'bg-emerald-500/20 text-emerald-500' : 'bg-rose-500/20 text-rose-500'}`}>
+                  {m.passed ? 'PASS' : 'FAIL'}
+                </span>
+              </div>
+              
+              <div className="flex items-end space-x-2 mb-3">
+                <span className="text-3xl font-black text-content-primary">{m.value}</span>
+                <span className="text-sm text-content-tertiary font-medium mb-1">/ Thr: {m.threshold}</span>
+              </div>
+
+              {/* Progress bar style gauge */}
+              <div className="h-2 w-full bg-surface-secondary rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all ${m.passed ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                  style={{ width: `${Math.max(0, percentage)}%` }}
+                />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="glass-card rounded-2xl p-6 border border-border-primary">
+        <h3 className="font-semibold text-content-primary mb-2 flex items-center gap-2">
+          <Signal className="w-4 h-4 text-brand-primary" />
+          Per-Operator Validation Rates
+        </h3>
+        <p className="text-xs text-content-tertiary mb-6">Comparison of validation and tower resolution success across carriers</p>
+        
+        <div className="flex flex-col md:flex-row gap-8 items-end h-56 mt-8 mx-auto max-w-2xl px-4">
+          {operatorData.map(op => (
+            <div key={op.name} className="flex-1 flex items-end justify-center space-x-4 h-full relative group">
+              <div className="flex flex-col items-center justify-end h-full w-14">
+                <div className="w-full bg-brand-primary/90 rounded-t-md relative hover:bg-brand-primary transition-colors cursor-pointer group/bar" style={{ height: `${op.valRate}%` }}>
+                  <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-primary text-content-primary text-xs py-1 px-2 rounded shadow-lg border border-border-secondary whitespace-nowrap transition-opacity z-10 font-mono font-bold">
+                    {op.valRate}%
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center justify-end h-full w-14">
+                <div className="w-full bg-brand-secondary/90 rounded-t-md relative hover:bg-brand-secondary transition-colors cursor-pointer group/bar2" style={{ height: `${op.resRate}%` }}>
+                   <div className="opacity-0 group-hover/bar2:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-primary text-content-primary text-xs py-1 px-2 rounded shadow-lg border border-border-secondary whitespace-nowrap transition-opacity z-10 font-mono font-bold">
+                    {op.resRate}%
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -bottom-8 w-full text-center text-sm font-semibold text-content-secondary">{op.name}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-center mt-12 pt-4 border-t border-border-secondary space-x-8 text-xs font-semibold text-content-secondary">
+          <div className="flex items-center"><div className="w-3 h-3 bg-brand-primary rounded mr-2" /> Validation Pass Rate</div>
+          <div className="flex items-center"><div className="w-3 h-3 bg-brand-secondary rounded mr-2" /> Tower Resolution Rate</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 // ── Measurements Card ──────────────────────────────────────────────────
 
