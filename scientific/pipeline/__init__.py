@@ -9,6 +9,11 @@ Exports:
     solve_multilateration: NLLS multilateration using scipy.
 """
 
+from scientific.pipeline.benchmark_thresholds import (
+    CALIBRATED_THRESHOLDS,
+    BenchmarkThresholdConfig,
+    verify_benchmark_compliance,
+)
 from scientific.pipeline.benchmarks import (
     BenchmarkMetrics,
     CGIResolver,
@@ -87,6 +92,8 @@ from scientific.pipeline.weighted_centroid import (
 __all__ = [
     "APPROVED_TERMS",
     "BenchmarkMetrics",
+    "BenchmarkThresholdConfig",
+    "CALIBRATED_THRESHOLDS",
     "CGIResolver",
     "CaseComparisonResult",
     "CellOverlapMetrics",
@@ -148,4 +155,5 @@ __all__ = [
     "synthesize_evidence",
     "track_positions",
     "validate_neutral_terminology",
+    "verify_benchmark_compliance",
 ]
