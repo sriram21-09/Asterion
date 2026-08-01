@@ -45,6 +45,7 @@ def client(test_db_session):
         yield c
     app.dependency_overrides.clear()
 
+
 def test_get_case_summary_non_existent(test_db_session):
     with pytest.raises(Exception) as exc_info:
         DashboardService.get_case_summary(test_db_session, case_id=99999)
