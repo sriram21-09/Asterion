@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
 from app.models.base import BaseModel
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -58,3 +58,10 @@ class CDRRecord(BaseModel):
         "ImportJob", back_populates="cdr_records"
     )
     case: Mapped[Optional["Case"]] = relationship("Case", backref="cdr_records")
+
+    __table_args__ = (
+        Index("ix_cdr_records_case_timestamp", "case_id", "timestamp"),
+        Index("ix_cdr_records_case_cgi", "case_id", "first_cgi"),
+        Index("ix_cdr_records_case_imei", "case_id", "imei"),
+        Index("ix_cdr_records_case_target", "case_id", "target_number"),
+    )

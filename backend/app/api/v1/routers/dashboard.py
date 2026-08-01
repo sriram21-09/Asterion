@@ -11,19 +11,6 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 @router.get(
-    "/health",
-    summary="Dashboard router health check",
-    description="Returns the health status of the dashboard component.",
-)
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "dashboard-api",
-        "version": settings.app_version,
-    }
-
-
-@router.get(
     "/{case_id}/summary",
     response_model=APIResponse[DashboardSummary],
     summary="Retrieve case dashboard summary aggregations",

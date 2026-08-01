@@ -43,8 +43,9 @@ def test_report_generation_full(setup_cases):
     case_id = setup_cases["empty"]
     res = client.post(f"/api/v1/reports/{case_id}/generate?report_type=full")
     assert res.status_code == 200
-    data = res.json()
-    assert "report_path" in data
+    res_data = res.json()
+    assert res_data["success"] is True
+    assert "report_path" in res_data["data"]
 
 
 def test_report_generation_evidence_audit(setup_cases):

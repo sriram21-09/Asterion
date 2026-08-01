@@ -40,19 +40,6 @@ def list_cases(
 
 
 @router.get(
-    "/health",
-    summary="Case router health check",
-    description="Returns the health status of the cases component.",
-)
-def health_check():
-    return {
-        "status": "healthy",
-        "service": "cases-api",
-        "version": settings.app_version,
-    }
-
-
-@router.get(
     "/compare",
     response_model=APIResponse[CaseComparisonResponse],
     summary="Compare cases",

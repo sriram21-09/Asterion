@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
 from app.models.base import BaseModel
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -54,3 +54,7 @@ class MovementEvent(BaseModel):
     case: Mapped["Case"] = relationship("Case", back_populates="movement_events")
     cdr_record: Mapped[Optional["CDRRecord"]] = relationship("CDRRecord")
     tracking_result: Mapped[Optional["TrackingResult"]] = relationship("TrackingResult")
+
+    __table_args__ = (
+        Index("ix_movement_events_case_timestamp", "case_id", "timestamp"),
+    )
