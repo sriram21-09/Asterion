@@ -1,4 +1,3 @@
-from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.dashboard import DashboardSummary
 from app.schemas.response import APIResponse

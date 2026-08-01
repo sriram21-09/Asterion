@@ -1,4 +1,3 @@
-from app.core.config import settings
 from app.database.session import get_db
 from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
 from app.schemas.comparison import CaseComparisonResponse
