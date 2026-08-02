@@ -98,7 +98,7 @@ export const useLocalizationStore = create<LocalizationState>()((set) => ({
           confidenceScore = confData.confidence_score;
         }
       } catch (confErr) {
-        if (import.meta.env.DEV) console.warn('Confidence run failed (non-blocking):', confErr);
+        // if (import.meta.env.DEV) console.warn('Confidence run failed (non-blocking):', confErr);
       }
 
       const elapsed = Math.round(performance.now() - startTime);

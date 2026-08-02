@@ -52,7 +52,7 @@ export default function Reports() {
       
       toast.success('Report generated successfully!', { id: 'pdf-gen' })
     } catch (error: any) {
-      console.error(error)
+      // console.error(error)
       toast.error(error.message || 'Failed to generate PDF report', { id: 'pdf-gen' })
     } finally {
       setIsGenerating(false)
@@ -82,7 +82,7 @@ export default function Reports() {
       
       toast.success('Download complete!', { id: 'pdf-dl' })
     } catch (error: any) {
-      console.error(error)
+      // console.error(error)
       toast.error('Failed to download PDF report', { id: 'pdf-dl' })
     } finally {
       setDownloading(false)
