@@ -101,8 +101,8 @@ export default function CaseDetails() {
       clearEvidence()
 
       // Fetch case measurements from DB
-      fetchMeasurements(caseCode).catch((err) => {
-        // if (import.meta.env.DEV) console.warn('No active measurements found for this case yet.', err)
+      fetchMeasurements(caseCode).catch((_err) => {
+        // if (import.meta.env.DEV) console.warn('No active measurements found for this case yet.', _err)
       })
     }
     return () => {

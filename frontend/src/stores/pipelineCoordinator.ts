@@ -41,26 +41,6 @@ export interface PipelineWarning {
   dismissed: boolean;
 }
 
-// ── Pipeline Stage Config ───────────────────────────────────────────────
-
-const STAGE_LABELS: Record<string, string> = {
-  simulating: 'Simulating',
-  validating: 'Validating',
-  localizing: 'Localizing',
-  tracking: 'Tracking',
-  confidence: 'Confidence',
-  evidence: 'Evidence',
-};
-
-const STAGE_ICONS: Record<string, string> = {
-  simulating: '⚡',
-  validating: '🔍',
-  localizing: '📍',
-  tracking: '🛤️',
-  confidence: '🛡️',
-  evidence: '📋',
-};
-
 // ── Store Interface ─────────────────────────────────────────────────────
 
 interface PipelineCoordinatorState {
@@ -171,17 +151,16 @@ export const usePipelineCoordinator = create<PipelineCoordinatorState>()(
       };
 
       const stageIndex = { current: 0 };
-      const totalStages = 6;
 
-      const logStageStart = (stage: string) => {
+      const logStageStart = (_stage: string) => {
         stageIndex.current += 1;
       };
 
-      const logStageSuccess = (detail: string) => {};
+      const logStageSuccess = (_detail: string) => {};
 
-      const logStageWarning = (detail: string) => {};
+      const logStageWarning = (_detail: string) => {};
 
-      const logStageError = (detail: string) => {};
+      const logStageError = (_detail: string) => {};
 
       try {
         // ════════════════════════════════════════════════════════════════
