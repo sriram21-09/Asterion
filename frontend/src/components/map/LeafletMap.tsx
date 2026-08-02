@@ -1,8 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, LayerGroup, Circle } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { HeatmapLayer } from './HeatmapLayer'
+import MarkerClusterGroup from 'react-leaflet-cluster'
 import { useThemeStore } from '@/stores/useThemeStore'
 
 export type ConfidenceTier = 'Known' | 'Estimated' | 'Unknown'
@@ -117,6 +120,58 @@ export function LeafletMap({
   const { theme } = useThemeStore()
   const isDark = theme === 'dark'
 
+  const memoizedCircles = useMemo(() => {
+    if (!showCircles) return null
+    return towers.map((tower) => tower.radius_m ? (
+      <Circle
+        key={`circle-${tower.id}`}
+        center={[tower.lat, tower.lng]}
+        radius={tower.radius_m}
+        pathOptions={{
+          color: tower.confidenceTier === 'Known' ? '#10b981' : tower.confidenceTier === 'Estimated' ? '#f59e0b' : '#ef4444',
+          fillColor: tower.confidenceTier === 'Known' ? '#10b981' : tower.confidenceTier === 'Estimated' ? '#f59e0b' : '#ef4444',
+          fillOpacity: tower.id === selectedTowerId ? 0.25 : 0.05,
+          weight: tower.id === selectedTowerId ? 2 : 1,
+          dashArray: '4, 4'
+        }}
+      />
+    ) : null)
+  }, [towers, showCircles, selectedTowerId])
+
+  const memoizedMarkers = useMemo(() => {
+    if (!showMarkers) return null
+    return towers.map((tower) => {
+      const isSelected = tower.id === selectedTowerId
+      return (
+        <Marker
+          key={tower.id}
+          position={[tower.lat, tower.lng]}
+          icon={ICONS[tower.confidenceTier](isSelected)}
+          eventHandlers={{
+            click: () => onSelectTower?.(tower.id)
+          }}
+        >
+          <Popup>
+            <div className="p-1">
+              <p className="font-bold text-sm mb-1 text-slate-900">{tower.name || tower.id}</p>
+              <p className="text-xs text-gray-600 mb-1">
+                Tier: <span className="font-semibold text-slate-800">{tower.confidenceTier}</span>
+              </p>
+              <p className="text-xs font-mono text-gray-500">
+                {tower.lat.toFixed(4)}, {tower.lng.toFixed(4)}
+              </p>
+              {tower.radius_m && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Radius: {tower.radius_m}m
+                </p>
+              )}
+            </div>
+          </Popup>
+        </Marker>
+      )
+    })
+  }, [towers, showMarkers, selectedTowerId, onSelectTower])
+
   // Dynamic Tile URL based on active theme
   const tileUrl = isDark
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -184,57 +239,18 @@ export function LeafletMap({
         {/* Confidence Circles Layer */}
         {showCircles && (
           <LayerGroup>
-            {towers.map((tower) => tower.radius_m ? (
-              <Circle
-                key={`circle-${tower.id}`}
-                center={[tower.lat, tower.lng]}
-                radius={tower.radius_m}
-                pathOptions={{
-                  color: tower.confidenceTier === 'Known' ? '#10b981' : tower.confidenceTier === 'Estimated' ? '#f59e0b' : '#ef4444',
-                  fillColor: tower.confidenceTier === 'Known' ? '#10b981' : tower.confidenceTier === 'Estimated' ? '#f59e0b' : '#ef4444',
-                  fillOpacity: tower.id === selectedTowerId ? 0.25 : 0.05,
-                  weight: tower.id === selectedTowerId ? 2 : 1,
-                  dashArray: '4, 4'
-                }}
-              />
-            ) : null)}
+            {memoizedCircles}
           </LayerGroup>
         )}
 
-        {/* Tower Markers Layer */}
+        {/* Tower Markers Layer - Clustered */}
         {showMarkers && (
-          <LayerGroup>
-            {towers.map((tower) => {
-              const isSelected = tower.id === selectedTowerId
-              return (
-                <Marker
-                  key={tower.id}
-                  position={[tower.lat, tower.lng]}
-                  icon={ICONS[tower.confidenceTier](isSelected)}
-                  eventHandlers={{
-                    click: () => onSelectTower?.(tower.id)
-                  }}
-                >
-                  <Popup>
-                    <div className="p-1">
-                      <p className="font-bold text-sm mb-1 text-slate-900">{tower.name || tower.id}</p>
-                      <p className="text-xs text-gray-600 mb-1">
-                        Tier: <span className="font-semibold text-slate-800">{tower.confidenceTier}</span>
-                      </p>
-                      <p className="text-xs font-mono text-gray-500">
-                        {tower.lat.toFixed(4)}, {tower.lng.toFixed(4)}
-                      </p>
-                      {tower.radius_m && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Radius: {tower.radius_m}m
-                        </p>
-                      )}
-                    </div>
-                  </Popup>
-                </Marker>
-              )
-            })}
-          </LayerGroup>
+          <MarkerClusterGroup 
+            chunkedLoading
+            maxClusterRadius={50}
+          >
+            {memoizedMarkers}
+          </MarkerClusterGroup>
         )}
       </MapContainer>
     </div>

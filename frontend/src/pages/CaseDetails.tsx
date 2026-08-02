@@ -102,7 +102,7 @@ export default function CaseDetails() {
 
       // Fetch case measurements from DB
       fetchMeasurements(caseCode).catch((err) => {
-        if (import.meta.env.DEV) console.warn('No active measurements found for this case yet.', err)
+        // if (import.meta.env.DEV) console.warn('No active measurements found for this case yet.', err)
       })
     }
     return () => {
@@ -141,7 +141,7 @@ export default function CaseDetails() {
         }
       })
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Simulation run failed:', err)
+      // if (import.meta.env.DEV) console.error('Simulation run failed:', err)
     }
   }
 
@@ -283,7 +283,7 @@ export default function CaseDetails() {
                           window.location.reload()
                         }
                       } catch (e) {
-                        console.error(e)
+                        // console.error(e)
                       }
                     }}
                     className="px-4 py-2.5 bg-brand-primary text-white border border-brand-primary/20 rounded-lg text-sm font-semibold hover:bg-brand-primary/90 transition-all shadow-md"
@@ -371,7 +371,7 @@ function ScientificValidationTab({ caseId }: { caseId: number }) {
   useEffect(() => {
     benchmarkService.getBenchmark(caseId)
       .then(setData)
-      .catch(console.error)
+      // .catch(console.error)
       .finally(() => setLoading(false))
   }, [caseId])
 
