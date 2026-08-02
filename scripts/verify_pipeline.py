@@ -235,7 +235,7 @@ def main():
                 f"{r['confidence_level']} confidence ({r['confidence_score']})"
             )
         else:
-            print(f"  [FAIL] {r['status']}: {r.get('error','')}")
+            print(f"  [FAIL] {r['status']}: {r.get('error', '')}")
 
     elapsed = time.perf_counter() - t0
 
