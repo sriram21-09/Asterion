@@ -377,7 +377,9 @@ The evidence engine (`scientific/pipeline/evidence.py`) generates deterministic 
 ```python
 from scientific.pipeline.evidence import compute_evidence_hash, synthesize_evidence
 
-evidence = synthesize_evidence(scenario_id="SCN-001", towers=towers, measurements=measurements)
+evidence = synthesize_evidence(
+    scenario_id="SCN-001", towers=towers, measurements=measurements
+)
 hash_1 = compute_evidence_hash(evidence)
 hash_2 = compute_evidence_hash(evidence)
 assert hash_1 == hash_2  # Always True — deterministic
