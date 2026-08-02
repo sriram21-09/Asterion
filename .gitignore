@@ -231,9 +231,8 @@ E-Rakshak CDR & Location Data Sets/
 *.docx
 *.xlsx
 *.csv
+!datasets/demo/*.csv
 
-<<<<<<< HEAD
-=======
 # SQLite Databases & Local Storage
 *.db
 *.db-journal
@@ -251,5 +250,3 @@ GSD-STYLE.md
 model_capabilities.yaml
 *.gsd.log
 
-
->>>>>>> 563df9fcb5b395c6734dc2284f99456f989bf468

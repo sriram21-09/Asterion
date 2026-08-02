@@ -1,0 +1,183 @@
+{
+  "verification_timestamp": "2026-08-02T06:19:31.479624+00:00",
+  "pipeline_version": "0.3.0",
+  "total_operators": 4,
+  "passed_operators": 4,
+  "zero_exceptions": true,
+  "total_time_s": 8.9392,
+  "operator_results": [
+    {
+      "operator": "airtel",
+      "filename": "9714499703_Airtel.csv",
+      "status": "PASSED",
+      "detected_operator": "airtel",
+      "parsed_records": 1570,
+      "failed_records": 0,
+      "valid_records": 1560,
+      "total_records": 1570,
+      "quality_grade": "Excellent",
+      "quality_score": 0.9959,
+      "movement_events": 2953,
+      "handover_count": 1383,
+      "smoothed_events": 1570,
+      "unique_towers": 290,
+      "total_measurements": 1570,
+      "evidence_hash": "6bd26e4318bb7828afc672d8d60ce47f9338095d2fba6cd27dc407322959a85b",
+      "hash_deterministic": true,
+      "accepted_measurements": 100,
+      "estimated_lat": 21.062975,
+      "estimated_lon": 73.002034,
+      "confidence_score": 1.0,
+      "confidence_level": "high",
+      "confidence_bounded": true,
+      "gdop": 0.464
+    },
+    {
+      "operator": "bsnl",
+      "filename": "9477523061_BSNL.csv",
+      "status": "PASSED",
+      "detected_operator": "bsnl",
+      "parsed_records": 29,
+      "failed_records": 0,
+      "valid_records": 29,
+      "total_records": 29,
+      "quality_grade": "Excellent",
+      "quality_score": 1.0,
+      "movement_events": 56,
+      "handover_count": 27,
+      "smoothed_events": 29,
+      "unique_towers": 1,
+      "total_measurements": 29,
+      "evidence_hash": "dd84ca6b3662f876532476025422cf7a71327b9eab51af6d3401642738e5629c",
+      "hash_deterministic": true,
+      "accepted_measurements": 29,
+      "estimated_lat": 22.39711,
+      "estimated_lon": 88.43938,
+      "confidence_score": 0.0,
+      "confidence_level": "low",
+      "confidence_bounded": true,
+      "gdop": null
+    },
+    {
+      "operator": "jio",
+      "filename": "9877535365_Jio.csv",
+      "status": "PASSED",
+      "detected_operator": "jio",
+      "parsed_records": 7101,
+      "failed_records": 0,
+      "valid_records": 4928,
+      "total_records": 7101,
+      "quality_grade": "Fair",
+      "quality_score": 0.7292,
+      "movement_events": 10158,
+      "handover_count": 3057,
+      "smoothed_events": 7101,
+      "unique_towers": 845,
+      "total_measurements": 7101,
+      "evidence_hash": "768618c642fe1a7112290b7acf30f8b9748c4ae2a71893b3ff1dc9ccedb6929d",
+      "hash_deterministic": true,
+      "accepted_measurements": 100,
+      "estimated_lat": 20.0,
+      "estimated_lon": 78.0,
+      "confidence_score": 0.0,
+      "confidence_level": "low",
+      "confidence_bounded": true,
+      "gdop": null
+    },
+    {
+      "operator": "vi",
+      "filename": "8980261614_Vi.csv",
+      "status": "PASSED",
+      "detected_operator": "vi",
+      "parsed_records": 4134,
+      "failed_records": 0,
+      "valid_records": 4133,
+      "total_records": 4134,
+      "quality_grade": "Good",
+      "quality_score": 0.9165,
+      "movement_events": 7018,
+      "handover_count": 2884,
+      "smoothed_events": 4134,
+      "unique_towers": 288,
+      "total_measurements": 4134,
+      "evidence_hash": "0f8341b75c95d6ec26219c055c9d90633717778eece2a6d9a85d2d86b7059c1a",
+      "hash_deterministic": true,
+      "accepted_measurements": 100,
+      "estimated_lat": 20.0,
+      "estimated_lon": 78.0,
+      "confidence_score": 0.0,
+      "confidence_level": "low",
+      "confidence_bounded": true,
+      "gdop": null
+    }
+  ],
+  "benchmark_metrics": {
+    "validation_pass_rate": 0.829827,
+    "tower_resolution_rate": 1.0,
+    "kalman_improvement_factor": 1.0,
+    "compliance": {
+      "overall_pass": true,
+      "checks": [
+        {
+          "name": "validation_pass_rate",
+          "passed": true,
+          "actual": 0.829827,
+          "threshold": 0.7,
+          "description": "Validation pass rate \u2265 70%"
+        },
+        {
+          "name": "tower_resolution_rate",
+          "passed": true,
+          "actual": 1.0,
+          "threshold": 0.6,
+          "description": "Tower resolution rate \u2265 60%"
+        },
+        {
+          "name": "unknown_tower_pct_airtel",
+          "passed": true,
+          "actual": 0.0,
+          "threshold": 40.0,
+          "description": "airtel unknown tower % \u2264 40%"
+        },
+        {
+          "name": "unknown_tower_pct_bsnl",
+          "passed": true,
+          "actual": 0.0,
+          "threshold": 40.0,
+          "description": "bsnl unknown tower % \u2264 40%"
+        },
+        {
+          "name": "unknown_tower_pct_jio",
+          "passed": true,
+          "actual": 0.0,
+          "threshold": 40.0,
+          "description": "jio unknown tower % \u2264 40%"
+        },
+        {
+          "name": "unknown_tower_pct_vi",
+          "passed": true,
+          "actual": 0.0,
+          "threshold": 40.0,
+          "description": "vi unknown tower % \u2264 40%"
+        },
+        {
+          "name": "kalman_improvement_factor",
+          "passed": true,
+          "actual": 1.0,
+          "threshold": 1.0,
+          "description": "Kalman improvement factor \u2265 1.0"
+        },
+        {
+          "name": "accuracy_threshold_alignment",
+          "passed": true,
+          "actual": 500.0,
+          "threshold": 500.0,
+          "description": "Accuracy threshold matches calibrated 500m"
+        }
+      ],
+      "total_checks": 8,
+      "passed_checks": 8,
+      "failed_checks": 0
+    }
+  }
+}
