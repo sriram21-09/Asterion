@@ -10,10 +10,10 @@
 
 <p align="center">
 
-![Version](https://img.shields.io/badge/Version-0.2.0-blue?style=flat-square)
-![Status](https://img.shields.io/badge/Status-Scientific%20Release-blue?style=flat-square)
+![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Production%20Release-blue?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-![Tests](https://img.shields.io/badge/Tests-503%20Passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/Tests-905%20Passing-brightgreen?style=flat-square)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)
@@ -99,7 +99,7 @@ Asterion is designed as an **evidence-first investigation platform**. Instead of
 └─────────────┘     └────────────────┘     └──────────────────┘
 ```
 
-**Core capabilities (Version 1.0 target):**
+**Core capabilities (Version 1.0):**
 
 - **Case Management** — Organize investigation cases with metadata and status tracking
 - **Measurement Generation** — Simulate or import telecom signal measurements
@@ -251,9 +251,9 @@ Asterion/
 
 ## 📊 Current Development Status
 
-> **Project Maturity:** Scientific Engine Release — Week 2 Complete
+> **Project Maturity:** Production Release — Week 4 Complete
 
-> **Current Version:** `v0.2.0` — Scientific Release ([Changelog](CHANGELOG.md))
+> **Current Version:** `v1.0.0` — Production Release ([Changelog](CHANGELOG.md))
 
 ### Implementation Status Matrix
 
@@ -282,9 +282,9 @@ Asterion/
 | **Confidence Engine** | ✅ Complete | Week 2 — GDOP and covariance error ellipses |
 | **Evidence Engine** | ✅ Complete | Week 2 — Audit trail and rejection matrices |
 | **Pipeline Runner** | ✅ Complete | Week 2 — End-to-end orchestration |
-| **Interactive Map** | 📅 Planned | Week 3 — Leaflet geospatial visualization |
-| **Report Generator** | 📅 Planned | Week 3–4 — Investigation report export |
-| **Performance Testing** | 📅 Planned | Week 4 — Benchmark and optimization |
+| **Interactive Map** | ✅ Complete | Week 3 — Leaflet geospatial visualization |
+| **Report Generator** | ✅ Complete | Week 3–4 — Investigation report export |
+| **Performance Testing** | ✅ Complete | Week 4 — Benchmark and optimization |
 
 ### Screenshots
 
@@ -385,7 +385,7 @@ The frontend will be available at `http://localhost:3000`.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `APP_NAME` | `Asterion` | Application display name |
-| `APP_VERSION` | `0.2.0` | Current version |
+| `APP_VERSION` | `1.0.0` | Current version |
 | `API_PREFIX` | `/api/v1` | API route prefix |
 | `DATABASE_URL` | `sqlite:///./asterion.db` | SQLite database path |
 | `LOG_LEVEL` | `INFO` | Logging verbosity |
@@ -409,7 +409,7 @@ The frontend will be available at `http://localhost:3000`.
 
 The backend exposes a versioned REST API at `/api/v1`. Interactive documentation is available via Swagger UI at `/docs` when the server is running.
 
-### Implemented Endpoints (v0.2.0)
+### Implemented Endpoints (v1.0.0)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -431,6 +431,12 @@ The backend exposes a versioned REST API at `/api/v1`. Interactive documentation
 | `POST` | `/api/v1/tracking/run` | Run Kalman-smoothed position tracking on stored localization results |
 | `POST` | `/api/v1/confidence/run` | Compute GDOP and error covariance ellipses on localization results |
 | `GET` | `/api/v1/evidence/{case_code}` | Generate comprehensive audit evidence packet for a case |
+| `POST` | `/api/v1/import` | Upload and parse operator CDR files |
+| `GET` | `/api/v1/search` | Search entities across cases and records |
+| `POST` | `/api/v1/reports/{case_id}/generate` | Generate PDF/HTML investigation report |
+| `GET` | `/api/v1/dashboard/stats` | Get high-level system metrics and statistics |
+| `POST` | `/api/v1/movement/reconstruct` | Reconstruct and smooth movement events |
+| `POST` | `/api/v1/towers/resolve` | Resolve missing cell towers via OpenCelliD/fallback |
 
 > All API responses follow a standardized `APIResponse` wrapper with `success`, `data`, and `error` fields.
 
@@ -703,5 +709,5 @@ MIT License · Copyright (c) 2026 Kasukurthi Sriram
 ---
 
 <p align="center">
-  <sub>Built with transparency in mind · Asterion v0.2.0</sub>
+  <sub>Built with transparency in mind · Asterion v1.0.0</sub>
 </p>
