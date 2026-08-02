@@ -14,7 +14,7 @@ Welcome to the **Asterion Scientific Engine** package. This is a standalone, dec
 
 ```text
 scientific/
-├── __init__.py              # Package entrypoint (specifies version 0.2.0)
+├── __init__.py              # Package entrypoint (specifies version 0.3.0)
 ├── config.py                # Frozen SimulationConfig, ValidationThresholds, EnvironmentConfig
 ├── constants.py             # Haversine distance, dB/linear conversions, WGS84, Cellular Bands
 ├── logger.py                # Standardized console logging helper
@@ -314,9 +314,120 @@ pytest
 
 ---
 
-## 🚀 Completed Scientific Engine Features (v0.2.0)
+## 📊 Pipeline Validation Benchmarks
 
-The core scientific and mathematical components are fully implemented and integrated:
+Benchmark metrics are computed by `scientific.pipeline.benchmarks` and verified against calibrated thresholds defined in `scientific.pipeline.benchmark_thresholds`.
+
+### Calibrated Threshold Constants
+
+All thresholds are derived from empirical analysis of the four real operator datasets (Airtel, BSNL, Jio, Vi).
+
+| Threshold Parameter | Config Field | Default | Description |
+| :--- | :--- | :--- | :--- |
+| **Coordinate Accuracy** | `coordinate_accuracy_threshold_m` | `500.0 m` | Maximum acceptable tower coordinate error |
+| **Accuracy Coverage** | `coordinate_accuracy_acceptable_pct` | `80.0%` | Minimum % of towers within accuracy threshold |
+| **Validation Pass Rate** | `min_validation_pass_rate` | `0.70` | Minimum fraction of CDR records passing validation |
+| **Tower Resolution Rate** | `min_tower_resolution_rate` | `0.60` | Minimum fraction of resolved towers (exact + prefix) |
+| **Max Unknown Towers** | `max_unknown_tower_pct_per_operator` | `40.0%` | Maximum unknown tower % for any single operator |
+| **Kalman Improvement** | `min_kalman_improvement_factor` | `1.0` | Kalman smoothing must not degrade accuracy |
+| **Confidence Bounds** | `confidence_score_min / max` | `[0.0, 1.0]` | Strict interval for all confidence scores |
+| **Evidence Hash** | `evidence_hash_length` | `64` | SHA-256 hex digest length |
+
+### Benchmark Metric Definitions
+
+| Metric | Formula | Acceptance |
+| :--- | :--- | :--- |
+| **Validation Pass Rate** | `validated_records / total_records` | ≥ 0.70 |
+| **Tower Resolution Rate** | `(exact + prefix_lac + prefix_mnc + prefix_mcc) / total` | ≥ 0.60 |
+| **Unknown Tower %** | `unresolved / operator_total × 100` | ≤ 40% per operator |
+| **Kalman Improvement Factor** | `mean(raw_errors) / mean(smoothed_errors)` | ≥ 1.0 |
+| **Coordinate Accuracy** | Haversine distance between reference and computed | ≥ 80% within 500 m |
+
+### Running Benchmarks
+
+```python
+from scientific.pipeline.benchmarks import run_pipeline_benchmarks
+from scientific.pipeline.benchmark_thresholds import (
+    CALIBRATED_THRESHOLDS,
+    verify_benchmark_compliance,
+)
+
+metrics = run_pipeline_benchmarks(
+    validated_records=850,
+    total_records=1000,
+    tower_data=tower_resolution_list,
+)
+report = verify_benchmark_compliance(metrics)
+print(report["overall_pass"])  # True / False
+```
+
+---
+
+## 🔐 Evidence & Reproducibility
+
+### SHA-256 Evidence Hashing
+
+The evidence engine (`scientific/pipeline/evidence.py`) generates deterministic SHA-256 tamper-evident hashes for all audit evidence packets:
+
+1. **Hash excludes self-referential keys** (`evidence_hash`, `hash`, `sha256_hash`) to avoid circular dependencies.
+2. **Canonical JSON serialization** with `sort_keys=True` ensures ordering invariance.
+3. **UTF-8 encoding** guarantees platform-independent byte sequences.
+4. **Determinism guarantee**: Identical inputs always produce identical 64-character hex digests.
+
+```python
+from scientific.pipeline.evidence import compute_evidence_hash, synthesize_evidence
+
+evidence = synthesize_evidence(
+    scenario_id="SCN-001", towers=towers, measurements=measurements
+)
+hash_1 = compute_evidence_hash(evidence)
+hash_2 = compute_evidence_hash(evidence)
+assert hash_1 == hash_2  # Always True — deterministic
+assert len(hash_1) == 64  # SHA-256 hex digest
+```
+
+### Confidence Score Clamping
+
+All confidence scores are strictly bounded within the `[0.0, 1.0]` interval via:
+- Exponential decay mapping: $CS = \exp(-0.15 \cdot (GDOP - 1.0))$
+- Post-computation clamping: `max(0.0, min(1.0, score))`
+- Edge-case handling for insufficient towers, collinear geometries, and singular matrices
+
+---
+
+## 📦 Demo Dataset
+
+A curated demonstration dataset is available in `datasets/demo/` containing representative CDR records from all four supported operators.
+
+| File | Operator | Records |
+| :--- | :--- | :--- |
+| `demo_airtel.csv` | Airtel | 25 |
+| `demo_bsnl.csv` | BSNL | 29 (complete) |
+| `demo_jio.csv` | Jio | 25 |
+| `demo_vi.csv` | Vi | 25 |
+| `asterion_demo_dataset.csv` | All operators | ~104 |
+
+### Regeneration
+
+```bash
+python scripts/generate_demo_dataset.py
+```
+
+### Full Pipeline Verification
+
+```bash
+# Run verification script (generates JSON report)
+python scripts/verify_pipeline.py
+
+# Run verification test suite
+pytest tests/scientific/pipeline/test_full_pipeline_verification.py -v
+```
+
+---
+
+## 🚀 Completed Scientific Engine Features (v0.3.0)
+
+All scientific and mathematical components are fully implemented, verified, and benchmarked:
 
 1. **RSSI Signal Generator** (`scientific/simulation/rssi_generator.py`): Simulates log-distance path loss.
 2. **Noise Injection Model** (`scientific/simulation/noise_model.py`): Models shadow fading using standard normal distributions.
@@ -325,8 +436,16 @@ The core scientific and mathematical components are fully implemented and integr
 5. **Quality-Weighted Centroid Fallback** (`scientific/pipeline/weighted_centroid.py`): Multi-factor quality-weighted centroid estimation incorporating RSSI, coordinate validity, tower density, and temporal freshness metrics.
 6. **Movement & Handover Reconstruction** (`scientific/pipeline/movement.py`): Reconstructs chronological movement events, detects cell-sector CGI handovers, calculates travel kinematics (speed, bearing, distance, dwell time), and flags implausible travel velocities (>350 km/h).
 7. **Kalman Position Tracker & Path Smoothing** (`scientific/pipeline/kalman_tracker.py`): Performs 2D constant-velocity smoothing with anomaly dampening and handover preservation.
-8. **GDOP & Covariance confidence estimator** (`scientific/pipeline/confidence.py`): Evaluates geometric errors and 1-sigma error ellipses.
-9. **Evidence Synthesis & Cryptographic Tamper-Proofing** (`scientific/pipeline/evidence.py`): Generates audit evidence packets and computes SHA-256 tamper-evident hashes.
+8. **GDOP & Covariance Confidence Estimator** (`scientific/pipeline/confidence.py`): Evaluates geometric errors and 1-sigma error ellipses.
+9. **Evidence Synthesis & Cryptographic Tamper-Proofing** (`scientific/pipeline/evidence.py`): Generates audit evidence packets with deterministic SHA-256 tamper-evident hashes.
 10. **End-to-End Pipeline Orchestrator** (`scientific/pipeline/runner.py`): Orchestrates simulation, validation, localization, tracking, evidence, and confidence.
-11. **Real Operator Dataset Pipeline Test Suite** (`tests/scientific/pipeline/test_operator_pipeline.py`): Verifies zero-exception pipeline runs across all major operator datasets (Airtel, BSNL, Reliance Jio, Vodafone Idea).
+11. **Pipeline Validation Benchmarks** (`scientific/pipeline/benchmarks.py`): Coordinate accuracy, validation pass rate, tower resolution, Kalman improvement, and per-operator unknown tower metrics.
+12. **Calibrated Benchmark Thresholds** (`scientific/pipeline/benchmark_thresholds.py`): Empirically-calibrated acceptance criteria derived from real operator datasets.
+13. **Heatmap Calculation Engine** (`scientific/pipeline/heatmap.py`): Spatial grid-based aggregation with normalized density, dwell time, confidence, and handover scores.
+14. **Case Comparison Analysis** (`scientific/pipeline/case_comparison.py`): Spatial overlap, velocity trends, and similarity metrics across investigation cases.
+15. **Report Formatter** (`scientific/pipeline/report_formatter.py`): Structured, neutral-language report data components for PDF exports.
+16. **Investigation Summary Generator** (`scientific/pipeline/summary_generator.py`): Professional-grade narrative generation with Section 3F neutral terminology enforcement.
+17. **Real Operator Dataset Pipeline Test Suite** (`tests/scientific/pipeline/test_operator_pipeline.py`): Zero-exception pipeline runs across Airtel, BSNL, Jio, and Vi.
+18. **Full Pipeline Verification Suite** (`tests/scientific/pipeline/test_full_pipeline_verification.py`): Benchmark compliance, hash determinism, and confidence bounds verification.
+19. **Curated Demo Dataset** (`datasets/demo/`): Representative CDR records from all four operators for platform demonstration.
 
