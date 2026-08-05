@@ -88,11 +88,15 @@ class CDRImportService:
         parser = self.get_parser(detected_op)
 
         if case_id is not None:
-            existing_job = db.query(ImportJob).filter(
-                ImportJob.case_id == case_id,
-                ImportJob.filename == file_name,
-                ImportJob.status == "completed"
-            ).first()
+            existing_job = (
+                db.query(ImportJob)
+                .filter(
+                    ImportJob.case_id == case_id,
+                    ImportJob.filename == file_name,
+                    ImportJob.status == "completed",
+                )
+                .first()
+            )
             if existing_job:
                 return {
                     "job": existing_job,
@@ -101,8 +105,8 @@ class CDRImportService:
                         "parsed_records": existing_job.parsed_records,
                         "failed_records": existing_job.failed_records,
                         "status": "duplicate",
-                        "error": "This file has already been imported into this case."
-                    }
+                        "error": "This file has already been imported into this case.",
+                    },
                 }
 
         if case_id is None:
@@ -147,7 +151,8 @@ class CDRImportService:
 
             # Pre-resolve tower coordinates for CGIs without explicit lat/lon
             from app.models.tower import Tower
-            cgi_coords_map: dict[str, tuple[float, float]] = {}
+
+            cgi_coords_map: dict[str, tuple[float | None, float | None]] = {}
             new_towers: list[Tower] = []
 
             for data in records_data:
