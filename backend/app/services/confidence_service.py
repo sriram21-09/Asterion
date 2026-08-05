@@ -62,8 +62,9 @@ class ConfidenceService:
                 status_code=400,
             )
 
-        # 2. Load scenario config from dataset JSON
-        config = ConfidenceService._load_scenario_config(case.scenario_id)
+        # 2. Load scenario config
+        from app.services.scenario_config_helper import load_scenario_config
+        config = load_scenario_config(db, case.scenario_id, case_id)
 
         # 3. Retrieve stored measurements
         db_measurements = MeasurementRepository.get_by_case(db, case_id)

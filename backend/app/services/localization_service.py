@@ -49,57 +49,9 @@ class LocalizationService:
                 status_code=400,
             )
 
-        # 2. Load scenario config from JSON dataset
-        dataset_path = (
-            Path(__file__).resolve().parents[3]
-            / "datasets"
-            / "sample"
-            / "scenario_example.json"
-        )
-        if not dataset_path.exists():
-            raise HTTPException(
-                status_code=500,
-                detail=f"Scenario dataset not found at {dataset_path}",
-            )
-
-        try:
-            with open(dataset_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            configs_list = data.get("scenario_configs", [])
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to read scenario dataset: {e!s}",
-            )
-
-        # Find matching scenario config
-        target_config_dict = None
-        for cfg_dict in configs_list:
-            sc_id_str = cfg_dict.get("scenario_id", "")
-            try:
-                cfg_id_int = int(sc_id_str.split("-")[-1])
-            except (ValueError, IndexError):
-                continue
-            if cfg_id_int == case.scenario_id:
-                target_config_dict = cfg_dict
-                break
-
-        if not target_config_dict:
-            raise ValidationError(
-                "scenario_id",
-                f"Scenario config mapping to scenario ID {case.scenario_id} not found in dataset.",
-                status_code=400,
-            )
-
-        # Parse into ScenarioConfig
-        try:
-            config = ScenarioConfig(**target_config_dict)
-        except Exception as e:
-            raise ValidationError(
-                "scenario_config",
-                f"Failed to parse scenario config: {e!s}",
-                status_code=400,
-            )
+        # 2. Load scenario config (from dataset JSON or dynamically generated from DB data)
+        from app.services.scenario_config_helper import load_scenario_config
+        config = load_scenario_config(db, case.scenario_id, case_id)
 
         # 3. Retrieve stored measurements for the case
         db_measurements = MeasurementRepository.get_by_case(db, case_id)

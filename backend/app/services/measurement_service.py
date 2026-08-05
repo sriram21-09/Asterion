@@ -41,61 +41,10 @@ class MeasurementService:
                 status_code=400,
             )
 
-        # 4. Load the scenario configs from JSON dataset
-        dataset_path = (
-            Path(__file__).resolve().parents[3]
-            / "datasets"
-            / "sample"
-            / "scenario_example.json"
-        )
-        if not dataset_path.exists():
-            raise HTTPException(
-                status_code=500,
-                detail=f"Scenario dataset not found at {dataset_path}",
-            )
-
-        try:
-            with open(dataset_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            configs_list = data.get("scenario_configs", [])
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to read scenario dataset: {e!s}",
-            )
-
-        # 5. Search for the scenario config that matches our scenario_id
-        target_config_dict = None
-        for cfg_dict in configs_list:
-            sc_id_str = cfg_dict.get("scenario_id", "")
-            try:
-                # ponytail: parse ID dynamically based on scenario-code metadata mapping index
-                # e.g., SCN-CFG-001 -> 1
-                cfg_id_int = int(sc_id_str.split("-")[-1])
-            except (ValueError, IndexError):
-                continue
-
-            if cfg_id_int == case.scenario_id:
-                target_config_dict = cfg_dict
-                break
-
-        if not target_config_dict:
-            raise ValidationError(
-                "scenario_id",
-                f"Scenario config mapping to scenario ID {case.scenario_id} not found in dataset.",
-                status_code=400,
-            )
-
-        # 6. Parse into ScenarioConfig and override simulation parameters
-        try:
-            config = ScenarioConfig(**target_config_dict)
-            config.simulation = params
-        except Exception as e:
-            raise ValidationError(
-                "simulation_parameters",
-                f"Failed to validate scenario config or simulation parameters: {e!s}",
-                status_code=400,
-            )
+        # 4. Load scenario config and override simulation parameters
+        from app.services.scenario_config_helper import load_scenario_config
+        config = load_scenario_config(db, case.scenario_id, case_id)
+        config.simulation = params
 
         # 7. Call Chaitanya's engine to generate measurements
         try:

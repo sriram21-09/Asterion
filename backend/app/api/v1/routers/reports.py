@@ -1,5 +1,6 @@
 import os
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Any, Optional
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -15,19 +16,23 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 class ReportResponse(BaseModel):
     message: str
     report_path: str
+    preview: Optional[dict[str, Any]] = None
 
 
 @router.post("/{case_id}/generate", response_model=APIResponse[ReportResponse])
 def generate_report(
     case_id: int, report_type: str = "full", db: Session = Depends(get_db)
 ):
-    """Generate a PDF investigation report for the specified case."""
+    """Generate a PDF investigation report for the specified case and return preview data."""
     try:
         report_path = ReportService.generate_pdf_report(db, case_id, report_type)
+        preview_data = ReportService.get_report_preview(db, case_id, report_type)
         return APIResponse(
             success=True,
             data=ReportResponse(
-                message="Report generated successfully", report_path=report_path
+                message="Report generated successfully",
+                report_path=report_path,
+                preview=preview_data,
             ),
         )
     except HTTPException as e:
@@ -36,6 +41,28 @@ def generate_report(
         raise HTTPException(
             status_code=500, detail=f"Failed to generate report: {str(e)}"
         )
+
+
+@router.get("/{case_id}/preview", response_model=APIResponse[dict[str, Any]])
+def get_report_preview(
+    case_id: int, report_type: str = "full", db: Session = Depends(get_db)
+):
+    """Fetch report preview metrics for the specified case."""
+    preview_data = ReportService.get_report_preview(db, case_id, report_type)
+    return APIResponse(success=True, data=preview_data)
+
+
+@router.get("/export-csv")
+@router.get("/{case_id}/export-csv")
+def export_csv_report(case_id: Optional[int] = None, db: Session = Depends(get_db)):
+    """Export raw CDR & measurement records for a case (or all cases) in CSV format."""
+    csv_content = ReportService.generate_csv_report(db, case_id)
+    filename = f"asterion_raw_export_case_{case_id}.csv" if case_id else "asterion_raw_export_all.csv"
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 @router.get("/{case_id}/download")
@@ -80,3 +107,4 @@ def download_report(case_id: int, db: Session = Depends(get_db)):
         media_type="application/pdf",
         filename=f"asterion_investigation_report_case_{case_id}.pdf",
     )
+

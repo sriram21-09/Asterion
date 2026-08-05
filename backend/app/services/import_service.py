@@ -87,6 +87,24 @@ class CDRImportService:
 
         parser = self.get_parser(detected_op)
 
+        if case_id is not None:
+            existing_job = db.query(ImportJob).filter(
+                ImportJob.case_id == case_id,
+                ImportJob.filename == file_name,
+                ImportJob.status == "completed"
+            ).first()
+            if existing_job:
+                return {
+                    "job": existing_job,
+                    "summary": {
+                        "total_records": existing_job.total_records,
+                        "parsed_records": existing_job.parsed_records,
+                        "failed_records": existing_job.failed_records,
+                        "status": "duplicate",
+                        "error": "This file has already been imported into this case."
+                    }
+                }
+
         if case_id is None:
             new_case = Case(
                 title=f"Import - {file_name}",
@@ -127,6 +145,38 @@ class CDRImportService:
             records_data, failed_count = parser.parse(content)
             total_count = len(records_data) + failed_count
 
+            # Pre-resolve tower coordinates for CGIs without explicit lat/lon
+            from app.models.tower import Tower
+            cgi_coords_map: dict[str, tuple[float, float]] = {}
+            new_towers: list[Tower] = []
+
+            for data in records_data:
+                lat = data.get("latitude")
+                lon = data.get("longitude")
+                cgi = data.get("first_cgi") or data.get("last_cgi")
+
+                if (lat is None or lon is None) and cgi:
+                    if cgi not in cgi_coords_map:
+                        cgi_coords_map[cgi] = (None, None)
+                        new_towers.append(
+                            Tower(
+                                cgi=cgi,
+                                tower_name=f"Cell {cgi}",
+                                latitude=None,
+                                longitude=None,
+                                operator=detected_op or "Unknown",
+                                confidence=0.1,
+                                confidence_category="Unknown",
+                                resolution_method="unresolved",
+                            )
+                        )
+                    resolved_lat, resolved_lon = cgi_coords_map[cgi]
+                    data["latitude"] = resolved_lat
+                    data["longitude"] = resolved_lon
+
+            if new_towers:
+                db.bulk_save_objects(new_towers)
+
             db_records = [
                 CDRRecord(
                     import_job_id=job.id,
@@ -147,21 +197,16 @@ class CDRImportService:
                 lon = data.get("longitude")
                 ts = data.get("timestamp") or now
 
-                # Mock missing coordinates near Bangalore so map displays work
-                if not lat or not lon:
-                    lat = 12.971 + (i * 0.001)
-                    lon = 77.594 + (i * 0.001)
-
                 measurements.append(
                     Measurement(
                         case_id=case_id,
                         scenario_id=None,
                         measurement_code=f"IMP-{job.id}-{i}",
                         timestamp=ts,
-                        rssi_dbm=-75.0,
+                        rssi_dbm=None,
                         latitude=lat,
                         longitude=lon,
-                        uncertainty_m=50.0,
+                        uncertainty_m=None,
                     )
                 )
 
@@ -173,13 +218,15 @@ class CDRImportService:
                         longitude=lon,
                         event_type="movement",
                         sequence_number=i,
-                        speed_kmh=15.0,
-                        confidence=0.85,
+                        speed_kmh=None,
+                        confidence=None,
                     )
                 )
 
-            db.bulk_save_objects(measurements)
-            db.bulk_save_objects(movement_events)
+            if measurements:
+                db.bulk_save_objects(measurements)
+            if movement_events:
+                db.bulk_save_objects(movement_events)
 
             job.total_records = total_count
             job.parsed_records = len(records_data)

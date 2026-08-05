@@ -77,17 +77,24 @@ export default function InvestigationDashboard() {
             const confidenceTier: ConfidenceTier = 
               rssi >= -70 ? 'Known' : rssi >= -90 ? 'Estimated' : 'Unknown'
             
+            // Cluster nearby pings (~10m grid) into distinct cell sites
             const syntheticId = `TWR-${m.latitude.toFixed(4)}-${m.longitude.toFixed(4)}`
             const towerId = m.tower_id || m.tower_code || syntheticId
             
-            towersMap.set(towerId, {
-              id: towerId,
-              name: m.tower_id ? `Tower ${m.tower_id}` : `Cell ${syntheticId}`,
-              lat: m.latitude,
-              lng: m.longitude,
-              confidenceTier,
-              radius_m: m.uncertainty_m || 1000
-            })
+            if (towersMap.has(towerId)) {
+              const existing = towersMap.get(towerId)!
+              ;(existing as any).pingCount = ((existing as any).pingCount || 1) + 1
+            } else {
+              towersMap.set(towerId, {
+                id: towerId,
+                name: m.tower_id ? `Tower ${m.tower_id}` : `Cell ${syntheticId}`,
+                lat: m.latitude,
+                lng: m.longitude,
+                confidenceTier,
+                radius_m: m.uncertainty_m || 1000,
+                pingCount: 1
+              } as any)
+            }
           }
         })
         
@@ -155,7 +162,7 @@ export default function InvestigationDashboard() {
             title: evt.event_type.replace(/_/g, ' ').toUpperCase(),
             description: evt.event_type === 'handover' 
               ? `Handover from ${evt.from_cgi || '—'} to ${evt.to_cgi || '—'}`
-              : `Location update. Speed: ${evt.speed_kmh?.toFixed(1) || 0} km/h, Confidence: ${(evt.confidence * 100)?.toFixed(0) || 100}%`,
+              : `Location update. Speed: ${evt.speed_kmh != null ? evt.speed_kmh.toFixed(1) + ' km/h' : 'Unknown'}, Confidence: ${evt.confidence != null ? (evt.confidence * 100).toFixed(0) + '%' : 'Unknown'}`,
             type: evt.event_type === 'handover' ? 'connection' : 'movement',
             category,
             coordinates: (evt.latitude != null && evt.longitude != null) 
@@ -222,6 +229,9 @@ export default function InvestigationDashboard() {
     const matchesTier = filterTier === 'All' || t.confidenceTier === filterTier
     return matchesSearch && matchesTier
   })
+
+  // Cap visible tower cards in DOM to top 100 for 60fps scrolling
+  const visibleTowers = filteredTowers.slice(0, 100)
 
   // Calculate map center prioritizing towers, then heatmap, then default to Bangalore
   const centerLat = filteredTowers.length > 0 
@@ -295,10 +305,15 @@ export default function InvestigationDashboard() {
             {/* Left Column: Tower Registry Explorer */}
             <div className="lg:col-span-1 bg-surface-primary border border-border-primary rounded-2xl flex flex-col overflow-hidden h-full">
               <div className="p-4 border-b border-border-primary bg-surface-secondary/50">
-                <h2 className="text-lg font-bold text-content-primary mb-4 flex items-center gap-2">
-                  <Signal className="w-5 h-5 text-brand-primary" />
-                  Tower Registry
-                </h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-bold text-content-primary flex items-center gap-2">
+                    <Signal className="w-5 h-5 text-brand-primary" />
+                    Tower Registry
+                  </h2>
+                  <span className="text-xs font-semibold text-content-tertiary bg-surface-primary px-2.5 py-1 rounded-full border border-border-secondary">
+                    {visibleTowers.length} / {filteredTowers.length} Sites
+                  </span>
+                </div>
                 
                 <div className="space-y-3">
                   {/* Search */}
@@ -338,9 +353,10 @@ export default function InvestigationDashboard() {
 
               {/* Tower List */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {filteredTowers.length > 0 ? (
-                  filteredTowers.map(tower => {
+                {visibleTowers.length > 0 ? (
+                  visibleTowers.map(tower => {
                     const isSelected = selectedTowerId === tower.id
+                    const pings = (tower as any).pingCount
                     return (
                       <div 
                         key={tower.id} 
@@ -356,8 +372,13 @@ export default function InvestigationDashboard() {
                           <h3 className="font-bold text-sm text-content-primary">{tower.name}</h3>
                           <TierBadge tier={tower.confidenceTier} />
                         </div>
-                        <div className="text-xs text-content-tertiary font-mono mb-2">
-                          {tower.id}
+                        <div className="flex justify-between items-center text-xs text-content-tertiary font-mono mb-2">
+                          <span>{tower.id}</span>
+                          {pings && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                              {pings} pings
+                            </span>
+                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-xs text-content-secondary mt-3 bg-surface-primary p-2 rounded-lg border border-border-primary">
                           <div>

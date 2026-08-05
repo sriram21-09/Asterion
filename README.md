@@ -611,22 +611,26 @@ npm run build
 
 ---
 
-### Sprint 3 — Visualization & Integration 📅 Planned
+### Sprint 3 — Visualization & Integration ✅ Complete
 
-- [ ] Interactive Leaflet map with tower/device markers
-- [ ] Evidence panel and confidence visualization
-- [ ] Report generation system
-- [ ] Full frontend integration with live backend data
+> **Released as v0.3.0** · [View Changelog](CHANGELOG.md)
+
+- [x] Interactive Leaflet map with tower/device markers
+- [x] Evidence panel and confidence visualization
+- [x] Report generation system
+- [x] Full frontend integration with live backend data
 
 ---
 
-### Sprint 4 — Testing & Release 📅 Planned
+### Sprint 4 — Testing & Release ✅ Complete
 
-- [ ] Performance benchmarking (< 2s localization target)
-- [ ] End-to-end integration tests
-- [ ] Documentation finalization
-- [ ] Demo preparation
-- [ ] Version 1.0 release
+> **Released as v1.0.0** · [View Changelog](CHANGELOG.md)
+
+- [x] Performance benchmarking (<2s localization target)
+- [x] End-to-end integration tests
+- [x] Documentation finalization
+- [x] Demo preparation
+- [x] Version 1.0 release
 
 ---
 

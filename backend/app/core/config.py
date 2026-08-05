@@ -10,7 +10,7 @@ class Settings(BaseModel):
     """Application settings with dynamic environment variable resolution."""
 
     app_name: str = Field(default_factory=lambda: os.getenv("APP_NAME", "Asterion"))
-    app_version: str = Field(default_factory=lambda: os.getenv("APP_VERSION", "0.2.0"))
+    app_version: str = Field(default_factory=lambda: os.getenv("APP_VERSION", "1.0.0"))
     api_prefix: str = Field(default_factory=lambda: os.getenv("API_PREFIX", "/api/v1"))
     database_url: str = Field(
         default_factory=lambda: os.getenv("DATABASE_URL", "sqlite:///./asterion.db")

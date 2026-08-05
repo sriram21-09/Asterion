@@ -204,7 +204,7 @@ export function LeafletMap({
         {/* Tower Markers Layer */}
         {showMarkers && (
           <LayerGroup>
-            {towers.map((tower) => {
+            {towers.slice(0, 150).map((tower) => {
               const isSelected = tower.id === selectedTowerId
               return (
                 <Marker
