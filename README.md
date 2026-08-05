@@ -9,16 +9,14 @@
 </p>
 
 <p align="center">
-
-![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)
-![Status](https://img.shields.io/badge/Status-Production%20Release-blue?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-![Tests](https://img.shields.io/badge/Tests-905%20Passing-brightgreen?style=flat-square)
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
-![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?style=flat-square&logo=typescript&logoColor=white)
-
+  <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square" alt="Version 1.0.0" />
+  <img src="https://img.shields.io/badge/Status-Production%20Release-blue?style=flat-square" alt="Status Production" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License MIT" /></a>
+  <img src="https://img.shields.io/badge/Tests-32%20Passing-brightgreen?style=flat-square" alt="Tests 32 Passing" />
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11+" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/TypeScript-5.2+-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
 </p>
 
 ---
@@ -40,122 +38,112 @@
 - [Contributing](#-contributing)
 - [Team](#-team)
 - [License](#-license)
-- [Acknowledgements](#-acknowledgements)
 
 ---
 
 ## 📌 Project Overview
 
-Asterion is an open-source investigation support platform that demonstrates how multiple cellular tower measurements can be scientifically combined to estimate a device's probable location.
+Asterion is an open-source investigation support platform that demonstrates how multiple cellular tower measurements can be scientifically combined to reconstruct and estimate a device's probable location.
 
-Rather than treating localization as a black box, Asterion emphasizes **explainability** — showing exactly how measurements contribute to localization, how uncertainty is quantified, and why the final estimated position was produced.
+Rather than treating localization as a black box, Asterion emphasizes **explainability and scientific integrity**. If a value (like speed, confidence, or coordinates) cannot be proven by the evidence, Asterion explicitly marks it as **Unknown** rather than fabricating a "clean" output. 
 
-The platform is being developed for **E-Rakshak 2026**, a cybersecurity and digital investigation hackathon organized by the Surat City Police, Sardar Vallabhbhai National Institute of Technology (SVNIT) Surat, and NEXUS. The hackathon focuses on solving real-world law enforcement and cybercrime challenges through technology.
-
-Asterion is designed to serve both as a hackathon-ready MVP and a long-term open-source educational and research platform.
+Asterion was developed for **E-Rakshak 2026**, a cybersecurity and digital investigation hackathon organized by the Surat City Police, SVNIT Surat, and NEXUS. It serves as both a hackathon-ready investigation tool and a long-term open-source educational platform for digital forensics.
 
 ### Who Is This For?
 
 | Audience | Value |
 |----------|-------|
 | **Law Enforcement** | Transparent, evidence-backed location estimation for digital investigations |
-| **Researchers** | Modular scientific engine for studying multilateration algorithms |
+| **Researchers** | Modular scientific engine for studying multilateration and Kalman smoothing |
 | **Students** | Educational platform demonstrating RF signal processing and geospatial analysis |
-| **Developers** | Clean, well-documented codebase following modern engineering practices |
+| **Developers** | Clean, well-documented codebase following modern software engineering practices |
 
 ---
 
 ## 🚨 Problem Statement
 
-Telecommunication records often provide investigators with signal measurements from multiple nearby cellular towers. While individual tower measurements indicate only broad coverage areas, investigations frequently require a more precise estimate of a device's probable location.
+Telecommunication records (CDRs) provide investigators with signal measurements from nearby cellular towers. However, extracting actionable intelligence from these records is extremely difficult.
 
 **Current challenges in telecom-based localization:**
 
 | Challenge | Description |
 |-----------|-------------|
-| **Large search areas** | Single tower coverage areas span hundreds of meters to several kilometers |
-| **Measurement noise** | Signal strength varies due to fading, multipath, and environmental factors |
-| **Interpretation complexity** | Combining measurements from multiple towers requires domain expertise |
-| **Confidence opacity** | Investigators lack visibility into how reliable an estimated location is |
-| **Evidence gaps** | No transparent audit trail explaining why a location was estimated |
+| **Large search areas** | Single tower coverage areas span hundreds of meters to several kilometers. |
+| **Fabricated Evidence** | Commercial tools often silently guess missing data (like coordinates) to make the map look better. |
+| **Measurement noise** | Signal strength varies due to fading, multipath, and environmental factors. |
+| **Confidence opacity** | Investigators lack visibility into how reliable an estimated location actually is. |
 
-Asterion addresses these challenges by combining multiple telecom measurements using scientifically grounded localization techniques while maintaining complete transparency throughout the investigation workflow.
+Asterion addresses these challenges by processing telecom measurements through a rigorous scientific pipeline while maintaining a transparent audit trail.
 
 ---
 
 ## 💡 Solution Overview
 
-Asterion is designed as an **evidence-first investigation platform**. Instead of simply producing a coordinate on a map, the platform provides a complete investigation workflow with full explainability.
+Asterion is an **evidence-first investigation platform**. The platform provides a complete, mathematically defensible workflow from raw CDR import to PDF report generation.
 
-```text
-┌─────────────┐     ┌────────────────┐     ┌──────────────────┐     ┌────────────────┐
-│ Create Case │────▶│ Load / Import  │────▶│ Validate         │────▶│ Estimate       │
-│             │     │ Measurements   │     │ Measurements     │     │ Location (NLLS)│
-└─────────────┘     └────────────────┘     └──────────────────┘     └───────┬────────┘
-                                                                            │
-┌─────────────┐     ┌────────────────┐     ┌──────────────────┐            │
-│ Export      │◀────│ Review         │◀────│ Analyze          │◀───────────┘
-│ Report      │     │ Evidence       │     │ Confidence       │
-└─────────────┘     └────────────────┘     └──────────────────┘
+```mermaid
+graph LR
+    A[Import CDR] --> B[Validate]
+    B --> C[Normalize]
+    C --> D[Localization NLLS]
+    D --> E[Kalman Tracker]
+    E --> F[Confidence GDOP]
+    F --> G[Dashboard / Report]
 ```
 
-**Core capabilities (Version 1.0):**
+**Core capabilities (v1.0.0):**
 
-- **Case Management** — Organize investigation cases with metadata and status tracking
-- **Measurement Generation** — Simulate or import telecom signal measurements
-- **Measurement Validation** — Reject corrupt or out-of-range measurements with detailed error reporting
-- **Multilateration (NLLS)** — Estimate device position using Non-Linear Least Squares optimization
-- **Movement Tracking** — Smooth sequential position estimates using a 2D Kalman Filter
-- **Confidence Estimation** — Quantify localization reliability using GDOP and covariance analysis
-- **Evidence Packaging** — Generate audit trails mapping every input to every output
-- **Report Generation** — Produce investigation-ready summary reports
-
-> **Design Principle:** Asterion supports investigators through _transparent decision support_ rather than automated decision making. Every result includes the mathematical reasoning behind it.
+- **Case Management** — Organize investigations with case isolation and duplicate file detection.
+- **Data Ingestion** — Import and validate raw operator CDR files.
+- **Multilateration** — Estimate position using a Quality-Weighted Centroid and Non-Linear Least Squares.
+- **Movement Tracking** — Smooth sequential position estimates and prevent chronological drift using a 2D Kalman Filter.
+- **Confidence Estimation** — Quantify reliability using Geometric Dilution of Precision (GDOP) and covariance.
+- **Scientific Integrity** — Strict enforcement of `null` state propagation. Unknown towers map to "Unresolved", unknown speed maps to "Unknown", and missing confidence maps to "N/A".
+- **Reporting** — Generate comprehensive, court-ready PDF investigation reports.
 
 ---
 
 ## 🏗️ Architecture
 
-Asterion follows a **Layered Modular Monolith Architecture**, allowing independent development of core subsystems while keeping deployment simple for the MVP phase.
+Asterion utilizes a **Layered Modular Monolith Architecture**, allowing independent development of core subsystems while keeping deployment simple.
 
-```text
-┌──────────────────────────────────────────────────────────────────┐
-│                    React Investigation UI                        │
-│           Dashboard · Cases · Scenarios · Reports                │
-└──────────────────────────────▲───────────────────────────────────┘
-                               │ REST API (JSON)
-┌──────────────────────────────▼───────────────────────────────────┐
-│                       FastAPI Backend                             │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
-│  │ Case Manager │  │ Scenario Svc │  │ Exception Handlers   │   │
-│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
-│  │ Repositories │  │ Middleware   │  │ Response Wrappers    │   │
-│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
-└──────────────────────────────▲───────────────────────────────────┘
-                               │
-┌──────────────────────────────▼───────────────────────────────────┐
-│               Scientific Computation Core                        │
-│                                                                  │
-│   Constants · Config · Models · Validators                       │
-│   Simulator → NLLS → Kalman → Confidence → Evidence              │
-└──────────────────────────────▲───────────────────────────────────┘
-                               │
-┌──────────────────────────────▼───────────────────────────────────┐
-│                     SQLite Database                               │
-│         Cases · Scenarios · Towers · Measurements                │
-│         Localization Results · Tracking · Confidence              │
-└──────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Frontend [React / Vite SPA]
+        UI[Dashboard & Map]
+        State[Zustand Store]
+    end
+
+    subgraph API [FastAPI Backend]
+        Router[API Routers]
+        Import[Import Service]
+        Pipeline[Scientific Service]
+    end
+
+    subgraph Scientific [Decoupled Scientific Engine]
+        Val[Validator]
+        Norm[Normalizer]
+        Loc[NLLS / Centroid]
+        Kalman[Kalman Tracker]
+        Conf[GDOP]
+    end
+
+    subgraph Database [SQLAlchemy]
+        DB[(SQLite)]
+    end
+
+    Frontend <-->|REST / JSON| API
+    Router --> Import
+    Router --> Pipeline
+    Pipeline --> Scientific
+    Import --> DB
+    Pipeline --> DB
 ```
 
 **Key architectural decisions:**
-
-- **Repository-Service-Router pattern** — Clean separation between data access, business logic, and HTTP concerns
-- **Decoupled Scientific Engine** — The `scientific/` package operates independently of FastAPI and can be used in notebooks, scripts, or batch pipelines
-- **Frozen configuration** — All scientific parameters use immutable dataclasses to prevent side effects
-- **Business identifier strategy** — APIs expose human-readable codes (`CASE-001`, `SCN-001`) instead of raw database IDs
+- **Repository-Service-Router pattern** — Clean separation of concerns in the FastAPI backend.
+- **Decoupled Scientific Engine** — The `scientific/` package operates independently of FastAPI and can be imported into Jupyter Notebooks or batch processing scripts.
+- **Strict Data Validation** — Pydantic v2 enforces boundary conditions before any scientific computation begins.
 
 ---
 
@@ -163,20 +151,15 @@ Asterion follows a **Layered Modular Monolith Architecture**, allowing independe
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Frontend** | React 19, TypeScript 6, Vite 8 | Single-page investigation dashboard |
+| **Frontend** | React 19, TypeScript 5.2+, Vite 5 | Single-page investigation dashboard |
 | **Styling** | Tailwind CSS 4 | Responsive design with dark mode support |
 | **State Management** | Zustand | Lightweight client-side state |
-| **Routing** | React Router 7 | Client-side page navigation |
-| **Data Fetching** | TanStack React Query, Axios | Server state management and HTTP client |
 | **Mapping** | Leaflet + React-Leaflet | Interactive geospatial visualization |
 | **Backend** | FastAPI, Uvicorn | High-performance async REST API |
 | **ORM** | SQLAlchemy 2, Alembic | Database models and migrations |
-| **Validation** | Pydantic v2 | Request/response schema validation |
 | **Scientific** | NumPy, SciPy | Numerical computation and optimization |
-| **Database** | SQLite | Lightweight embedded database |
-| **Containerization** | Docker, Docker Compose | Multi-service orchestration |
+| **Database** | SQLite | Lightweight embedded database (MVP phase) |
 | **CI/CD** | GitHub Actions | Automated testing and linting |
-| **Linting** | Ruff, Black (Python) · OxLint (TypeScript) | Code quality enforcement |
 
 ---
 
@@ -185,110 +168,47 @@ Asterion follows a **Layered Modular Monolith Architecture**, allowing independe
 ```text
 Asterion/
 ├── backend/                    # FastAPI Python backend
+│   ├── alembic/                # Database migration scripts
 │   ├── app/
 │   │   ├── api/v1/routers/     # REST API route handlers
-│   │   ├── core/               # Application configuration
-│   │   ├── database/           # Database session and base model registration
-│   │   ├── exceptions/         # Global exception handlers
-│   │   ├── middleware/         # Request logging and timing middleware
-│   │   ├── models/             # SQLAlchemy ORM models (Case, Scenario, Tower)
-│   │   ├── repositories/      # Data access layer
+│   │   ├── database/           # Database session and base models
+│   │   ├── models/             # SQLAlchemy ORM models
+│   │   ├── repositories/       # Data access layer
 │   │   ├── schemas/            # Pydantic request/response schemas
-│   │   ├── services/           # Business logic layer
-│   │   └── shared/             # Shared utilities
-│   ├── alembic/                # Database migration scripts
-│   ├── tests/                  # Backend unit and integration tests
-│   ├── main.py                 # Application entry point
-│   ├── requirements.txt        # Python dependencies
-│   └── .env.example            # Environment variable template
+│   │   └── services/           # Business logic layer
+│   ├── tests/                  # Backend and red team tests
+│   └── main.py                 # Application entry point
 │
 ├── frontend/                   # React + TypeScript + Vite frontend
 │   ├── src/
 │   │   ├── components/         # Reusable UI components
-│   │   │   ├── cases/          # Case management components
-│   │   │   ├── layout/         # Header, Sidebar shell
-│   │   │   ├── scenarios/      # Scenario management components
-│   │   │   └── ui/             # Button, Badge, Loading, Dialog, etc.
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── layouts/            # Dashboard layout shell
-│   │   ├── lib/                # Utility helpers
 │   │   ├── pages/              # Route-level page components
 │   │   ├── services/           # Axios API client layer
-│   │   ├── stores/             # Zustand state management
-│   │   └── types/              # TypeScript type definitions
-│   ├── package.json            # Node.js dependencies
-│   └── .env.example            # Frontend environment template
+│   │   └── stores/             # Zustand state management
 │
 ├── scientific/                 # Standalone scientific computation engine
-│   ├── config.py               # Frozen simulation & validation thresholds
-│   ├── constants.py            # Physical, RF, geodesy, and cellular constants
-│   ├── logger.py               # Standardized logging wrapper
-│   ├── models/                 # Pydantic data models (Tower, Measurement, Scenario)
-│   ├── validation/             # Domain validators (coordinates, RSSI, TA, RF)
-│   ├── simulation/             # Signal propagation and noise generation (Week 2)
-│   └── pipeline/               # Localization solver pipeline (Week 2)
+│   ├── models/                 # Pydantic domain models
+│   ├── pipeline/               # Localization solver pipeline
+│   └── validation/             # Domain validators
 │
-├── datasets/                   # Sample and test datasets
-│   └── sample/                 # Bangalore-area sample scenarios (JSON)
-│
-├── docker/                     # Dockerfiles for backend and frontend
+├── datasets/                   # Sample and test datasets (CDR files)
 ├── docker-compose.yml          # Multi-service orchestration
-├── scripts/                    # Utility and demo scripts
-├── tests/                      # Cross-module integration tests
-├── docs/                       # Project documentation
-├── Plans/                      # Sprint planning documents
-├── automation/                 # Sprint automation engine and configs
-│
-├── .github/workflows/ci.yml    # GitHub Actions CI pipeline
-├── CHANGELOG.md                # Version history
-├── CONTRIBUTING.md             # Contribution guidelines
-├── CODE_OF_CONDUCT.md          # Community standards
-├── SECURITY.md                 # Vulnerability reporting policy
-└── LICENSE                     # MIT License
+└── .github/workflows/          # CI/CD pipelines
 ```
 
 ---
 
 ## 📊 Current Development Status
 
-> **Project Maturity:** Production Release — Week 4 Complete
+> **Current Version:** `v1.0.0` — Production Release 
 
-> **Current Version:** `v1.0.0` — Production Release ([Changelog](CHANGELOG.md))
+Asterion v1.0.0 successfully completed a rigorous **Red Team Engineering Audit**, resulting in the complete removal of fabricated metrics and the implementation of a mathematically honest tracking pipeline.
 
-### Implementation Status Matrix
-
-| Component | Status | Details |
-|-----------|--------|---------|
-| **Project Vision & Requirements** | ✅ Complete | Project charter, PRD, and SRS finalized |
-| **Architecture Design** | ✅ Complete | HLD, system design, and API contracts frozen |
-| **Backend Foundation** | ✅ Complete | FastAPI app with Repository-Service-Router pattern |
-| **Case Management API** | ✅ Complete | Full CRUD endpoints for investigation cases |
-| **Scenario Management API** | ✅ Complete | Full CRUD endpoints for localization scenarios |
-| **Tower Management** | ✅ Complete | ORM model, migrations, and database storage |
-| **Database Foundation** | ✅ Complete | SQLAlchemy models, Alembic migrations, SQLite |
-| **Global Error Handling** | ✅ Complete | Centralized exception filters and JSON response wrappers |
-| **Request Logging** | ✅ Complete | Duration-logging middleware for all API requests |
-| **Frontend Dashboard** | ✅ Complete | Responsive shell with sidebar, header, dark mode |
-| **Cases UI** | ✅ Complete | CRUD interface for case management |
-| **Scenarios UI** | ✅ Complete | CRUD interface for scenario management |
-| **Scientific Package** | ✅ Complete | Constants, config, models, validators — fully decoupled |
-| **CI/CD Pipeline** | ✅ Complete | GitHub Actions running backend tests + frontend lint/build |
-| **Docker Environment** | ✅ Complete | Docker Compose with health checks for both services |
-| **Test Suite** | ✅ Complete | 503 passing tests across all modules |
-| **Measurement Simulator** | ✅ Complete | Week 2 — RSSI signal generation and noise models |
-| **Measurement Validation API** | ✅ Complete | Week 2 — REST endpoint for measurement validation |
-| **Localization Engine (NLLS)** | ✅ Complete | Week 2 — Non-Linear Least Squares multilateration |
-| **Tracking Engine (Kalman)** | ✅ Complete | Week 2 — 2D constant-velocity Kalman Filter |
-| **Confidence Engine** | ✅ Complete | Week 2 — GDOP and covariance error ellipses |
-| **Evidence Engine** | ✅ Complete | Week 2 — Audit trail and rejection matrices |
-| **Pipeline Runner** | ✅ Complete | Week 2 — End-to-end orchestration |
-| **Interactive Map** | ✅ Complete | Week 3 — Leaflet geospatial visualization |
-| **Report Generator** | ✅ Complete | Week 3–4 — Investigation report export |
-| **Performance Testing** | ✅ Complete | Week 4 — Benchmark and optimization |
-
-### Screenshots
-
-> 📸 **Screenshots will be added as the frontend matures.** The current dashboard includes a responsive dark-mode shell with sidebar navigation, case management CRUD, scenario management CRUD, and system status cards.
+**Core Achievements:**
+- ✅ **Null Propagation:** System safely handles unresolved cell towers and unknown speeds without crashing.
+- ✅ **Kalman Filter Integrity:** System explicitly rejects chronological impossibilities (negative time deltas).
+- ✅ **Idempotent Ingestion:** Prevents duplicate dataset imports per case.
+- ✅ **Explainable Dashboard:** The frontend explicitly renders missing data as "N/A" or "Unknown", refusing to display misleading "100% confidence" when data is absent.
 
 ---
 
@@ -301,25 +221,17 @@ Asterion/
 | **Git** | Any recent version | Repository cloning |
 | **Python** | 3.11+ | Backend and scientific engine |
 | **Node.js** | 20+ | Frontend build tooling |
-| **Docker Desktop** | Latest (optional) | Containerized deployment |
+| **Docker** | Latest (optional) | Containerized deployment |
 
 ### Option 1: Docker Compose (Recommended)
 
 ```bash
-# Clone the repository
 git clone https://github.com/sriram21-09/Asterion.git
 cd Asterion
-
-# Start all services
 docker compose up --build
 ```
-
-| Service | URL |
-|---------|-----|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8222 |
-| API Docs (Swagger) | http://localhost:8222/docs |
-| Health Check | http://localhost:8222/api/v1/health |
+- Dashboard: `http://localhost:3000`
+- API Docs: `http://localhost:8222/docs`
 
 ### Option 2: Manual Setup
 
@@ -327,80 +239,25 @@ docker compose up --build
 <summary><strong>Backend Setup</strong></summary>
 
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Create and activate virtual environment
 python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
-
-# Install dependencies
+# Windows: .venv\Scripts\activate | Unix: source .venv/bin/activate
 pip install -r requirements.txt
-
-# Copy environment template
 cp .env.example .env
-
-# Run database migrations
 alembic upgrade head
-
-# Start the development server
 uvicorn main:app --reload --port 8222
 ```
-
-The backend will be available at `http://localhost:8222`.
-
 </details>
 
 <details>
 <summary><strong>Frontend Setup</strong></summary>
 
 ```bash
-# Navigate to frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Copy environment template
 cp .env.example .env
-
-# Start the development server
 npm run dev
 ```
-
-The frontend will be available at `http://localhost:3000`.
-
-</details>
-
-### Environment Variables
-
-<details>
-<summary><strong>Backend (.env)</strong></summary>
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `APP_NAME` | `Asterion` | Application display name |
-| `APP_VERSION` | `1.0.0` | Current version |
-| `API_PREFIX` | `/api/v1` | API route prefix |
-| `DATABASE_URL` | `sqlite:///./asterion.db` | SQLite database path |
-| `LOG_LEVEL` | `INFO` | Logging verbosity |
-| `DEBUG` | `False` | Debug mode toggle |
-| `CORS_ORIGINS` | `*` | Allowed CORS origins |
-
-</details>
-
-<details>
-<summary><strong>Frontend (.env)</strong></summary>
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VITE_API_BASE_URL` | `http://localhost:8222/api/v1` | Backend API base URL |
-
 </details>
 
 ---
@@ -409,275 +266,67 @@ The frontend will be available at `http://localhost:3000`.
 
 The backend exposes a versioned REST API at `/api/v1`. Interactive documentation is available via Swagger UI at `/docs` when the server is running.
 
-### Implemented Endpoints (v1.0.0)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/` | Service status and version |
-| `GET` | `/api/v1/health` | Health check |
-| `GET` | `/api/v1/cases` | List all investigation cases |
-| `POST` | `/api/v1/cases` | Create a new case |
-| `GET` | `/api/v1/cases/{id}` | Get case by ID |
-| `PUT` | `/api/v1/cases/{id}` | Update a case |
-| `DELETE` | `/api/v1/cases/{id}` | Delete a case |
-| `GET` | `/api/v1/scenarios` | List all scenarios |
-| `POST` | `/api/v1/scenarios` | Create a new scenario |
-| `GET` | `/api/v1/scenarios/{id}` | Get scenario by ID |
-| `PUT` | `/api/v1/scenarios/{id}` | Update a scenario |
-| `DELETE` | `/api/v1/scenarios/{id}` | Delete a scenario |
-| `POST` | `/api/v1/simulation/generate` | Generate synthetic signal strength measurements for a scenario |
-| `POST` | `/api/v1/measurements/validate` | Validate a batch of measurements against physical/logical rules |
-| `POST` | `/api/v1/localization/run` | Run non-linear least squares (NLLS) multilateration on stored measurements |
-| `POST` | `/api/v1/tracking/run` | Run Kalman-smoothed position tracking on stored localization results |
-| `POST` | `/api/v1/confidence/run` | Compute GDOP and error covariance ellipses on localization results |
-| `GET` | `/api/v1/evidence/{case_code}` | Generate comprehensive audit evidence packet for a case |
-| `POST` | `/api/v1/import` | Upload and parse operator CDR files |
-| `GET` | `/api/v1/search` | Search entities across cases and records |
-| `POST` | `/api/v1/reports/{case_id}/generate` | Generate PDF/HTML investigation report |
-| `GET` | `/api/v1/dashboard/stats` | Get high-level system metrics and statistics |
-| `POST` | `/api/v1/movement/reconstruct` | Reconstruct and smooth movement events |
-| `POST` | `/api/v1/towers/resolve` | Resolve missing cell towers via OpenCelliD/fallback |
-
-> All API responses follow a standardized `APIResponse` wrapper with `success`, `data`, and `error` fields.
+**Key Endpoints:**
+- `POST /api/v1/import` — Upload and parse operator CDR files.
+- `POST /api/v1/localization/run` — Run NLLS multilateration.
+- `POST /api/v1/tracking/run` — Run Kalman-smoothed position tracking.
+- `GET /api/v1/evidence/{case_code}` — Generate a comprehensive audit packet.
+- `POST /api/v1/reports/{case_id}/generate` — Generate investigation reports.
 
 ---
 
 ## 🔬 Scientific Engine
 
-The `scientific/` package is a **standalone, decoupled Python package** for telecom localization computation. It has no dependency on FastAPI or the database and can be imported independently in notebooks, research scripts, or batch pipelines.
+The `scientific/` package is decoupled from the web application framework. 
 
-### Package Overview
+### Pipeline Components
 
-| Module | Purpose |
-|--------|---------|
-| `constants.py` | Physical constants (speed of light, Boltzmann), WGS84 geodesy, Haversine distance, cellular frequency bands, RSSI quality tiers, timing advance resolution |
-| `config.py` | Frozen dataclasses: `SimulationConfig`, `ValidationThresholds`, `EnvironmentConfig` with propagation presets for urban/suburban/rural/highway |
-| `logger.py` | Idempotent console logging wrapper using standard library `logging` |
-| `models/` | Pydantic v2 schemas: `Tower`, `Measurement`, `Scenario`, `ScenarioConfig`, `LocalizationResult`, `ConfidenceResult` |
-| `validation/` | Domain validators: coordinate bounds, RSSI plausibility, TA↔RSSI consistency, referential integrity |
+1. **Validation Engine:** Enforces coordinate bounds, RF constraints, and chronological consistency.
+2. **NLLS Multilateration:** Uses `scipy.optimize.least_squares` alongside a Quality-Weighted Centroid fallback.
+3. **Kalman Tracker:** A 2D constant-velocity state estimation filter that smooths erratic signal jumps.
+4. **Confidence Engine:** Computes Geometric Dilution of Precision (GDOP) and covariance error ellipses.
 
-### Quick Example
-
-```python
-from scientific.models.tower import Tower
-from scientific.models.measurement import Measurement
-from scientific.models.scenario import Scenario
-from scientific.validation.validators import ScenarioValidator
-
-# Define a cell tower
-tower = Tower(
-    tower_id="T001",
-    latitude=12.9716,
-    longitude=77.5946,
-    transmit_power_dbm=43.0,
-    antenna_height_m=30.0,
-    coverage_radius_m=1000.0,
-    frequency_mhz=1800.0,
-)
-
-# Define a measurement
-measurement = Measurement(
-    tower_id="T001",
-    timestamp="2026-07-12T10:00:00Z",
-    rssi=-75.0,
-    timing_advance=2,
-)
-
-# Create and validate a scenario
-scenario = Scenario(
-    scenario_id="S001",
-    name="Bangalore Core Test",
-    towers=[tower],
-    measurements=[measurement],
-)
-
-validator = ScenarioValidator()
-result = validator.validate(scenario)
-print(f"Valid: {result.is_valid}")  # Valid: True
-```
-
-### Scientific Pipeline Architecture
-
-```text
-ScenarioConfig
-     │
-     ▼
-RSSI Signal Generator ─── Log-distance path-loss model
-     │
-     ▼
-Noise Model ────────────── AWGN + shadow fading
-     │
-     ▼
-Measurement Synthesizer
-     │
-     ▼
-Validation Engine ──────── Coordinate, RF, temporal checks
-     │
-     ▼
-NLLS Multilateration ───── scipy.optimize.least_squares
-     │
-     ▼
-Kalman Tracker ─────────── 2D constant-velocity state estimation
-     │
-     ▼
-Confidence Engine ──────── GDOP + covariance error ellipses
-     │
-     ▼
-Evidence Generator ─────── Audit trail and rejection matrices
-```
-
-For detailed documentation, see [`scientific/README.md`](scientific/README.md).
+For detailed formulas and models, review the internal documentation within the `scientific/` module.
 
 ---
 
 ## 🧪 Testing
 
-The project maintains a comprehensive test suite with **503 passing tests** across all modules.
+The project maintains a targeted test suite covering critical path execution, specifically focused on the scientific edge cases discovered during the Red Team audit.
 
-### Test Distribution
-
-| Test Module | Tests | Scope |
-|-------------|-------|-------|
-| `tests/test_day3_deliverables.py` | 85 | Pydantic models, scenarios, measurements, validators |
-| `tests/test_day5_deliverables.py` | 86 | Scientific config, constants, logger |
-| `tests/test_day4_deliverables.py` | 57 | ScenarioConfig, tower placement, propagation defaults |
-| `tests/test_tower_model.py` | 43 | Tower model construction, boundaries, serialization |
-| `tests/api/` | 22 | Case CRUD and Scenario CRUD endpoint tests |
-| `tests/database/` | 12 | Database model validation (Cases, Scenarios, Towers) |
-| `backend/tests/` | 18 | Core config, logging, exception handling, middleware |
-| `tests/test_week2_pipeline.py` | 180 | E2E pipeline integration, solvers, tracking, validation |
-
-### Running Tests
+- **Backend:** 28 passing tests (including scientific bounds and Kalman chronologies).
+- **Frontend:** 4 Vitest UI tests.
 
 ```bash
-# Run all tests from the project root
+# Run backend tests
 cd backend
-pytest
-
-# Run with verbose output
-pytest -v
-
-# Run a specific test file
-pytest tests/test_day3_deliverables.py
-```
-
-### Code Quality
-
-```bash
-# Python linting and formatting
-ruff check .
-black .
-
-# Frontend linting and type checking
-cd frontend
-npm run lint
-npm run build
+pytest tests/
 ```
 
 ---
 
 ## 🗺️ Development Roadmap
 
-### Sprint 1 — Foundation ✅ Complete
+### Version 1.0 (Current)
+- ✅ Core Localization Engine
+- ✅ CDR Import & Validation
+- ✅ Kalman Tracking & GDOP Confidence
+- ✅ Interactive Dashboard & Report Generation
+- ✅ Red Team Scientific Integrity Audit
 
-> **Released as v0.1.0** · [View Changelog](CHANGELOG.md)
-
-- [x] Repository setup with project documentation
-- [x] Docker Compose environment with health checks
-- [x] FastAPI backend with Repository-Service-Router pattern
-- [x] Case Management CRUD (API + UI)
-- [x] Scenario Management CRUD (API + UI)
-- [x] Tower ORM model and database migrations
-- [x] Scientific package: constants, config, models, validators
-- [x] React dashboard shell with dark mode
-- [x] Global exception handling and logging middleware
-- [x] GitHub Actions CI pipeline
-- [x] 323 automated tests passing
-
----
-
-### Sprint 2 — Scientific Engine ✅ Complete
-
-> **Released as v0.2.0** · [View Changelog](CHANGELOG.md)
-
-- [x] Measurement Simulator (RSSI generation, noise models)
-- [x] Measurement Validation REST API
-- [x] NLLS Multilateration Solver (scipy)
-- [x] 2D Kalman Filter Tracker
-- [x] GDOP Confidence Estimator
-- [x] Evidence Audit Engine
-- [x] End-to-End Pipeline Runner
-- [x] Frontend API client integration
-
----
-
-### Sprint 3 — Visualization & Integration ✅ Complete
-
-> **Released as v0.3.0** · [View Changelog](CHANGELOG.md)
-
-- [x] Interactive Leaflet map with tower/device markers
-- [x] Evidence panel and confidence visualization
-- [x] Report generation system
-- [x] Full frontend integration with live backend data
-
----
-
-### Sprint 4 — Testing & Release ✅ Complete
-
-> **Released as v1.0.0** · [View Changelog](CHANGELOG.md)
-
-- [x] Performance benchmarking (<2s localization target)
-- [x] End-to-end integration tests
-- [x] Documentation finalization
-- [x] Demo preparation
-- [x] Version 1.0 release
+### Version 1.1 (Future)
+- 🔲 **PostgreSQL Migration:** Move from SQLite to PostgreSQL to support heavy concurrent investigations.
+- 🔲 **SHA-256 Idempotency:** Upgrade import duplicate detection from filename matching to SHA-256 content hashing.
+- 🔲 **Celery Task Queue:** Make long-running imports and report generations fully atomic and asynchronous.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome once the project foundation stabilizes. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
-### Quick Start
-
-```bash
-# Fork and clone
-git clone https://github.com/<your-username>/Asterion.git
-cd Asterion
-
-# Create a feature branch
-git checkout -b feature/your-feature-name
-
-# Make changes, run tests, commit
-pytest
-git commit -m "feat(module): description of change"
-
-# Push and open a Pull Request
-git push origin feature/your-feature-name
-```
-
-### Branch Naming Convention
-
-| Prefix | Usage |
-|--------|-------|
-| `feature/` | New functionality |
-| `bugfix/` | Bug fixes |
-| `docs/` | Documentation updates |
-| `refactor/` | Code restructuring |
-
-### Coding Standards
-
-**Python (Backend & Scientific)**
-- PEP 8 with type hints
-- Formatted with `black` and `ruff`
-- Descriptive docstrings on public functions
-- Max function length: ~40 lines
-
-**TypeScript (Frontend)**
-- Functional components with hooks
-- Formatted with OxLint
-- Clean state management with Zustand
-- Semantic JSX
+Contributions are welcome! Please ensure any PRs affecting the `scientific/` engine are backed by mathematical proofs or referential datasets. 
+- Create a feature branch (`feature/your-feature`)
+- Ensure tests pass (`pytest`)
+- Open a Pull Request.
 
 ---
 
@@ -693,25 +342,10 @@ git push origin feature/your-feature-name
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
-
-```
-MIT License · Copyright (c) 2026 Kasukurthi Sriram
-```
-
----
-
-## 🙏 Acknowledgements
-
-- **E-Rakshak 2026** — Cybersecurity and digital investigation hackathon
-- **Surat City Police** — Hackathon organizing body
-- **SVNIT Surat** — Academic partner
-- **NEXUS** — Hackathon partner
-- **OpenStreetMap** — Geospatial tile data
-- The open-source communities behind FastAPI, React, NumPy, SciPy, SQLAlchemy, and Leaflet
+This project is licensed under the **MIT License**. See `LICENSE` for details.
 
 ---
 
 <p align="center">
-  <sub>Built with transparency in mind · Asterion v1.0.0</sub>
+  <sub>Built with scientific integrity · Asterion v1.0.0</sub>
 </p>
