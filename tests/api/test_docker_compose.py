@@ -73,8 +73,6 @@ class TestDockerComposeStructure:
         assert "timeout" in hc
         assert "retries" in hc
 
-
-
     def test_frontend_depends_on_backend(self, compose_config):
         """frontend depends_on backend with service_healthy condition."""
         frontend = compose_config["services"]["frontend"]
