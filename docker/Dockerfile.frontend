@@ -1,12 +1,27 @@
-FROM node:20-slim
+# Stage 1: Build the frontend
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
+# Copy package files and install dependencies
 COPY frontend/package*.json ./
+COPY frontend/.npmrc ./
 RUN npm install
 
-COPY frontend/ /app
+# Copy source and build
+COPY frontend/ .
+RUN npm run build
 
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
+
+# Copy the build output to replace the default nginx contents.
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expose port 3000 (as mapped in docker-compose)
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Copy a custom nginx configuration to listen on port 3000 and handle SPA routing
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+CMD ["nginx", "-g", "daemon off;"]

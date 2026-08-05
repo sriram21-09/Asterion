@@ -257,12 +257,11 @@ html.light .glass-card {
 }
 
 /* Theme transition — applied to root for smooth switching */
-.theme-transition,
-.theme-transition * {
+.theme-transition {
   transition:
     background-color 250ms ease,
     border-color 250ms ease,
-    color 150ms ease !important;
+    color 150ms ease;
 }
 
 /* -------------------------

@@ -47,7 +47,7 @@ export default function InvestigationDashboard() {
         setSelectedCaseId(list[0].id)
       }
     } catch (err) {
-      console.error('Failed to load cases:', err)
+      // console.error('Failed to load cases:', err)
     } finally {
       setIsLoadingCases(false)
     }
@@ -100,7 +100,7 @@ export default function InvestigationDashboard() {
         
         fetchedTowers = Array.from(towersMap.values())
       } catch (err) {
-        console.warn('Measurements could not be fetched for case:', err)
+        // console.warn('Measurements could not be fetched for case:', err)
       }
 
       // 2. Fetch Heatmap points
@@ -131,7 +131,7 @@ export default function InvestigationDashboard() {
           Math.min(1.0, Math.max(0.2, (int / maxIntensity) * 1.2))
         ])
       } catch (err) {
-        console.warn('Heatmap could not be fetched for case:', err)
+        // console.warn('Heatmap could not be fetched for case:', err)
       }
 
       // 3. Fetch movement events (Timeline)
@@ -208,7 +208,7 @@ export default function InvestigationDashboard() {
           fetchedTowers = Array.from(towersMap.values())
         }
       } catch (err) {
-        console.warn('Movement events could not be reconstructed for case:', err)
+        // console.warn('Movement events could not be reconstructed for case:', err)
       }
 
       // Apply case data if we got anything valid
@@ -216,7 +216,7 @@ export default function InvestigationDashboard() {
       setHeatmapPoints(fetchedHeatmap)
       setEvents(fetchedEvents)
     } catch (err) {
-      console.error('Failed to load case details:', err)
+      // console.error('Failed to load case details:', err)
     } finally {
       setIsLoadingData(false)
     }
