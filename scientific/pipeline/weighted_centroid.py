@@ -281,7 +281,9 @@ def solve_weighted_centroid(
     # 4. Compute estimated coordinates
     if total_weight == 0.0:
         # Fallback to simple unweighted centroid of towers if no weights/measurements
-        valid_towers = [t for t in towers if t.latitude is not None and t.longitude is not None]
+        valid_towers = [
+            t for t in towers if t.latitude is not None and t.longitude is not None
+        ]
         if valid_towers:
             est_lat = sum(t.latitude for t in valid_towers) / len(valid_towers)
             est_lon = sum(t.longitude for t in valid_towers) / len(valid_towers)

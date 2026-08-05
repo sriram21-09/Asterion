@@ -57,7 +57,11 @@ def get_report_preview(
 def export_csv_report(case_id: Optional[int] = None, db: Session = Depends(get_db)):
     """Export raw CDR & measurement records for a case (or all cases) in CSV format."""
     csv_content = ReportService.generate_csv_report(db, case_id)
-    filename = f"asterion_raw_export_case_{case_id}.csv" if case_id else "asterion_raw_export_all.csv"
+    filename = (
+        f"asterion_raw_export_case_{case_id}.csv"
+        if case_id
+        else "asterion_raw_export_all.csv"
+    )
     return Response(
         content=csv_content,
         media_type="text/csv",
@@ -107,4 +111,3 @@ def download_report(case_id: int, db: Session = Depends(get_db)):
         media_type="application/pdf",
         filename=f"asterion_investigation_report_case_{case_id}.pdf",
     )
-

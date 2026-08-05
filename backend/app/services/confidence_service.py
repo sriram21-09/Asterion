@@ -64,6 +64,7 @@ class ConfidenceService:
 
         # 2. Load scenario config
         from app.services.scenario_config_helper import load_scenario_config
+
         config = load_scenario_config(db, case.scenario_id, case_id)
 
         # 3. Retrieve stored measurements

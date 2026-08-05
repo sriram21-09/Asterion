@@ -179,7 +179,8 @@ class SectionFactory:
                 unique_cells.add(c.last_cgi)
         story.append(
             Paragraph(
-                f"Distinct Cell Towers Observed: {len(unique_cells)}", ctx.styles["Normal"]
+                f"Distinct Cell Towers Observed: {len(unique_cells)}",
+                ctx.styles["Normal"],
             )
         )
         story.append(Spacer(1, 12))
@@ -206,9 +207,7 @@ class SectionFactory:
                     else "N/A"
                 )
                 speed_val = getattr(ev, "speed_kmh", None)
-                speed_str = (
-                    f"{speed_val:.1f}" if speed_val is not None else "N/A"
-                )
+                speed_str = f"{speed_val:.1f}" if speed_val is not None else "N/A"
                 seq_val = getattr(ev, "sequence_number", ev.id)
                 event_data.append(
                     [
@@ -392,15 +391,24 @@ class SectionFactory:
         )
 
         if kalman_points:
-            valid_errors = [p.error_m for p in kalman_points if getattr(p, 'error_m', None) is not None]
+            valid_errors = [
+                p.error_m
+                for p in kalman_points
+                if getattr(p, "error_m", None) is not None
+            ]
             if valid_errors:
                 avg_error = sum(valid_errors) / len(valid_errors)
                 story.append(
-                    Paragraph(f"<b>Average Smoothing Error:</b> {avg_error:.2f} m", styles["Normal"])
+                    Paragraph(
+                        f"<b>Average Smoothing Error:</b> {avg_error:.2f} m",
+                        styles["Normal"],
+                    )
                 )
             else:
                 story.append(
-                    Paragraph("<b>Average Smoothing Error:</b> Unknown", styles["Normal"])
+                    Paragraph(
+                        "<b>Average Smoothing Error:</b> Unknown", styles["Normal"]
+                    )
                 )
         else:
             story.append(
@@ -503,10 +511,14 @@ class ReportService:
                 unique_cgis.add(c.first_cgi)
             if c.last_cgi:
                 unique_cgis.add(c.last_cgi)
-        towers_involved = len(unique_cgis) if unique_cgis else max(1, len(ctx.measurements))
-        sector_coverage = min(
-            100.0, round((towers_involved / max(total_meas, 1)) * 100.0, 1)
-        ) if total_meas > 0 else 0.0
+        towers_involved = (
+            len(unique_cgis) if unique_cgis else max(1, len(ctx.measurements))
+        )
+        sector_coverage = (
+            min(100.0, round((towers_involved / max(total_meas, 1)) * 100.0, 1))
+            if total_meas > 0
+            else 0.0
+        )
 
         total_dist_m = sum(
             ev.distance_from_prev_m
@@ -518,18 +530,19 @@ class ReportService:
 
         conf_score = None
         algos = list(
-            set(
-                loc.algorithm
-                for loc in ctx.localization_results
-                if loc.algorithm
-            )
+            set(loc.algorithm for loc in ctx.localization_results if loc.algorithm)
         )
         if not algos:
             algos = ["multilateration", "kalman"]
 
-        if ctx.confidence_results and ctx.confidence_results[0].confidence_score is not None:
+        if (
+            ctx.confidence_results
+            and ctx.confidence_results[0].confidence_score is not None
+        ):
             raw_score = ctx.confidence_results[0].confidence_score
-            conf_score = round(raw_score * 100, 1) if raw_score <= 1.0 else round(raw_score, 1)
+            conf_score = (
+                round(raw_score * 100, 1) if raw_score <= 1.0 else round(raw_score, 1)
+            )
 
         return {
             "metadata": {
@@ -563,27 +576,27 @@ class ReportService:
         output = io.StringIO()
         writer = csv.writer(output)
 
-        writer.writerow([
-            "Case ID",
-            "Record Type",
-            "Record ID",
-            "Operator",
-            "Target Number",
-            "B-Party Number",
-            "Call Type",
-            "Timestamp",
-            "Duration (s)",
-            "Latitude",
-            "Longitude",
-            "CGI",
-            "IMEI",
-            "IMSI",
-        ])
+        writer.writerow(
+            [
+                "Case ID",
+                "Record Type",
+                "Record ID",
+                "Operator",
+                "Target Number",
+                "B-Party Number",
+                "Call Type",
+                "Timestamp",
+                "Duration (s)",
+                "Latitude",
+                "Longitude",
+                "CGI",
+                "IMEI",
+                "IMSI",
+            ]
+        )
 
         if case_id is not None and case_id > 0:
-            cdr_records = (
-                db.query(CDRRecord).filter(CDRRecord.case_id == case_id).all()
-            )
+            cdr_records = db.query(CDRRecord).filter(CDRRecord.case_id == case_id).all()
             measurements = (
                 db.query(Measurement).filter(Measurement.case_id == case_id).all()
             )
@@ -592,40 +605,43 @@ class ReportService:
             measurements = db.query(Measurement).all()
 
         for cdr in cdr_records:
-            writer.writerow([
-                cdr.case_id or "",
-                "CDR",
-                cdr.id,
-                cdr.operator or "",
-                cdr.target_number or "",
-                cdr.b_party_number or "",
-                cdr.call_type or "",
-                cdr.timestamp.isoformat() if cdr.timestamp else "",
-                cdr.duration if cdr.duration is not None else 0,
-                cdr.latitude if cdr.latitude is not None else "",
-                cdr.longitude if cdr.longitude is not None else "",
-                cdr.first_cgi or "",
-                cdr.imei or "",
-                cdr.imsi or "",
-            ])
+            writer.writerow(
+                [
+                    cdr.case_id or "",
+                    "CDR",
+                    cdr.id,
+                    cdr.operator or "",
+                    cdr.target_number or "",
+                    cdr.b_party_number or "",
+                    cdr.call_type or "",
+                    cdr.timestamp.isoformat() if cdr.timestamp else "",
+                    cdr.duration if cdr.duration is not None else 0,
+                    cdr.latitude if cdr.latitude is not None else "",
+                    cdr.longitude if cdr.longitude is not None else "",
+                    cdr.first_cgi or "",
+                    cdr.imei or "",
+                    cdr.imsi or "",
+                ]
+            )
 
         for m in measurements:
-            writer.writerow([
-                m.case_id,
-                "Measurement",
-                m.id,
-                "N/A",
-                "N/A",
-                "N/A",
-                "Signal",
-                m.timestamp.isoformat() if m.timestamp else "",
-                0,
-                m.latitude if m.latitude is not None else "",
-                m.longitude if m.longitude is not None else "",
-                "",
-                "",
-                "",
-            ])
+            writer.writerow(
+                [
+                    m.case_id,
+                    "Measurement",
+                    m.id,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "Signal",
+                    m.timestamp.isoformat() if m.timestamp else "",
+                    0,
+                    m.latitude if m.latitude is not None else "",
+                    m.longitude if m.longitude is not None else "",
+                    "",
+                    "",
+                    "",
+                ]
+            )
 
         return output.getvalue()
-

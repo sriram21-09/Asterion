@@ -1,14 +1,10 @@
 import pytest
 import sys
 from pathlib import Path
-from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-import math
 
-from app.models.tower import Tower
-from app.models.measurement import Measurement
 from scientific.pipeline.kalman_tracker import KalmanTracker
 from scientific.pipeline.weighted_centroid import solve_weighted_centroid
 
@@ -19,10 +15,12 @@ def test_kalman_tracker_negative_dt():
     with pytest.raises(ValueError, match="Negative time delta"):
         tracker.predict(-1.0)
 
+
 def test_kalman_tracker_zero_dt():
     tracker = KalmanTracker()
     tracker.initialize(10.0, 20.0, 50.0)
     tracker.predict(0.0)  # Should not raise
+
 
 def test_weighted_centroid_none_coordinates():
     # Test that solve_weighted_centroid handles towers with None coordinates
@@ -46,7 +44,7 @@ def test_weighted_centroid_none_coordinates():
         DummyMeasurement("1", -75),
         DummyMeasurement("2", -80),
     ]
-    
+
     # Should not crash, and should compute centroid based on valid tower only
     res = solve_weighted_centroid("scen-1", towers, measurements)
     assert res.estimated_latitude == 10.0

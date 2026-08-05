@@ -89,6 +89,7 @@ class EvidenceGenerationService:
             )
 
         from app.services.scenario_config_helper import load_scenario_config
+
         config = load_scenario_config(db, case.scenario_id, db_case_id)
 
         db_measurements = MeasurementRepository.get_by_case(db, db_case_id)

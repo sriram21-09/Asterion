@@ -1,6 +1,3 @@
-import json
-from pathlib import Path
-
 from app.models.localization_result import LocalizationResult as LocalizationResultORM
 from app.repositories.case_repository import CaseRepository
 from app.repositories.localization_repository import LocalizationRepository
@@ -11,9 +8,6 @@ from sqlalchemy.orm import Session
 
 from scientific.models.measurement import Measurement as ScientificMeasurement
 from scientific.models.result import LocalizationResult as ScientificResult
-from scientific.models.scenario_config import (
-    ScenarioConfig,
-)
 from scientific.models.tower import Tower as ScientificTower
 from scientific.pipeline.multilateration import solve_multilateration
 
@@ -51,6 +45,7 @@ class LocalizationService:
 
         # 2. Load scenario config (from dataset JSON or dynamically generated from DB data)
         from app.services.scenario_config_helper import load_scenario_config
+
         config = load_scenario_config(db, case.scenario_id, case_id)
 
         # 3. Retrieve stored measurements for the case

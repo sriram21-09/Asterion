@@ -64,8 +64,12 @@ class TrackingService:
 
         # 2. Load scenario config for ground-truth coords
         from app.services.scenario_config_helper import load_scenario_config
+
         config = load_scenario_config(db, case.scenario_id, case_id)
-        expected_lat, expected_lon = config.expected_device_lat, config.expected_device_lon
+        expected_lat, expected_lon = (
+            config.expected_device_lat,
+            config.expected_device_lon,
+        )
 
         # 3. Retrieve stored localization results for the case
         db_loc_results = LocalizationRepository.get_by_case(db, case_id)

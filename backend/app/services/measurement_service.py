@@ -1,6 +1,3 @@
-import json
-from pathlib import Path
-
 from app.models.measurement import Measurement as MeasurementORM
 from app.repositories.case_repository import CaseRepository
 from app.repositories.measurement_repository import MeasurementRepository
@@ -11,7 +8,7 @@ from app.shared.validation import (
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from scientific.models.scenario_config import ScenarioConfig, SimulationParameters
+from scientific.models.scenario_config import SimulationParameters
 from scientific.simulation.measurement_generator import generate_scenario_measurements
 
 
@@ -43,6 +40,7 @@ class MeasurementService:
 
         # 4. Load scenario config and override simulation parameters
         from app.services.scenario_config_helper import load_scenario_config
+
         config = load_scenario_config(db, case.scenario_id, case_id)
         config.simulation = params
 

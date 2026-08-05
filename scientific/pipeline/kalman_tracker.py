@@ -88,7 +88,9 @@ class KalmanTracker:
             raise RuntimeError("Tracker must be initialized before calling predict.")
 
         if dt < 0.0:
-            raise ValueError(f"Negative time delta ({dt}s) encountered. Timestamps must be chronological.")
+            raise ValueError(
+                f"Negative time delta ({dt}s) encountered. Timestamps must be chronological."
+            )
         if dt == 0.0:
             return  # No time elapsed, skip prediction
 
