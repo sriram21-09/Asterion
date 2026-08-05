@@ -8,10 +8,6 @@ services:
     environment:
       - ENV=development
       - PORT=8222
-    volumes:
-      - ./backend:/app
-      - ./datasets:/app/datasets
-      - ./scientific:/app/scientific
     restart: always
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8222/api/v1/health')"]
@@ -24,23 +20,20 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.frontend
+      args:
+        # Browser-side API URL (client requests from host browser to host-mapped port)
+        - VITE_API_URL=http://localhost:8222/api/v1
+        # Server-side / Proxy API URL (container-to-container via Docker network)
+        - VITE_API_BASE_URL=http://backend:8222/api/v1
+        - VITE_BACKEND_URL=http://backend:8222
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      # Browser-side API URL (client requests from host browser to host-mapped port)
-      - VITE_API_URL=http://localhost:8222/api/v1
-      # Server-side / Proxy API URL (container-to-container via Docker network)
-      - VITE_API_BASE_URL=http://backend:8222/api/v1
-      - VITE_BACKEND_URL=http://backend:8222
     depends_on:
       backend:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (res) => { res.statusCode === 200 ? process.exit(0) : process.exit(1) })"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
       interval: 10s
       timeout: 5s
       retries: 5
