@@ -1,16 +1,15 @@
+<h1 align="center">🛰️ Asterion</h1>
+
 <p align="center">
-  <h1 align="center">🛰️ Asterion</h1>
-  <p align="center">
-    <strong>Explainable telecom investigation platform that reconstructs probable device locations from cellular network measurements while preserving scientific integrity and evidence traceability.</strong>
-  </p>
-  <p align="center">
-    Built for <strong>E-Rakshak 2026</strong>
-  </p>
+  <strong>Explainable telecom investigation platform that reconstructs probable device locations from cellular network measurements while preserving scientific integrity and evidence traceability.</strong>
+</p>
+<p align="center">
+  Built for <strong>E-Rakshak 2026</strong>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square" alt="Version 1.0.0" />
-  <img src="https://img.shields.io/badge/Status-Production%20Release-blue?style=flat-square" alt="Status Production" />
+  <img src="https://img.shields.io/badge/Status-Stable%20Release-blue?style=flat-square" alt="Status Stable" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License MIT" /></a>
   <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square" alt="Tests Passing" />
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11+" />
@@ -19,15 +18,18 @@
   <img src="https://img.shields.io/badge/TypeScript-5.2+-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
 </p>
 
-<p align="center">
-  <!-- TODO: Add a 10-second demo GIF showing Import -> Heatmap -> Timeline -> PDF -->
-  <img src="docs/assets/demo.gif" alt="Asterion Demo" width="800"/>
-  <br/>
-  <em>Import ➔ Heatmap ➔ Timeline ➔ PDF</em>
-</p>
+## 📊 Project Highlights
 
-> [!NOTE] 
-> **Attention Evaluators / Contributors:** The `docs/assets/demo.gif` and other screenshot placeholders in this README require real application screenshots to be captured and uploaded. 
+| Metric                |                                 Value |
+| --------------------- | ------------------------------------: |
+| **Architecture**          |              Layered Modular Monolith |
+| **Scientific Algorithms** | NLLS, Weighted Centroid, Kalman, GDOP |
+| **Backend**               |                               FastAPI |
+| **Frontend**              |                              React 19 |
+| **Database**              |                                SQLite |
+| **Deployment**            |                        Docker Compose |
+| **License**               |                                   MIT |
+| **Version**               |                                v1.0.0 |
 
 ---
 
@@ -36,7 +38,6 @@
 - [Project Overview](#-project-overview)
 - [Why Asterion?](#-why-asterion)
 - [Key Features](#-key-features)
-- [Dashboard Showcase](#-dashboard-showcase)
 - [Example Workflow](#-example-workflow)
 - [Problem Statement](#-problem-statement)
 - [Solution Overview](#-solution-overview)
@@ -70,7 +71,7 @@ Why build another localization project? Because modern investigations require mo
 
 * **Explainability:** When an investigator places a suspect at a location, they need to know *why* the system chose that coordinate. 
 * **Scientific Honesty:** Commercial tools often silently guess missing data to make a map look cleaner. Asterion rejects this. We prioritize evidence over aesthetics.
-* **Evidence Traceability:** Every localization result is cryptographically hashed and tied directly to the original raw CDR row that generated it, ensuring strict chain-of-custody for court readiness.
+* **Evidence Traceability:** Every localization result is cryptographically hashed and tied directly to the original raw CDR row that generated it, preserving traceability between imported records and derived outputs.
 
 ---
 
@@ -80,24 +81,10 @@ Why build another localization project? Because modern investigations require mo
 * 🛰 **Kalman Tracking:** 2D constant-velocity state estimation to prevent erratic chronological drift.
 * 📈 **GDOP Confidence:** Geometric Dilution of Precision to quantify the reliability of every point.
 * 🗺 **Heatmaps:** Multi-factor weighted density visualizations based on dwell time, transitions, and confidence.
-* 📄 **Reports:** Court-ready PDF generation with full algorithmic audit trails.
+* 📄 **Reports:** Evidence-oriented investigation reports with full algorithmic audit trails.
 * 🔍 **Evidence Traceability:** Direct cryptographic linkage between input CDRs and output locations.
 * ⚖ **Scientific Integrity:** Strict adherence to evidence boundaries; zero data fabrication.
-* 🐳 **Docker:** 30-second production-ready containerized deployment.
-
----
-
-## 📸 Dashboard Showcase
-
-*(Note to maintainers: Replace these placeholders with actual high-res screenshots before presenting.)*
-
-| Dashboard | Heatmap Analysis |
-|:---:|:---:|
-| <img src="docs/assets/dashboard.png" width="400" alt="Dashboard View" /> | <img src="docs/assets/heatmap.png" width="400" alt="Heatmap Visualization" /> |
-
-| Kalman Timeline | Evidence Report |
-|:---:|:---:|
-| <img src="docs/assets/timeline.png" width="400" alt="Kalman Timeline Tracking" /> | <img src="docs/assets/report.png" width="400" alt="PDF Evidence Report" /> |
+* 🐳 **Docker:** 30-second containerized deployment.
 
 ---
 
@@ -114,7 +101,7 @@ From raw data to actionable intelligence in 5 steps:
    ↓
 4. Calculate GDOP Confidence & Apply Kalman Smoothing
    ↓
-5. Review Timeline & Export Court-Ready Report
+5. Review Timeline & Export Investigation Report
 ```
 
 ---
@@ -160,7 +147,7 @@ graph LR
 - **Movement Tracking** — Smooth sequential position estimates and prevent chronological drift using a 2D Kalman Filter.
 - **Confidence Estimation** — Quantify reliability using Geometric Dilution of Precision (GDOP) and covariance.
 - **Scientific Integrity** — Strict enforcement of `null` state propagation. Unknown towers map to "Unresolved", unknown speed maps to "Unknown".
-- **Reporting** — Generate comprehensive, court-ready PDF investigation reports.
+- **Reporting** — Generate comprehensive, evidence-oriented investigation reports.
 
 ---
 
@@ -369,7 +356,7 @@ Asterion/
 
 ## 📊 Current Development Status
 
-> **Current Version:** `v1.0.0` — Production Release 
+> **Current Version:** `v1.0.0` — Stable Release 
 
 Asterion v1.0.0 successfully completed a rigorous **Red Team Engineering Audit**, resulting in the complete removal of fabricated metrics and the implementation of a mathematically honest tracking pipeline.
 
