@@ -259,6 +259,8 @@ def solve_weighted_centroid(
     for tid, avg_rssi in avg_tower_rssi.items():
         if tid in tower_map:
             tower = tower_map[tid]
+            if tower.latitude is None or tower.longitude is None:
+                continue
 
             # Base weight: RSSI linear power
             rssi_linear = 10.0 ** (avg_rssi / 10.0)
@@ -279,9 +281,12 @@ def solve_weighted_centroid(
     # 4. Compute estimated coordinates
     if total_weight == 0.0:
         # Fallback to simple unweighted centroid of towers if no weights/measurements
-        if towers:
-            est_lat = sum(t.latitude for t in towers) / len(towers)
-            est_lon = sum(t.longitude for t in towers) / len(towers)
+        valid_towers = [
+            t for t in towers if t.latitude is not None and t.longitude is not None
+        ]
+        if valid_towers:
+            est_lat = sum(t.latitude for t in valid_towers) / len(valid_towers)
+            est_lon = sum(t.longitude for t in valid_towers) / len(valid_towers)
         else:
             raise ValueError("No towers available to compute weighted centroid.")
     else:

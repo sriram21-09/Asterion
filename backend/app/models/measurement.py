@@ -23,7 +23,7 @@ class Measurement(BaseModel):
         String(255), unique=True, nullable=False
     )
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    rssi_dbm: Mapped[float] = mapped_column(Float, nullable=False)
+    rssi_dbm: Mapped[float | None] = mapped_column(Float, nullable=True)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     timing_advance: Mapped[float | None] = mapped_column(Float, nullable=True)

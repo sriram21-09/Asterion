@@ -141,16 +141,18 @@ export function ConfidenceScoreCard({ className }: ConfidenceScoreCardProps) {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-2xl font-bold tabular-nums text-content-primary">
-                  {(result.confidence_score * 100).toFixed(0)}%
+                  {result.confidence_score != null ? `${(result.confidence_score * 100).toFixed(0)}%` : 'N/A'}
                 </span>
                 <div className="flex-1 h-2 rounded-full bg-surface-tertiary overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all duration-700 ease-out',
-                      confidenceBarColor(result.confidence_score),
-                    )}
-                    style={{ width: `${result.confidence_score * 100}%` }}
-                  />
+                  {result.confidence_score != null && (
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all duration-700 ease-out',
+                        confidenceBarColor(result.confidence_score),
+                      )}
+                      style={{ width: `${result.confidence_score * 100}%` }}
+                    />
+                  )}
                 </div>
               </div>
             </div>

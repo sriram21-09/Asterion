@@ -72,6 +72,8 @@ export function TimelineStrip({ events, className, onEventClick }: TimelineStrip
     selectedCategories.includes(getEventCategory(event))
   )
 
+  const visibleEvents = filteredEvents.slice(0, 100)
+
   return (
     <div className="w-full flex flex-col">
       {/* Timeline Controls Header */}
@@ -79,6 +81,11 @@ export function TimelineStrip({ events, className, onEventClick }: TimelineStrip
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-content-tertiary" />
           <span className="text-xs font-semibold text-content-secondary uppercase tracking-wider">Timeline Filters</span>
+          {filteredEvents.length > 100 && (
+            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+              Showing 100 of {filteredEvents.length} events
+            </span>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           {ALL_CATEGORIES.map((cat) => {
@@ -113,14 +120,14 @@ export function TimelineStrip({ events, className, onEventClick }: TimelineStrip
 
       {/* Timeline Scroll Area */}
       <div className={cn("w-full overflow-x-auto pb-4 custom-scrollbar", className)}>
-        {filteredEvents.length === 0 ? (
+        {visibleEvents.length === 0 ? (
           <div className="w-full p-8 flex flex-col items-center justify-center text-content-tertiary border border-dashed border-border-primary rounded-xl bg-surface-secondary/20 my-4">
             <Clock className="w-8 h-8 mb-3 opacity-50" />
             <p className="text-sm">No timeline events match the selected filters.</p>
           </div>
         ) : (
           <div className="flex items-start gap-0 min-w-max px-4 pt-4">
-            {filteredEvents.map((event, index) => {
+            {visibleEvents.map((event, index) => {
               const category = getEventCategory(event)
               const colorClass = getCategoryColorClass(category)
               

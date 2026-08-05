@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from app.models.base import BaseModel
@@ -30,7 +31,7 @@ class TrackingResult(BaseModel):
     error_m: Mapped[float | None] = mapped_column(Float, nullable=True)
     computation_time_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     algorithm: Mapped[str] = mapped_column(String(50), nullable=False, default="kalman")
-    timestamp: Mapped[str | None] = mapped_column(
+    timestamp: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 

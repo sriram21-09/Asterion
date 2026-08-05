@@ -17,7 +17,7 @@ export interface BenchmarkResponse {
 class BenchmarkService {
   async getBenchmark(caseId: number): Promise<BenchmarkResponse> {
     const response = await axios.get(`${API_URL}/validation/benchmark/${caseId}`)
-    return response.data
+    return response.data.data ?? response.data
   }
 }
 

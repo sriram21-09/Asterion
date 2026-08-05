@@ -10,6 +10,7 @@ export default function Reports() {
   const { data: cases, isLoading: loadingCases, error: caseError } = useCases()
   const { data: scenarios, isLoading: loadingScenarios, error: scenarioError } = useScenarios()
 
+  const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [previewData, setPreviewData] = useState<ReportPreviewData | null>(null)
   const [downloading, setDownloading] = useState(false)
@@ -18,38 +19,89 @@ export default function Reports() {
     document.title = 'Reports — Asterion'
   }, [])
 
+  // Auto-select latest active case on initial load
+  useEffect(() => {
+    if (cases && cases.length > 0 && selectedCaseId === null) {
+      const sortedCases = [...cases].sort(
+        (a, b) =>
+          new Date(b.updated_at || b.created_at).getTime() -
+          new Date(a.updated_at || a.created_at).getTime()
+      )
+      const initialCaseId = sortedCases[0].id
+      setSelectedCaseId(initialCaseId)
+      loadPreview(initialCaseId)
+    }
+  }, [cases, selectedCaseId])
+
+  const loadPreview = async (caseId: number, reportType: string = 'full') => {
+    try {
+      const data = await reportService.getReportPreview(caseId, reportType)
+      setPreviewData(data)
+    } catch (err) {
+      console.error('Failed to load report preview:', err)
+    }
+  }
+
+  const handleCaseChange = (caseId: number) => {
+    setSelectedCaseId(caseId)
+    loadPreview(caseId)
+  }
+
   const REPORT_TYPES = {
     FULL: 'full',
     EVIDENCE: 'evidence_audit',
     VALIDATION: 'validation_error',
   }
 
+  const handleCsvExport = async () => {
+    try {
+      toast.loading('Exporting raw CSV data...', { id: 'csv-exp' })
+      const targetCaseId = selectedCaseId ?? undefined
+
+      const blob = await reportService.exportCsv(targetCaseId)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute(
+        'download',
+        targetCaseId
+          ? `Asterion_Raw_Data_Case_${targetCaseId}.csv`
+          : 'Asterion_Raw_Data.csv'
+      )
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+
+      toast.success('CSV Export downloaded successfully!', { id: 'csv-exp' })
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Failed to export CSV data', { id: 'csv-exp' })
+    }
+  }
+
   const handleExport = async (type: string) => {
+    if (type === 'CSV') {
+      await handleCsvExport()
+      return
+    }
+
     let backendReportType = REPORT_TYPES.FULL
     if (type === 'Evidence Audit') backendReportType = REPORT_TYPES.EVIDENCE
     if (type === 'Validation Error') backendReportType = REPORT_TYPES.VALIDATION
-    if (type !== 'PDF' && type !== 'Execution Summary' && type !== 'Evidence Audit' && type !== 'Validation Error') {
-      toast.info(`Exporting ${type} report... (Scheduled for Week 3/4 Roadmap)`)
+
+    if (!selectedCaseId) {
+      toast.error('No case selected to generate a report.')
       return
     }
 
-    if (!cases || cases.length === 0) {
-      toast.error('No cases available to generate a report.')
-      return
-    }
-
-    // Try to pick the most recently updated/active case, or fallback to the first one
-    const sortedCases = [...cases].sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
-    const caseId = sortedCases[0].id
-    
     try {
       setIsGenerating(true)
       toast.loading('Generating PDF report...', { id: 'pdf-gen' })
-      
-      const data = await reportService.generateReport(caseId, backendReportType)
-      // Set preview data even if backend returns empty due to stubbed responses
+
+      const data = await reportService.generateReport(selectedCaseId, backendReportType)
       setPreviewData(data || {})
-      
+
       toast.success('Report generated successfully!', { id: 'pdf-gen' })
     } catch (error: any) {
       // console.error(error)
@@ -60,26 +112,23 @@ export default function Reports() {
   }
 
   const handleDownload = async () => {
-    if (!cases || cases.length === 0) return
-    const sortedCases = [...cases].sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())
-    const caseId = sortedCases[0].id
+    if (!selectedCaseId) return
 
     try {
       setDownloading(true)
       toast.loading('Downloading PDF...', { id: 'pdf-dl' })
-      
-      const blob = await reportService.downloadReport(caseId)
-      
-      // Create a link element, use it to download the blob, and then remove it
+
+      const blob = await reportService.downloadReport(selectedCaseId)
+
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `Asterion_Report_${caseId}.pdf`)
+      link.setAttribute('download', `Asterion_Report_Case_${selectedCaseId}.pdf`)
       document.body.appendChild(link)
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
-      
+
       toast.success('Download complete!', { id: 'pdf-dl' })
     } catch (error: any) {
       // console.error(error)
@@ -106,12 +155,12 @@ export default function Reports() {
     )
   }
 
-  // Calculate some aggregate metrics
   const totalCases = cases?.length || 0
   const totalScenarios = scenarios?.length || 0
-  
+
   const casesWithScenarios = cases?.filter(c => c.scenario_id != null).length || 0
   const completionRate = totalCases > 0 ? Math.round((casesWithScenarios / totalCases) * 100) : 0
+  const currentCase = cases?.find(c => c.id === selectedCaseId)
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
@@ -130,7 +179,7 @@ export default function Reports() {
             variant="secondary"
             onClick={() => handleExport('Execution Summary')}
             leftIcon={isGenerating ? <LoadingSpinner size="sm" /> : <FileText className="w-4 h-4" />}
-            disabled={isGenerating}
+            disabled={isGenerating || !selectedCaseId}
           >
             Generate Report
           </Button>
@@ -141,6 +190,33 @@ export default function Reports() {
             Export Raw CSV
           </Button>
         </div>
+      </div>
+
+      {/* Target Case Selector */}
+      <div className="bg-surface-primary border border-border-primary rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center space-x-3">
+          <ShieldCheck className="w-5 h-5 text-brand-primary flex-shrink-0" />
+          <label htmlFor="case-select" className="text-sm font-bold text-content-primary whitespace-nowrap">
+            Target Investigation Case:
+          </label>
+          <select
+            id="case-select"
+            value={selectedCaseId ?? ''}
+            onChange={(e) => handleCaseChange(Number(e.target.value))}
+            className="bg-surface-secondary border border-border-secondary text-content-primary text-sm font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-brand-primary outline-none transition-all cursor-pointer min-w-[220px]"
+          >
+            {cases?.map((c) => (
+              <option key={c.id} value={c.id}>
+                Case #{c.id}: {c.title || `Investigation #${c.id}`} ({c.status || 'Active'})
+              </option>
+            ))}
+          </select>
+        </div>
+        {currentCase && (
+          <div className="text-xs text-content-tertiary font-medium">
+            Active: <span className="text-content-primary font-bold">{currentCase.title}</span> (ID: {currentCase.id})
+          </div>
+        )}
       </div>
 
       {/* Aggregate Metrics */}

@@ -88,7 +88,9 @@ class EvidenceGenerationService:
                 status_code=400,
             )
 
-        config = EvidenceGenerationService._load_scenario_config(case.scenario_id)
+        from app.services.scenario_config_helper import load_scenario_config
+
+        config = load_scenario_config(db, case.scenario_id, db_case_id)
 
         db_measurements = MeasurementRepository.get_by_case(db, db_case_id)
         if not db_measurements:

@@ -87,7 +87,11 @@ class KalmanTracker:
         if self.x is None or self.P is None:
             raise RuntimeError("Tracker must be initialized before calling predict.")
 
-        if dt <= 0.0:
+        if dt < 0.0:
+            raise ValueError(
+                f"Negative time delta ({dt}s) encountered. Timestamps must be chronological."
+            )
+        if dt == 0.0:
             return  # No time elapsed, skip prediction
 
         # 1. State transition matrix (F)
