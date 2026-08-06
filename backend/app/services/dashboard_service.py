@@ -73,8 +73,12 @@ class DashboardService:
         operator_breakdown = {op: count for op, count in op_rows if op}
 
         if not operator_breakdown:
-            import_job = db.query(ImportJob).filter(ImportJob.case_id == case_id).first()
-            op_name = import_job.operator if import_job and import_job.operator else None
+            import_job = (
+                db.query(ImportJob).filter(ImportJob.case_id == case_id).first()
+            )
+            op_name = (
+                import_job.operator if import_job and import_job.operator else None
+            )
             if not op_name and case and case.title:
                 t_low = case.title.lower()
                 if "airtel" in t_low:
@@ -338,6 +342,7 @@ class DashboardService:
         )
 
         from app.services.provenance_service import ProvenanceService
+
         provenance_data = ProvenanceService.get_case_provenance(db, case_id)
 
         return DashboardSummary(
@@ -420,6 +425,7 @@ class DashboardService:
                 .all()
             )
             if meas_rows:
+
                 class DummyEvent:
                     def __init__(self, lat, lon):
                         self.latitude = lat
@@ -427,6 +433,7 @@ class DashboardService:
                         self.dwell_time_seconds = 60.0
                         self.confidence = 0.8
                         self.event_type = "movement"
+
                 events = [DummyEvent(lat, lon) for lat, lon in meas_rows]
             else:
                 # Fallback 2: Query CDRRecord table for coordinates
@@ -440,13 +447,15 @@ class DashboardService:
                     .all()
                 )
                 if cdr_rows:
-                    class DummyEvent:
+
+                    class DummyEventCDR:
                         def __init__(self, lat, lon):
                             self.latitude = lat
                             self.longitude = lon
                             self.dwell_time_seconds = 60.0
                             self.confidence = 0.8
                             self.event_type = "movement"
+
                     events = [DummyEvent(lat, lon) for lat, lon in cdr_rows]
 
         if not events:

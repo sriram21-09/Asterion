@@ -9,10 +9,13 @@ Empirically verifies the 3 scientific integrity fixes:
 """
 
 from datetime import datetime, timezone
-import pytest
 
 from scientific.models.measurement import Measurement as ScientificMeasurement
-from scientific.models.scenario_config import ScenarioConfig, SimulationParameters, TowerPlacement
+from scientific.models.scenario_config import (
+    ScenarioConfig,
+    SimulationParameters,
+    TowerPlacement,
+)
 from scientific.models.tower import Tower as ScientificTower
 from scientific.pipeline.multilateration import solve_multilateration
 from scientific.simulation.measurement_generator import generate_scenario_measurements
@@ -29,14 +32,21 @@ def test_multilateration_no_fake_rssi_fallback():
     # Measurements missing rssi_dbm
     measurements = [
         ScientificMeasurement(
-            measurement_id="M1", tower_id="T01", timestamp=datetime.now(timezone.utc), rssi_dbm=None
+            measurement_id="M1",
+            tower_id="T01",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=None,
         ),
         ScientificMeasurement(
-            measurement_id="M2", tower_id="T02", timestamp=datetime.now(timezone.utc), rssi_dbm=None
+            measurement_id="M2",
+            tower_id="T02",
+            timestamp=datetime.now(timezone.utc),
+            rssi_dbm=None,
         ),
     ]
 
     from scientific.models.scenario_config import PropagationDefaults
+
     prop = PropagationDefaults()
     sim = SimulationParameters()
 
@@ -72,6 +82,8 @@ def test_ground_truth_isolation_in_measurements():
 
     for m in measurements:
         assert m.latitude is None, "Synthetic measurement must NOT leak target latitude"
-        assert m.longitude is None, "Synthetic measurement must NOT leak target longitude"
+        assert m.longitude is None, (
+            "Synthetic measurement must NOT leak target longitude"
+        )
         assert m.is_simulated is True
         assert m.source == "SIMULATED"

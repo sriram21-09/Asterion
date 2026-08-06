@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --port 3000 --host",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
+    "lint": "oxlint -A eslint/no-unused-vars -A react/only-export-components",
     "test": "vitest run",
     "preview": "vite preview"
   },

@@ -48,9 +48,16 @@ class Case(BaseModel):
     @property
     def has_evidence(self) -> bool:
         from sqlalchemy.orm import object_session
+
         session = object_session(self)
         if not session or not self.scenario_id:
             return False
         from app.models.measurement import Measurement
-        count = session.query(Measurement.id).filter(Measurement.case_id == self.id).limit(1).count()
+
+        count = (
+            session.query(Measurement.id)
+            .filter(Measurement.case_id == self.id)
+            .limit(1)
+            .count()
+        )
         return count > 0

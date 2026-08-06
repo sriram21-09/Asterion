@@ -7,8 +7,9 @@ Measurement objects for a given scenario.
 """
 
 from datetime import UTC, datetime, timedelta
+from typing import List
 
-from scientific.models.measurement import Measurement
+from scientific.models.measurement import Measurement, MeasurementSource
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.simulation.noise_model import AWGNModel
 from scientific.simulation.rssi_generator import RSSIGenerator
@@ -95,7 +96,7 @@ class MeasurementGenerator:
                     latitude=None,
                     longitude=None,
                     is_simulated=True,
-                    source="SIMULATED",
+                    source=MeasurementSource.SIMULATED,
                 )
                 measurements.append(measurement)
                 measurement_idx += 1

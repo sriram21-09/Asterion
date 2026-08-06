@@ -99,6 +99,7 @@ class MovementReconstructionService:
 
         if not cdr_records and not tracking_results:
             from app.models.measurement import Measurement
+
             meas_records = (
                 db.query(Measurement)
                 .filter(Measurement.case_id == case_id)
@@ -142,6 +143,7 @@ class MovementReconstructionService:
                 )
         else:
             from app.models.measurement import Measurement
+
             meas_records = (
                 db.query(Measurement)
                 .filter(Measurement.case_id == case_id)

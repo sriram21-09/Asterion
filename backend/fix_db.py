@@ -19,6 +19,7 @@ db.query(MovementEvent).filter(MovementEvent.case_id == 1).delete()
 cdrs = db.query(CDRRecord).filter(CDRRecord.case_id == 1).all()
 
 import datetime
+
 now = datetime.datetime.utcnow()
 
 measurements = []

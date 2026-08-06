@@ -170,7 +170,9 @@ def _validate_single(
         try:
             sci_m = SciMeasurement(
                 measurement_id=m.measurement_id,
-                tower_id=m.tower_id if (m.tower_id and m.tower_id.strip()) else "UNRESOLVED",
+                tower_id=m.tower_id
+                if (m.tower_id and m.tower_id.strip())
+                else "UNRESOLVED",
                 timestamp=dt,
                 rssi_dbm=m.rssi_dbm if m.rssi_dbm is not None else -80.0,
                 latitude=m.latitude,

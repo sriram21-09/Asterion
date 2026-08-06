@@ -66,6 +66,7 @@ def compare_cases(
 )
 def get_case_provenance_in_cases(id: int, db: Session = Depends(get_db)):
     from app.services.provenance_service import ProvenanceService
+
     result = ProvenanceService.get_case_provenance(db, case_id=id)
     return APIResponse(success=True, data=result)
 

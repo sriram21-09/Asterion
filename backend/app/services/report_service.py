@@ -95,24 +95,106 @@ class VectorMapDrawer:
         d = Drawing(width, height)
 
         # Background Map Canvas
-        d.add(Rect(0, 0, width, height, fillColor=colors.HexColor("#0f172a"), strokeColor=colors.HexColor("#334155"), strokeWidth=1, rx=4, ry=4))
+        d.add(
+            Rect(
+                0,
+                0,
+                width,
+                height,
+                fillColor=colors.HexColor("#0f172a"),
+                strokeColor=colors.HexColor("#334155"),
+                strokeWidth=1,
+                rx=4,
+                ry=4,
+            )
+        )
 
         if not has_data or estimated_lat is None or estimated_lon is None:
             # Placeholder map for empty cases / no localization data
             for x in range(40, int(width), 50):
-                d.add(Line(x, 0, x, height, strokeColor=colors.HexColor("#1e293b"), strokeWidth=0.5, strokeDashArray=[2, 2]))
+                d.add(
+                    Line(
+                        x,
+                        0,
+                        x,
+                        height,
+                        strokeColor=colors.HexColor("#1e293b"),
+                        strokeWidth=0.5,
+                        strokeDashArray=[2, 2],
+                    )
+                )
             for y in range(30, int(height), 40):
-                d.add(Line(0, y, width, y, strokeColor=colors.HexColor("#1e293b"), strokeWidth=0.5, strokeDashArray=[2, 2]))
-            d.add(String(width / 2.0 - 130, height / 2.0 + 4, "NO LOCALIZATION AVAILABLE (INSUFFICIENT DATA)", fontName="Helvetica-Bold", fontSize=9, fillColor=colors.HexColor("#64748b")))
-            d.add(Rect(8, 8, width - 16, 20, fillColor=colors.HexColor("#1e293b"), strokeColor=colors.HexColor("#334155"), strokeWidth=0.5, rx=2, ry=2))
-            d.add(String(14, 14, "Map Status: Not Generated  |  CRS: WGS84 (EPSG:4326)", fontName="Helvetica", fontSize=7, fillColor=colors.HexColor("#94a3b8")))
+                d.add(
+                    Line(
+                        0,
+                        y,
+                        width,
+                        y,
+                        strokeColor=colors.HexColor("#1e293b"),
+                        strokeWidth=0.5,
+                        strokeDashArray=[2, 2],
+                    )
+                )
+            d.add(
+                String(
+                    width / 2.0 - 130,
+                    height / 2.0 + 4,
+                    "NO LOCALIZATION AVAILABLE (INSUFFICIENT DATA)",
+                    fontName="Helvetica-Bold",
+                    fontSize=9,
+                    fillColor=colors.HexColor("#64748b"),
+                )
+            )
+            d.add(
+                Rect(
+                    8,
+                    8,
+                    width - 16,
+                    20,
+                    fillColor=colors.HexColor("#1e293b"),
+                    strokeColor=colors.HexColor("#334155"),
+                    strokeWidth=0.5,
+                    rx=2,
+                    ry=2,
+                )
+            )
+            d.add(
+                String(
+                    14,
+                    14,
+                    "Map Status: Not Generated  |  CRS: WGS84 (EPSG:4326)",
+                    fontName="Helvetica",
+                    fontSize=7,
+                    fillColor=colors.HexColor("#94a3b8"),
+                )
+            )
             return d
 
         # Grid lines (Coordinate Reference Frame)
         for x in range(40, int(width), 50):
-            d.add(Line(x, 0, x, height, strokeColor=colors.HexColor("#1e293b"), strokeWidth=0.5, strokeDashArray=[2, 2]))
+            d.add(
+                Line(
+                    x,
+                    0,
+                    x,
+                    height,
+                    strokeColor=colors.HexColor("#1e293b"),
+                    strokeWidth=0.5,
+                    strokeDashArray=[2, 2],
+                )
+            )
         for y in range(30, int(height), 40):
-            d.add(Line(0, y, width, y, strokeColor=colors.HexColor("#1e293b"), strokeWidth=0.5, strokeDashArray=[2, 2]))
+            d.add(
+                Line(
+                    0,
+                    y,
+                    width,
+                    y,
+                    strokeColor=colors.HexColor("#1e293b"),
+                    strokeWidth=0.5,
+                    strokeDashArray=[2, 2],
+                )
+            )
 
         # Center coordinates calculation (pixel mapping)
         cx, cy = width / 2.0, height / 2.0 + 10.0
@@ -130,44 +212,176 @@ class VectorMapDrawer:
         for t in towers:
             tx, ty = float(t.get("x", cx)), float(t.get("y", cy))
             if prev_pt:
-                d.add(Line(prev_pt[0], prev_pt[1], tx, ty, strokeColor=colors.HexColor("#f59e0b"), strokeWidth=1.2, strokeDashArray=[4, 3]))
+                d.add(
+                    Line(
+                        prev_pt[0],
+                        prev_pt[1],
+                        tx,
+                        ty,
+                        strokeColor=colors.HexColor("#f59e0b"),
+                        strokeWidth=1.2,
+                        strokeDashArray=[4, 3],
+                    )
+                )
             prev_pt = (tx, ty)
             # Line to center
-            d.add(Line(tx, ty, cx, cy, strokeColor=colors.HexColor("#38bdf8"), strokeWidth=0.8, strokeDashArray=[2, 2]))
+            d.add(
+                Line(
+                    tx,
+                    ty,
+                    cx,
+                    cy,
+                    strokeColor=colors.HexColor("#38bdf8"),
+                    strokeWidth=0.8,
+                    strokeDashArray=[2, 2],
+                )
+            )
 
         # Draw Sector Arcs / Cell Towers
         for t in towers:
             tx, ty = float(t.get("x", cx)), float(t.get("y", cy))
             tid = str(t.get("id", "Site Tower"))
             # Tower Triangle Icon
-            d.add(Polygon([tx - 7, ty - 6, tx + 7, ty - 6, tx, ty + 9], fillColor=colors.HexColor("#0284c7"), strokeColor=colors.HexColor("#38bdf8"), strokeWidth=1))
+            d.add(
+                Polygon(
+                    [tx - 7, ty - 6, tx + 7, ty - 6, tx, ty + 9],
+                    fillColor=colors.HexColor("#0284c7"),
+                    strokeColor=colors.HexColor("#38bdf8"),
+                    strokeWidth=1,
+                )
+            )
             # Sector Coverage Circle Indicator
-            d.add(Circle(tx, ty, 24, fillColor=colors.transparent, strokeColor=colors.HexColor("#0284c7"), strokeWidth=0.6, strokeDashArray=[1, 2]))
+            d.add(
+                Circle(
+                    tx,
+                    ty,
+                    24,
+                    fillColor=colors.transparent,
+                    strokeColor=colors.HexColor("#0284c7"),
+                    strokeWidth=0.6,
+                    strokeDashArray=[1, 2],
+                )
+            )
             # Label
-            d.add(String(tx - 35, ty - 16, tid, fontName="Helvetica-Bold", fontSize=7, fillColor=colors.HexColor("#94a3b8")))
+            d.add(
+                String(
+                    tx - 35,
+                    ty - 16,
+                    tid,
+                    fontName="Helvetica-Bold",
+                    fontSize=7,
+                    fillColor=colors.HexColor("#94a3b8"),
+                )
+            )
 
         # Error Ellipse (95% Confidence Bounds)
         rx = 36.0
         if error_ellipse and error_ellipse.get("semi_major_m"):
             rx = min(70.0, max(15.0, float(error_ellipse["semi_major_m"]) / 4.0))
 
-        d.add(Circle(cx, cy, rx, fillColor=colors.HexColor("#ef444422"), strokeColor=colors.HexColor("#f87171"), strokeWidth=1.5, strokeDashArray=[3, 2]))
+        d.add(
+            Circle(
+                cx,
+                cy,
+                rx,
+                fillColor=colors.HexColor("#ef444422"),
+                strokeColor=colors.HexColor("#f87171"),
+                strokeWidth=1.5,
+                strokeDashArray=[3, 2],
+            )
+        )
 
         # Estimated Device Center Marker (Red target dot)
-        d.add(Circle(cx, cy, 6, fillColor=colors.HexColor("#ef4444"), strokeColor=colors.HexColor("#ffffff"), strokeWidth=1.5))
-        d.add(Circle(cx, cy, 14, fillColor=colors.transparent, strokeColor=colors.HexColor("#ef4444"), strokeWidth=0.8))
-        d.add(String(cx + 10, cy + 10, f"Estimated Pos ({estimated_lat:.4f}°, {estimated_lon:.4f}°)", fontName="Helvetica-Bold", fontSize=8, fillColor=colors.HexColor("#fecdd3")))
+        d.add(
+            Circle(
+                cx,
+                cy,
+                6,
+                fillColor=colors.HexColor("#ef4444"),
+                strokeColor=colors.HexColor("#ffffff"),
+                strokeWidth=1.5,
+            )
+        )
+        d.add(
+            Circle(
+                cx,
+                cy,
+                14,
+                fillColor=colors.transparent,
+                strokeColor=colors.HexColor("#ef4444"),
+                strokeWidth=0.8,
+            )
+        )
+        d.add(
+            String(
+                cx + 10,
+                cy + 10,
+                f"Estimated Pos ({estimated_lat:.4f}°, {estimated_lon:.4f}°)",
+                fontName="Helvetica-Bold",
+                fontSize=8,
+                fillColor=colors.HexColor("#fecdd3"),
+            )
+        )
 
         # North Arrow & Scale Box (Top Right)
-        d.add(Rect(width - 65, height - 35, 55, 28, fillColor=colors.HexColor("#1e293b"), strokeColor=colors.HexColor("#334155"), strokeWidth=0.5))
-        d.add(String(width - 55, height - 20, "N ▲", fontName="Helvetica-Bold", fontSize=10, fillColor=colors.HexColor("#38bdf8")))
-        d.add(String(width - 58, height - 30, "Scale: 500m", fontName="Helvetica", fontSize=6.5, fillColor=colors.HexColor("#cbd5e1")))
+        d.add(
+            Rect(
+                width - 65,
+                height - 35,
+                55,
+                28,
+                fillColor=colors.HexColor("#1e293b"),
+                strokeColor=colors.HexColor("#334155"),
+                strokeWidth=0.5,
+            )
+        )
+        d.add(
+            String(
+                width - 55,
+                height - 20,
+                "N ▲",
+                fontName="Helvetica-Bold",
+                fontSize=10,
+                fillColor=colors.HexColor("#38bdf8"),
+            )
+        )
+        d.add(
+            String(
+                width - 58,
+                height - 30,
+                "Scale: 500m",
+                fontName="Helvetica",
+                fontSize=6.5,
+                fillColor=colors.HexColor("#cbd5e1"),
+            )
+        )
 
         # Map Legend & Coordinate Reference System Footer (Bottom)
-        d.add(Rect(8, 8, width - 16, 20, fillColor=colors.HexColor("#1e293b"), strokeColor=colors.HexColor("#334155"), strokeWidth=0.5, rx=2, ry=2))
-        bbox_str = f"BBox: {estimated_lat-0.01:.2f}°N–{estimated_lat+0.01:.2f}°N, {estimated_lon-0.01:.2f}°E–{estimated_lon+0.01:.2f}°E"
+        d.add(
+            Rect(
+                8,
+                8,
+                width - 16,
+                20,
+                fillColor=colors.HexColor("#1e293b"),
+                strokeColor=colors.HexColor("#334155"),
+                strokeWidth=0.5,
+                rx=2,
+                ry=2,
+            )
+        )
+        bbox_str = f"BBox: {estimated_lat - 0.01:.2f}°N–{estimated_lat + 0.01:.2f}°N, {estimated_lon - 0.01:.2f}°E–{estimated_lon + 0.01:.2f}°E"
         legend_str = f"▲ Cell Tower  ● Estimated Pos  ⬡ Error Bounds  |  Path Mode: Filtered Trajectory  |  {bbox_str}"
-        d.add(String(14, 14, legend_str, fontName="Helvetica-Bold", fontSize=6.5, fillColor=colors.HexColor("#e2e8f0")))
+        d.add(
+            String(
+                14,
+                14,
+                legend_str,
+                fontName="Helvetica-Bold",
+                fontSize=6.5,
+                fillColor=colors.HexColor("#e2e8f0"),
+            )
+        )
 
         return d
 
@@ -252,13 +466,25 @@ class ReportContext:
     def _compute_trajectory_stats(self) -> dict[str, Any]:
         valid_pts = []
         for m in self.measurements:
-            if m.latitude is not None and m.longitude is not None and (abs(m.latitude) > 0.001 or abs(m.longitude) > 0.001):
+            if (
+                m.latitude is not None
+                and m.longitude is not None
+                and (abs(m.latitude) > 0.001 or abs(m.longitude) > 0.001)
+            ):
                 valid_pts.append((m.latitude, m.longitude, m.timestamp))
         for c in self.cdr_records:
-            if c.latitude is not None and c.longitude is not None and (abs(c.latitude) > 0.001 or abs(c.longitude) > 0.001):
+            if (
+                c.latitude is not None
+                and c.longitude is not None
+                and (abs(c.latitude) > 0.001 or abs(c.longitude) > 0.001)
+            ):
                 valid_pts.append((c.latitude, c.longitude, c.timestamp))
 
-        total_pts = len(valid_pts) if valid_pts else len(self.cdr_records) + len(self.measurements)
+        total_pts = (
+            len(valid_pts)
+            if valid_pts
+            else len(self.cdr_records) + len(self.measurements)
+        )
 
         if not valid_pts:
             return {
@@ -299,7 +525,9 @@ class ReportContext:
             max_t = _ts_key(valid_pts[-1])
             time_span_min = max(1, int(round((max_t - min_t).total_seconds() / 60.0)))
 
-        avg_speed = round(dist_km / (time_span_min / 60.0), 1) if time_span_min > 0 else 0.0
+        avg_speed = (
+            round(dist_km / (time_span_min / 60.0), 1) if time_span_min > 0 else 0.0
+        )
 
         return {
             "total_points": total_pts,
@@ -313,10 +541,16 @@ class ReportContext:
         hasher.update(str(self.case.id).encode("utf-8"))
         hasher.update(str(self.case.title or "").encode("utf-8"))
         for c in sorted(self.cdr_records, key=lambda x: x.id):
-            hasher.update(f"CDR:{c.id}:{c.timestamp}:{c.first_cgi}:{c.duration}".encode("utf-8"))
+            hasher.update(
+                f"CDR:{c.id}:{c.timestamp}:{c.first_cgi}:{c.duration}".encode("utf-8")
+            )
         for m in sorted(self.measurements, key=lambda x: x.id):
             rssi_val = getattr(m, "rssi_dbm", getattr(m, "rssi", None))
-            hasher.update(f"MEAS:{m.id}:{m.timestamp}:{m.latitude}:{m.longitude}:{rssi_val}:{m.source}".encode("utf-8"))
+            hasher.update(
+                f"MEAS:{m.id}:{m.timestamp}:{m.latitude}:{m.longitude}:{rssi_val}:{m.source}".encode(
+                    "utf-8"
+                )
+            )
         return hasher.hexdigest()
 
     def _compute_data_quality(self) -> dict[str, Any]:
@@ -337,11 +571,19 @@ class ReportContext:
             }
 
         accepted_cnt = total_records
-        valid_meas = sum(1 for m in self.measurements if m.latitude is not None and m.longitude is not None)
-        valid_cdrs = sum(1 for c in self.cdr_records if c.first_cgi or c.latitude is not None)
+        valid_meas = sum(
+            1
+            for m in self.measurements
+            if m.latitude is not None and m.longitude is not None
+        )
+        valid_cdrs = sum(
+            1 for c in self.cdr_records if c.first_cgi or c.latitude is not None
+        )
 
         ds_comp_pct = round((accepted_cnt / max(total_records, 1)) * 100.0, 1)
-        meas_comp_pct = round(((valid_meas + valid_cdrs) / max(total_records, 1)) * 100.0, 1)
+        meas_comp_pct = round(
+            ((valid_meas + valid_cdrs) / max(total_records, 1)) * 100.0, 1
+        )
 
         unique_towers = set()
         for c in self.cdr_records:
@@ -353,13 +595,26 @@ class ReportContext:
             if m.tower_id:
                 unique_towers.add(m.tower_id)
 
-        resolved_towers = sum(1 for c in self.cdr_records if c.latitude is not None and c.longitude is not None)
-        tower_cnt = len(unique_towers) if unique_towers else max(1, len(self.measurements))
-        tower_cov_pct = min(100.0, round((resolved_towers / max(tower_cnt, 1)) * 100.0, 1)) if tower_cnt > 0 else 0.0
+        resolved_towers = sum(
+            1
+            for c in self.cdr_records
+            if c.latitude is not None and c.longitude is not None
+        )
+        tower_cnt = (
+            len(unique_towers) if unique_towers else max(1, len(self.measurements))
+        )
+        tower_cov_pct = (
+            min(100.0, round((resolved_towers / max(tower_cnt, 1)) * 100.0, 1))
+            if tower_cnt > 0
+            else 0.0
+        )
 
         conf_score = 0.85
         conf_level_str = "High Confidence"
-        if self.confidence_results and self.confidence_results[0].confidence_score is not None:
+        if (
+            self.confidence_results
+            and self.confidence_results[0].confidence_score is not None
+        ):
             raw_s = self.confidence_results[0].confidence_score
             conf_score = raw_s if raw_s <= 1.0 else raw_s / 100.0
             if conf_score >= 0.90:
@@ -394,8 +649,14 @@ class SectionFactory:
         # 1. Header Block with Report ID
         header_data = [
             [
-                Paragraph("<b>INVESTIGATION REPORT</b><br/><font size=8 color='#64748b'>Evidence Analysis &amp; Signal Provenance</font>", styles["Normal"]),
-                Paragraph(f"<b>Report ID:</b> {ctx.report_id}<br/><b>Generated:</b> {ctx.generated_at_str}<br/><b>Case Ref:</b> CASE-{ctx.case.id}", styles["Normal"]),
+                Paragraph(
+                    "<b>INVESTIGATION REPORT</b><br/><font size=8 color='#64748b'>Evidence Analysis &amp; Signal Provenance</font>",
+                    styles["Normal"],
+                ),
+                Paragraph(
+                    f"<b>Report ID:</b> {ctx.report_id}<br/><b>Generated:</b> {ctx.generated_at_str}<br/><b>Case Ref:</b> CASE-{ctx.case.id}",
+                    styles["Normal"],
+                ),
             ]
         ]
         header_table = Table(header_data, colWidths=[270, 234])
@@ -412,8 +673,14 @@ class SectionFactory:
         story.append(Spacer(1, 4))
 
         # 2. Case Metadata Table
-        valid_ts = [m.timestamp for m in ctx.measurements if m.timestamp] + [c.timestamp for c in ctx.cdr_records if c.timestamp]
-        date_range = f"{min(valid_ts).strftime('%Y-%m-%d %H:%M')} to {max(valid_ts).strftime('%Y-%m-%d %H:%M')}" if valid_ts else "N/A (No measurements)"
+        valid_ts = [m.timestamp for m in ctx.measurements if m.timestamp] + [
+            c.timestamp for c in ctx.cdr_records if c.timestamp
+        ]
+        date_range = (
+            f"{min(valid_ts).strftime('%Y-%m-%d %H:%M')} to {max(valid_ts).strftime('%Y-%m-%d %H:%M')}"
+            if valid_ts
+            else "N/A (No measurements)"
+        )
         status_str = "Analysis Completed ✓" if ctx.has_data else "Insufficient Data ⚠"
 
         metadata_data = [
@@ -445,7 +712,9 @@ class SectionFactory:
         story.append(Spacer(1, 10))
 
         # 3. Visual Executive Summary Checklist
-        summary_title = Paragraph("<b>Executive Summary Checklist</b>", styles["Heading3"])
+        summary_title = Paragraph(
+            "<b>Executive Summary Checklist</b>", styles["Heading3"]
+        )
         story.append(summary_title)
         story.append(Spacer(1, 4))
 
@@ -478,7 +747,14 @@ class SectionFactory:
                     ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
                     ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                     ("FONTSIZE", (0, 0), (-1, -1), 8.5),
-                    ("TEXTCOLOR", (1, 1), (1, -1), colors.HexColor("#16a34a") if ctx.has_data else colors.HexColor("#d97706")),
+                    (
+                        "TEXTCOLOR",
+                        (1, 1),
+                        (1, -1),
+                        colors.HexColor("#16a34a")
+                        if ctx.has_data
+                        else colors.HexColor("#d97706"),
+                    ),
                     ("FONTNAME", (1, 1), (1, -1), "Helvetica-Bold"),
                     ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
                     ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#ffffff")),
@@ -526,7 +802,9 @@ class SectionFactory:
             "mathematical models and signal propagation physics. All results should be interpreted alongside "
             "supporting telecom records and standard investigative procedures."
         )
-        disc_table = Table([[Paragraph(disclaimer_text, styles["Normal"])]], colWidths=[504])
+        disc_table = Table(
+            [[Paragraph(disclaimer_text, styles["Normal"])]], colWidths=[504]
+        )
         disc_table.setStyle(
             TableStyle(
                 [
@@ -557,7 +835,11 @@ class SectionFactory:
             no_loc_p = Paragraph("N/A (No localization performed)", styles["Normal"])
             no_data_table = Table(
                 [
-                    ["Parameter / Metric", "Computed Value", "Qualitative Rank / Interpretation"],
+                    [
+                        "Parameter / Metric",
+                        "Computed Value",
+                        "Qualitative Rank / Interpretation",
+                    ],
                     ["Estimated Latitude", "N/A", "No measurement data"],
                     ["Estimated Longitude", "N/A", "No measurement data"],
                     ["Position Uncertainty Radius", "N/A", "No measurement data"],
@@ -583,17 +865,34 @@ class SectionFactory:
             story.append(no_data_table)
             story.append(Spacer(1, 10))
 
-            story.append(Paragraph("<b>Static Investigation Map Snapshot</b>", styles["Heading3"]))
+            story.append(
+                Paragraph(
+                    "<b>Static Investigation Map Snapshot</b>", styles["Heading3"]
+                )
+            )
             story.append(Spacer(1, 4))
             story.append(VectorMapDrawer.create_investigation_map(has_data=False))
             story.append(Spacer(1, 10))
 
-            story.append(Paragraph("<b>Movement Summary & Timeline</b>", styles["Heading3"]))
+            story.append(
+                Paragraph("<b>Movement Summary & Timeline</b>", styles["Heading3"])
+            )
             story.append(Spacer(1, 4))
-            story.append(Paragraph("• <b>Total Trajectory Points:</b> 0 &nbsp;&nbsp;|&nbsp;&nbsp; • <b>Estimated Distance:</b> N/A &nbsp;&nbsp;|&nbsp;&nbsp; • <b>Observation Period:</b> N/A", styles["Normal"]))
+            story.append(
+                Paragraph(
+                    "• <b>Total Trajectory Points:</b> 0 &nbsp;&nbsp;|&nbsp;&nbsp; • <b>Estimated Distance:</b> N/A &nbsp;&nbsp;|&nbsp;&nbsp; • <b>Observation Period:</b> N/A",
+                    styles["Normal"],
+                )
+            )
             story.append(Spacer(1, 6))
 
-            empty_timeline = Table([["Timestamp", "Associated Cell ID / CGI", "Connection Event Type"], ["N/A", "No records found for this case", "N/A"]], colWidths=[110, 220, 174])
+            empty_timeline = Table(
+                [
+                    ["Timestamp", "Associated Cell ID / CGI", "Connection Event Type"],
+                    ["N/A", "No records found for this case", "N/A"],
+                ],
+                colWidths=[110, 220, 174],
+            )
             empty_timeline.setStyle(
                 TableStyle(
                     [
@@ -618,8 +917,22 @@ class SectionFactory:
 
         if lat_val is None or lon_val is None:
             # Check measurements or CDR records for lat/lon
-            valid_m = next((m for m in ctx.measurements if m.latitude is not None and m.longitude is not None), None)
-            valid_c = next((c for c in ctx.cdr_records if c.latitude is not None and c.longitude is not None), None)
+            valid_m = next(
+                (
+                    m
+                    for m in ctx.measurements
+                    if m.latitude is not None and m.longitude is not None
+                ),
+                None,
+            )
+            valid_c = next(
+                (
+                    c
+                    for c in ctx.cdr_records
+                    if c.latitude is not None and c.longitude is not None
+                ),
+                None,
+            )
             if valid_m:
                 lat_val, lon_val = valid_m.latitude, valid_m.longitude
             elif valid_c:
@@ -630,11 +943,27 @@ class SectionFactory:
         first_conf = ctx.confidence_results[0] if ctx.confidence_results else None
         gdop_val = getattr(first_conf, "gdop", 2.3) if first_conf else 2.3
         gdop_val = 2.3 if gdop_val is None else gdop_val
-        gdop_rank = "Excellent Geometry" if gdop_val <= 2.0 else ("Good Geometry" if gdop_val <= 5.0 else "Poor Geometry")
+        gdop_rank = (
+            "Excellent Geometry"
+            if gdop_val <= 2.0
+            else ("Good Geometry" if gdop_val <= 5.0 else "Poor Geometry")
+        )
 
-        semi_maj = getattr(first_conf, "error_ellipse_semi_major_m", 120.0) if first_conf else 120.0
-        semi_min = getattr(first_conf, "error_ellipse_semi_minor_m", 75.0) if first_conf else 75.0
-        orient = getattr(first_conf, "error_ellipse_orientation_deg", 45.0) if first_conf else 45.0
+        semi_maj = (
+            getattr(first_conf, "error_ellipse_semi_major_m", 120.0)
+            if first_conf
+            else 120.0
+        )
+        semi_min = (
+            getattr(first_conf, "error_ellipse_semi_minor_m", 75.0)
+            if first_conf
+            else 75.0
+        )
+        orient = (
+            getattr(first_conf, "error_ellipse_orientation_deg", 45.0)
+            if first_conf
+            else 45.0
+        )
         semi_maj = 120.0 if semi_maj is None else semi_maj
         semi_min = 75.0 if semi_min is None else semi_min
         orient = 45.0 if orient is None else orient
@@ -645,13 +974,37 @@ class SectionFactory:
         gdop_p = Paragraph(f"<b>{gdop_rank}</b>", styles["Normal"])
 
         pos_data = [
-            ["Parameter / Metric", "Computed Value", "Qualitative Rank / Interpretation"],
-            ["Estimated Latitude", f"{lat_val:.6f}° N" if lat_val else "N/A", "WGS84 Datum"],
-            ["Estimated Longitude", f"{lon_val:.6f}° E" if lon_val else "N/A", "WGS84 Datum"],
-            ["Position Uncertainty Radius", f"± {err_m:.1f} meters", "High Spatial Precision"],
+            [
+                "Parameter / Metric",
+                "Computed Value",
+                "Qualitative Rank / Interpretation",
+            ],
+            [
+                "Estimated Latitude",
+                f"{lat_val:.6f}° N" if lat_val else "N/A",
+                "WGS84 Datum",
+            ],
+            [
+                "Estimated Longitude",
+                f"{lon_val:.6f}° E" if lon_val else "N/A",
+                "WGS84 Datum",
+            ],
+            [
+                "Position Uncertainty Radius",
+                f"± {err_m:.1f} meters",
+                "High Spatial Precision",
+            ],
             ["GDOP (Geometric Dilution)", f"{gdop_val:.2f}", gdop_p],
-            ["95% Error Ellipse Semi-Major", f"{semi_maj:.1f} meters", f"Orientation: {orient:.1f}°"],
-            ["95% Error Ellipse Semi-Minor", f"{semi_min:.1f} meters", f"Enclosed Area: {area_sqm:.0f} m²"],
+            [
+                "95% Error Ellipse Semi-Major",
+                f"{semi_maj:.1f} meters",
+                f"Orientation: {orient:.1f}°",
+            ],
+            [
+                "95% Error Ellipse Semi-Minor",
+                f"{semi_min:.1f} meters",
+                f"Enclosed Area: {area_sqm:.0f} m²",
+            ],
         ]
         pos_table = Table(pos_data, colWidths=[170, 150, 184])
         pos_table.setStyle(
@@ -671,14 +1024,18 @@ class SectionFactory:
         story.append(Spacer(1, 10))
 
         # Static Investigation Map Drawing
-        story.append(Paragraph("<b>Static Investigation Map Snapshot</b>", styles["Heading3"]))
+        story.append(
+            Paragraph("<b>Static Investigation Map Snapshot</b>", styles["Heading3"])
+        )
         story.append(Spacer(1, 4))
 
         # Gather real tower coordinates if available
         towers = []
         for i, c in enumerate(ctx.cdr_records[:3]):
-            cgi = c.first_cgi or f"CGI-404-45-{13870+i}"
-            towers.append({"id": cgi, "x": 130.0 + i * 110.0, "y": 120.0 + (i % 2) * 35.0})
+            cgi = c.first_cgi or f"CGI-404-45-{13870 + i}"
+            towers.append(
+                {"id": cgi, "x": 130.0 + i * 110.0, "y": 120.0 + (i % 2) * 35.0}
+            )
         if not towers:
             towers = [
                 {"id": "CGI-404-45-13872", "x": 132.0, "y": 145.0},
@@ -699,7 +1056,9 @@ class SectionFactory:
         story.append(Spacer(1, 10))
 
         # Movement Timeline & Trajectory Summary
-        story.append(Paragraph("<b>Movement Summary & Timeline</b>", styles["Heading3"]))
+        story.append(
+            Paragraph("<b>Movement Summary & Timeline</b>", styles["Heading3"])
+        )
         story.append(Spacer(1, 4))
 
         tr_stats = ctx.trajectory_stats
@@ -713,12 +1072,18 @@ class SectionFactory:
         story.append(Spacer(1, 6))
 
         # Handover Sequence Table with Real Cell IDs / CGIs
-        timeline_data = [["Timestamp", "Associated Cell ID / CGI", "Connection Event Type"]]
+        timeline_data = [
+            ["Timestamp", "Associated Cell ID / CGI", "Connection Event Type"]
+        ]
         if ctx.cdr_records:
             for c in ctx.cdr_records[:4]:
                 ts_s = c.timestamp.strftime("%H:%M:%S") if c.timestamp else "10:00:00"
                 cgi_s = c.first_cgi or f"Cell ID 404-45-{c.id:05d}"
-                event_s = "Primary Tower Connection" if c == ctx.cdr_records[0] else "Inter-Sector Handover"
+                event_s = (
+                    "Primary Tower Connection"
+                    if c == ctx.cdr_records[0]
+                    else "Inter-Sector Handover"
+                )
                 timeline_data.append([ts_s, cgi_s, event_s])
         else:
             timeline_data.extend(
@@ -753,7 +1118,11 @@ class SectionFactory:
         story = []
         styles = ctx.styles
 
-        story.append(Paragraph("2. Evidence Provenance & Measurement Augmentation", styles["Heading1"]))
+        story.append(
+            Paragraph(
+                "2. Evidence Provenance & Measurement Augmentation", styles["Heading1"]
+            )
+        )
         story.append(Spacer(1, 4))
 
         prov = ctx.provenance
@@ -779,7 +1148,9 @@ class SectionFactory:
             + "<b>Evidence Integrity Preservation Assurance:</b><br/>"
             "Original telecom records remain 100% unchanged. All derived values, where present, supplement missing attributes only and are explicitly marked and fully traceable."
         )
-        callout_table = Table([[Paragraph(rationale_text, styles["Normal"])]], colWidths=[504])
+        callout_table = Table(
+            [[Paragraph(rationale_text, styles["Normal"])]], colWidths=[504]
+        )
         callout_table.setStyle(
             TableStyle(
                 [
@@ -796,7 +1167,9 @@ class SectionFactory:
         story.append(Spacer(1, 10))
 
         # Dynamic Composition Progress Bar (Proportional display)
-        story.append(Paragraph("<b>Measurement Composition Ratio</b>", styles["Heading3"]))
+        story.append(
+            Paragraph("<b>Measurement Composition Ratio</b>", styles["Heading3"])
+        )
         story.append(Spacer(1, 4))
 
         def _bar(pct: float) -> str:
@@ -806,10 +1179,25 @@ class SectionFactory:
             return "█" * bars + "░" * (20 - bars)
 
         comp_data = [
-            ["Source Classification", "Exact Record Count", "Percentage Ratio", "Graphical Distribution"],
-            ["Imported Data (REAL)", str(counts.get("REAL", 0)), f"{imp_pct:.1f}%", _bar(imp_pct)],
+            [
+                "Source Classification",
+                "Exact Record Count",
+                "Percentage Ratio",
+                "Graphical Distribution",
+            ],
+            [
+                "Imported Data (REAL)",
+                str(counts.get("REAL", 0)),
+                f"{imp_pct:.1f}%",
+                _bar(imp_pct),
+            ],
             ["Augmented RSSI / TA", str(aug_cnt), f"{gen_pct:.1f}%", _bar(gen_pct)],
-            ["Simulated Scenario Data", str(counts.get("SIMULATED", 0)), f"{sim_pct:.1f}%", _bar(sim_pct)],
+            [
+                "Simulated Scenario Data",
+                str(counts.get("SIMULATED", 0)),
+                f"{sim_pct:.1f}%",
+                _bar(sim_pct),
+            ],
         ]
         comp_table = Table(comp_data, colWidths=[140, 100, 90, 174])
         comp_table.setStyle(
@@ -829,21 +1217,49 @@ class SectionFactory:
         story.append(Spacer(1, 10))
 
         # Conditional Evidence Chain Flow Diagram Table
-        story.append(Paragraph("<b>Forensic Evidence Chain Flow</b>", styles["Heading3"]))
+        story.append(
+            Paragraph("<b>Forensic Evidence Chain Flow</b>", styles["Heading3"])
+        )
         story.append(Spacer(1, 4))
 
         if has_aug:
             chain_data = [
                 ["Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5", "Stage 6"],
-                ["Imported CDR", "Validation", "Augmentation", "Localization", "Tracking", "PDF Report"],
-                ["[Telecom Data]", "[Bounds Check]", "[RSSI Derived]", "[Multilateration]", "[EKF Filter]", "[SHA-256 Verified]"],
+                [
+                    "Imported CDR",
+                    "Validation",
+                    "Augmentation",
+                    "Localization",
+                    "Tracking",
+                    "PDF Report",
+                ],
+                [
+                    "[Telecom Data]",
+                    "[Bounds Check]",
+                    "[RSSI Derived]",
+                    "[Multilateration]",
+                    "[EKF Filter]",
+                    "[SHA-256 Verified]",
+                ],
             ]
             col_w = [84, 84, 84, 84, 84, 84]
         else:
             chain_data = [
                 ["Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5"],
-                ["Imported CDR", "Validation", "Localization", "Tracking", "PDF Report"],
-                ["[Telecom Data]", "[Bounds Check]", "[Direct Multilateration]", "[EKF Filter]", "[SHA-256 Verified]"],
+                [
+                    "Imported CDR",
+                    "Validation",
+                    "Localization",
+                    "Tracking",
+                    "PDF Report",
+                ],
+                [
+                    "[Telecom Data]",
+                    "[Bounds Check]",
+                    "[Direct Multilateration]",
+                    "[EKF Filter]",
+                    "[SHA-256 Verified]",
+                ],
             ]
             col_w = [100, 100, 104, 100, 100]
 
@@ -865,7 +1281,9 @@ class SectionFactory:
         story.append(Spacer(1, 10))
 
         # System Validation Statistics Table (Professional bullet dots)
-        story.append(Paragraph("<b>System Validation Statistics</b>", styles["Heading3"]))
+        story.append(
+            Paragraph("<b>System Validation Statistics</b>", styles["Heading3"])
+        )
         story.append(Spacer(1, 4))
 
         total_records = len(ctx.measurements) + len(ctx.cdr_records)
@@ -875,8 +1293,16 @@ class SectionFactory:
             ["Accepted Validated Records", str(total_records), "● Accepted"],
             ["Rejected Out-of-Bounds Records", "0", "● Passed"],
             ["Malformed CDR Schema Records", "0", "● Passed"],
-            ["Augmented Signal Parameters", str(aug_cnt), "● Augmented" if has_aug else "● Not Required"],
-            ["Simulated Scenario Measurements", str(counts.get("SIMULATED", 0)), "● Verified"],
+            [
+                "Augmented Signal Parameters",
+                str(aug_cnt),
+                "● Augmented" if has_aug else "● Not Required",
+            ],
+            [
+                "Simulated Scenario Measurements",
+                str(counts.get("SIMULATED", 0)),
+                "● Verified",
+            ],
         ]
         val_table = Table(val_data, colWidths=[200, 130, 174])
         val_table.setStyle(
@@ -902,7 +1328,9 @@ class SectionFactory:
         story = []
         styles = ctx.styles
 
-        story.append(Paragraph("3. Recommendations & Integrity Declaration", styles["Heading1"]))
+        story.append(
+            Paragraph("3. Recommendations & Integrity Declaration", styles["Heading1"])
+        )
         story.append(Spacer(1, 4))
 
         # Dynamic Factual Recommendations
@@ -911,26 +1339,40 @@ class SectionFactory:
         gdop_val = 2.3 if gdop_val is None else gdop_val
 
         prov = ctx.provenance
-        aug_cnt = prov.get("counts", {}).get("AUGMENTED_RSSI", 0) + prov.get("counts", {}).get("AUGMENTED_TA", 0)
+        aug_cnt = prov.get("counts", {}).get("AUGMENTED_RSSI", 0) + prov.get(
+            "counts", {}
+        ).get("AUGMENTED_TA", 0)
 
         recs_list = []
         if not ctx.has_data:
-            recs_list.append("• Case contains zero measurement/CDR records; import subscriber CDR data before re-initiating localization.")
+            recs_list.append(
+                "• Case contains zero measurement/CDR records; import subscriber CDR data before re-initiating localization."
+            )
         else:
             if gdop_val > 5.0:
-                recs_list.append("• Positioning geometry is limited (GDOP > 5.0); acquire additional sector measurements.")
+                recs_list.append(
+                    "• Positioning geometry is limited (GDOP > 5.0); acquire additional sector measurements."
+                )
             if ctx.data_quality.get("tower_cov_pct", 100.0) < 30.0:
-                recs_list.append("• Spatial resolution is limited by sparse tower coverage (<30% resolved).")
+                recs_list.append(
+                    "• Spatial resolution is limited by sparse tower coverage (<30% resolved)."
+                )
             if aug_cnt > 0:
-                recs_list.append("• Measurement augmentation active; review derived RSSI parameters prior to evidentiary submission.")
+                recs_list.append(
+                    "• Measurement augmentation active; review derived RSSI parameters prior to evidentiary submission."
+                )
 
-            recs_list.extend([
-                "• Review estimated coordinates alongside supporting operator tower dump records.",
-                "• Correlate computed spatial paths with external surveillance or physical evidence.",
-                "• Export evidence package for legal archival and multi-agency review.",
-            ])
+            recs_list.extend(
+                [
+                    "• Review estimated coordinates alongside supporting operator tower dump records.",
+                    "• Correlate computed spatial paths with external surveillance or physical evidence.",
+                    "• Export evidence package for legal archival and multi-agency review.",
+                ]
+            )
 
-        recs_text = "<b>Investigative Recommendations:</b><br/>" + "<br/>".join(recs_list)
+        recs_text = "<b>Investigative Recommendations:</b><br/>" + "<br/>".join(
+            recs_list
+        )
         recs_table = Table([[Paragraph(recs_text, styles["Normal"])]], colWidths=[504])
         recs_table.setStyle(
             TableStyle(
@@ -972,11 +1414,19 @@ class SectionFactory:
         story.append(Spacer(1, 10))
 
         # Technical Appendix Table
-        story.append(Paragraph("<b>Scientific Technical Appendix</b>", styles["Heading3"]))
+        story.append(
+            Paragraph("<b>Scientific Technical Appendix</b>", styles["Heading3"])
+        )
         story.append(Spacer(1, 4))
 
         first_loc = ctx.localization_results[0] if ctx.localization_results else None
-        algo_name = getattr(first_loc, "algorithm", "Multilateration + Calibrated RSSI Propagation") if first_loc else "Multilateration + Calibrated RSSI Propagation"
+        algo_name = (
+            getattr(
+                first_loc, "algorithm", "Multilateration + Calibrated RSSI Propagation"
+            )
+            if first_loc
+            else "Multilateration + Calibrated RSSI Propagation"
+        )
 
         app_data = [
             ["Technical System Attribute", "Specification / Configuration Value"],
@@ -1084,7 +1534,9 @@ class ReportService:
             if c.last_cgi:
                 unique_cgis.add(c.last_cgi)
         towers_involved = (
-            len(unique_cgis) if unique_cgis else (len(ctx.measurements) if ctx.measurements else 0)
+            len(unique_cgis)
+            if unique_cgis
+            else (len(ctx.measurements) if ctx.measurements else 0)
         )
         sector_coverage = (
             min(100.0, round((towers_involved / max(total_meas, 1)) * 100.0, 1))
@@ -1112,23 +1564,35 @@ class ReportService:
                 round(raw_score * 100, 1) if raw_score <= 1.0 else round(raw_score, 1)
             )
 
-        aug_cnt = ctx.provenance.get("counts", {}).get("AUGMENTED_RSSI", 0) + ctx.provenance.get("counts", {}).get("AUGMENTED_TA", 0)
+        aug_cnt = ctx.provenance.get("counts", {}).get(
+            "AUGMENTED_RSSI", 0
+        ) + ctx.provenance.get("counts", {}).get("AUGMENTED_TA", 0)
 
         recs = []
         if not ctx.has_data:
-            recs.append("Case contains zero measurement/CDR records; import subscriber CDR data before re-initiating localization.")
+            recs.append(
+                "Case contains zero measurement/CDR records; import subscriber CDR data before re-initiating localization."
+            )
         else:
             if conf_score < 75.0:
-                recs.append("Positioning geometry is limited; acquire additional sector measurements.")
+                recs.append(
+                    "Positioning geometry is limited; acquire additional sector measurements."
+                )
             if ctx.data_quality.get("tower_cov_pct", 100.0) < 30.0:
-                recs.append("Spatial resolution is limited by sparse tower coverage (<30% resolved).")
+                recs.append(
+                    "Spatial resolution is limited by sparse tower coverage (<30% resolved)."
+                )
             if aug_cnt > 0:
-                recs.append("Measurement augmentation active; review derived RSSI parameters prior to evidentiary submission.")
-            recs.extend([
-                "Review estimated coordinates alongside supporting operator tower dump records.",
-                "Correlate computed spatial paths with external surveillance or physical evidence.",
-                "Export evidence package for legal archival and multi-agency review.",
-            ])
+                recs.append(
+                    "Measurement augmentation active; review derived RSSI parameters prior to evidentiary submission."
+                )
+            recs.extend(
+                [
+                    "Review estimated coordinates alongside supporting operator tower dump records.",
+                    "Correlate computed spatial paths with external surveillance or physical evidence.",
+                    "Export evidence package for legal archival and multi-agency review.",
+                ]
+            )
 
         return {
             "metadata": {
@@ -1161,7 +1625,9 @@ class ReportService:
                 "confidence_score": conf_score,
                 "algorithms_used": algos,
                 "evidence_hash": ctx.evidence_hash,
-                "augmentation_status": "Enabled" if ctx.provenance.get("augmentation_enabled") else "Disabled",
+                "augmentation_status": "Enabled"
+                if ctx.provenance.get("augmentation_enabled")
+                else "Disabled",
             },
             "recommendations": recs,
             "evidence_declaration": "This report preserves the evidence state at the time of generation. Original imported records were not modified during processing.",

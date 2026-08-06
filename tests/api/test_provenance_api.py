@@ -1,6 +1,5 @@
 """Unit tests for ProvenanceService and Provenance API endpoints."""
 
-import pytest
 from datetime import datetime, timezone
 from app.models.case import Case
 from app.models.measurement import Measurement
@@ -9,7 +8,9 @@ from app.services.provenance_service import ProvenanceService
 
 def test_provenance_service_real_data(db_session):
     """Test provenance calculation with 100% REAL measurements."""
-    case = Case(title="Test Real Case", description="Real data case", enable_augmentation=True)
+    case = Case(
+        title="Test Real Case", description="Real data case", enable_augmentation=True
+    )
     db_session.add(case)
     db_session.commit()
     db_session.refresh(case)
@@ -48,7 +49,11 @@ def test_provenance_service_real_data(db_session):
 
 def test_provenance_service_augmented_data(db_session):
     """Test provenance calculation with REAL and AUGMENTED_RSSI measurements."""
-    case = Case(title="Test Augmented Case", description="Augmented data case", enable_augmentation=True)
+    case = Case(
+        title="Test Augmented Case",
+        description="Augmented data case",
+        enable_augmentation=True,
+    )
     db_session.add(case)
     db_session.commit()
     db_session.refresh(case)
@@ -95,7 +100,9 @@ def test_provenance_service_augmented_data(db_session):
 
 def test_provenance_api_endpoint(client, db_session):
     """Test GET /api/v1/cases/{case_id}/provenance endpoint."""
-    case = Case(title="API Case", description="Testing provenance API", enable_augmentation=True)
+    case = Case(
+        title="API Case", description="Testing provenance API", enable_augmentation=True
+    )
     db_session.add(case)
     db_session.commit()
     db_session.refresh(case)

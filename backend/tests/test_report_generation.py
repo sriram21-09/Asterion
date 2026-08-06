@@ -146,6 +146,3 @@ def test_report_generation_with_measurements(setup_cases):
     res_data = res.json()
     assert res_data["success"] is True
     assert "report_path" in res_data["data"]
-
-
-

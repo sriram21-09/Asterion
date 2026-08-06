@@ -13,7 +13,9 @@ class Settings(BaseModel):
     app_version: str = Field(default_factory=lambda: os.getenv("APP_VERSION", "1.0.0"))
     api_prefix: str = Field(default_factory=lambda: os.getenv("API_PREFIX", "/api/v1"))
     database_url: str = Field(
-        default_factory=lambda: os.getenv("DATABASE_URL", "sqlite:///./data/asterion.db")
+        default_factory=lambda: os.getenv(
+            "DATABASE_URL", "sqlite:///./data/asterion.db"
+        )
     )
     log_level: str = Field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
     debug: bool = Field(

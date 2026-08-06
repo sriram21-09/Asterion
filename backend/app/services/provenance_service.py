@@ -35,7 +35,7 @@ class ProvenanceService:
             .group_by(Measurement.source)
             .all()
         )
-        counts_dict = {}
+        counts_dict: dict[str, int] = {}
         for src, count in source_counts:
             if src:
                 clean_src = str(src).upper()

@@ -224,7 +224,7 @@ class EvidenceGenerationService:
         scientific_measurements: list[ScientificMeasurement] = []
         for m in db_measurements:
             # Use stored tower_id first; fall back to parsing measurement_code
-            tower_id = getattr(m, 'tower_id', None)
+            tower_id = getattr(m, "tower_id", None)
             if not tower_id:
                 parts = m.measurement_code.split("-")
                 for part in parts:

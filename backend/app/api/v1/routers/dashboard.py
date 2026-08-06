@@ -48,5 +48,6 @@ def get_heatmap(
 )
 def get_dashboard_provenance(case_id: int, db: Session = Depends(get_db)):
     from app.services.provenance_service import ProvenanceService
+
     result = ProvenanceService.get_case_provenance(db, case_id=case_id)
     return APIResponse(success=True, data=result)
