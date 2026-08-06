@@ -7,7 +7,6 @@ Measurement objects for a given scenario.
 """
 
 from datetime import UTC, datetime, timedelta
-from typing import List
 
 from scientific.models.measurement import Measurement, MeasurementSource
 from scientific.models.scenario_config import ScenarioConfig
