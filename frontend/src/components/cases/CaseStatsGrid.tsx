@@ -7,6 +7,7 @@ interface CaseStatsGridProps {
   validCount: number;
   rejectedCount: number;
   isValidated: boolean;
+  dashboardSummary?: any;
 }
 
 export function CaseStatsGrid({
@@ -14,27 +15,39 @@ export function CaseStatsGrid({
   validCount,
   rejectedCount,
   isValidated,
+  dashboardSummary,
 }: CaseStatsGridProps) {
   // 1. Record counts
-  const totalRecords = measurements.length;
+  const totalRecords = dashboardSummary
+    ? (dashboardSummary.cdr.total_records || dashboardSummary.cdr.total_measurements || measurements.length)
+    : measurements.length;
 
   // 2. Operator breakdown helper
-  const getOperator = (towerId: string) => {
-    const tid = towerId.toUpperCase();
-    if (tid.includes('VDF') || tid.includes('VODA') || tid.includes('VODAFONE')) return 'Vodafone';
-    if (tid.includes('TEL') || tid.includes('TELEKOM') || tid.includes('T-MOB')) return 'Telekom';
-    if (tid.includes('O2')) return 'O2';
-    // Fallback: stable hash based on ID
-    const sum = towerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const ops = ['Vodafone', 'Telekom', 'O2'];
-    return ops[sum % ops.length];
-  };
-
-  const operatorCounts = measurements.reduce((acc, m) => {
-    const op = getOperator(m.tower_id);
-    acc[op] = (acc[op] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  let operatorCounts: Record<string, number> = {};
+  if (dashboardSummary && dashboardSummary.cdr.operator_breakdown) {
+    // Standardize casing to capitalize first letter
+    const breakdown = dashboardSummary.cdr.operator_breakdown;
+    Object.keys(breakdown).forEach(op => {
+      const capOp = op.charAt(0).toUpperCase() + op.slice(1);
+      operatorCounts[capOp] = breakdown[op];
+    });
+  } else {
+    const getOperator = (towerId: string | null) => {
+      const tid = (towerId || '').toUpperCase();
+      if (tid.includes('VDF') || tid.includes('VODA') || tid.includes('VODAFONE')) return 'Vodafone';
+      if (tid.includes('TEL') || tid.includes('TELEKOM') || tid.includes('T-MOB')) return 'Telekom';
+      if (tid.includes('O2')) return 'O2';
+      // Fallback: stable hash based on ID
+      const sum = tid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const ops = ['Vodafone', 'Telekom', 'O2'];
+      return ops[sum % ops.length];
+    };
+    operatorCounts = measurements.reduce((acc, m) => {
+      const op = getOperator(m.tower_id);
+      acc[op] = (acc[op] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }
 
   const operatorPercentage = (count: number) => {
     if (!totalRecords) return 0;
@@ -48,17 +61,23 @@ export function CaseStatsGrid({
     : (isValidated ? 100 : 0);
 
   // 4. Tower resolution rate
-  const uniqueTowers = Array.from(new Set(measurements.map(m => m.tower_id)));
-  const totalTowers = uniqueTowers.length;
-  // A tower is "resolved" if we have measurements for it that contain lat/lon (or if the database resolved it)
-  const resolvedTowers = uniqueTowers.filter(tid => {
-    const m = measurements.find(meas => meas.tower_id === tid);
-    return m && m.latitude !== null && m.longitude !== null;
-  }).length;
+  let totalTowers = 0;
+  let resolvedTowers = 0;
+  let resolutionRate = 0;
 
-  const resolutionRate = totalTowers > 0
-    ? Math.round((resolvedTowers / totalTowers) * 100)
-    : 0;
+  if (dashboardSummary) {
+    totalTowers = dashboardSummary.towers.total_towers;
+    resolvedTowers = dashboardSummary.towers.known_coords_count + dashboardSummary.towers.estimated_coords_count;
+    resolutionRate = totalTowers > 0 ? Math.round((resolvedTowers / totalTowers) * 100) : 0;
+  } else {
+    const uniqueTowers = Array.from(new Set(measurements.map(m => m.tower_id).filter(Boolean)));
+    totalTowers = uniqueTowers.length;
+    resolvedTowers = uniqueTowers.filter(tid => {
+      const m = measurements.find(meas => meas.tower_id === tid);
+      return m && m.latitude !== null && m.longitude !== null;
+    }).length;
+    resolutionRate = totalTowers > 0 ? Math.round((resolvedTowers / totalTowers) * 100) : 0;
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">

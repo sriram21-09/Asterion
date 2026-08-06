@@ -42,6 +42,17 @@ export default function CaseDetails() {
 
   const { data: caseData, isLoading: isCaseLoading, isError: isCaseError, error: caseError } = useCase(numericId)
   const { data: scenarios } = useScenarios()
+  const [dashboardSummary, setDashboardSummary] = useState<any>(null)
+
+  useEffect(() => {
+    if (numericId) {
+      import('@/lib/api').then(({ api }) => {
+        api.get(`/dashboard/${numericId}/summary`)
+          .then(res => setDashboardSummary(res.data))
+          .catch(() => {})
+      })
+    }
+  }, [numericId])
 
   const { measurements, isGenerating, generateMeasurements, fetchMeasurements, clearResults } = useSimulationStore()
   const { 
@@ -197,7 +208,7 @@ export default function CaseDetails() {
               {caseData.referenceNumber || caseCode}
             </span>
             <Badge variant={getStatusVariant(caseData.status)} dot>
-              {caseData.status.replace('_', ' ')}
+              {(caseData.status || 'unknown').replace('_', ' ')}
             </Badge>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-content-primary tracking-tight">
@@ -240,6 +251,7 @@ export default function CaseDetails() {
         validCount={validCount}
         rejectedCount={rejectedCount}
         isValidated={isValid !== null}
+        dashboardSummary={dashboardSummary}
       />
 
       {/* Associated Scenario Card & Actions */}
@@ -274,14 +286,11 @@ export default function CaseDetails() {
                       const select = document.getElementById('scenario-select') as HTMLSelectElement
                       if (!select.value) return
                       try {
-                        const response = await fetch(`http://localhost:8222/api/v1/cases/${numericId}/scenario`, {
-                          method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ scenario_id: Number(select.value) })
+                        const { api } = await import('@/lib/api')
+                        await api.put(`/cases/${numericId}/scenario`, {
+                          scenario_id: Number(select.value)
                         })
-                        if (response.ok) {
-                          window.location.reload()
-                        }
+                        window.location.reload()
                       } catch (e) {
                         // console.error(e)
                       }
@@ -535,10 +544,10 @@ function MeasurementsCard({
           </div>
           <div>
             <h2 className="text-lg font-bold text-content-primary">
-              Generated Measurements
+              {measurements.some(m => m.source === 'REAL' || !m.is_simulated) ? 'Measurement Ledger' : 'Generated Measurements'}
             </h2>
             <p className="text-xs text-content-tertiary mt-0.5">
-              {measurements.length} measurement{measurements.length !== 1 ? 's' : ''} generated
+              {measurements.length} measurement{measurements.length !== 1 ? 's' : ''} recorded
             </p>
           </div>
         </div>
@@ -706,7 +715,10 @@ function MeasurementsCard({
   )
 }
 
-function RssiIndicator({ rssi }: { rssi: number }) {
+function RssiIndicator({ rssi }: { rssi: number | null }) {
+  if (rssi == null) {
+    return <span className="text-content-tertiary font-mono">—</span>
+  }
   let color: string
   let label: string
 

@@ -69,8 +69,9 @@ def test_measurement_generator_no_noise(base_config: ScenarioConfig):
     measurements = generator.generate()
 
     assert len(measurements) == 6
-    assert all(m.latitude == base_config.expected_device_lat for m in measurements)
-    assert all(m.longitude == base_config.expected_device_lon for m in measurements)
+    assert all(m.latitude is None for m in measurements)
+    assert all(m.longitude is None for m in measurements)
+    assert all(m.is_simulated is True for m in measurements)
     assert measurements[0].tower_id == "T1"
     assert measurements[1].tower_id == "T1"
     assert measurements[2].tower_id == "T2"

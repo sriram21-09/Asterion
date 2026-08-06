@@ -41,16 +41,16 @@ class MeasurementInput(BaseModel):
     measurement_id: str = Field(
         ..., description="Unique measurement identifier", examples=["M001"]
     )
-    tower_id: str = Field(
-        ...,
+    tower_id: str | None = Field(
+        None,
         description="Unique tower identifier that recorded the signal",
         examples=["T001"],
     )
     timestamp: str = Field(
         ..., description="ISO 8601 string when the measurement was captured"
     )
-    rssi_dbm: float = Field(
-        ...,
+    rssi_dbm: float | None = Field(
+        None,
         description="Received Signal Strength Indicator in dBm (typically negative)",
     )
     latitude: float | None = Field(

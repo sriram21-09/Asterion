@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -102,3 +103,4 @@ class DashboardSummary(BaseModel):
     tracking: TrackingSummary
     confidence: ConfidenceSummary
     pipeline_status: PipelineHealthStatus
+    provenance: dict[str, Any] | None = None

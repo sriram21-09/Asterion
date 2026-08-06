@@ -13,10 +13,12 @@ export default function Settings() {
     mapTileProvider,
     defaultMapCenter,
     defaultMapZoom,
+    defaultEnableMeasurementAugmentation,
     setApiBaseUrl,
     setMapTileProvider,
     setDefaultMapCenter,
     setDefaultMapZoom,
+    setDefaultEnableMeasurementAugmentation,
   } = useAppSettingsStore()
 
   const { theme, setTheme } = useThemeStore()
@@ -27,6 +29,7 @@ export default function Settings() {
   const [formLng, setFormLng] = useState(defaultMapCenter[1].toString())
   const [formZoom, setFormZoom] = useState(defaultMapZoom.toString())
   const [formTileProvider, setFormTileProvider] = useState(mapTileProvider)
+  const [formEnableAugmentation, setFormEnableAugmentation] = useState(defaultEnableMeasurementAugmentation)
 
   // Database Management states
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
@@ -64,6 +67,11 @@ export default function Settings() {
     }
     setApiBaseUrl(formApiUrl)
     toast.success('System settings saved.')
+  }
+
+  const handleSaveAugmentationSettings = () => {
+    setDefaultEnableMeasurementAugmentation(formEnableAugmentation)
+    toast.success('Measurement Augmentation preference saved.')
   }
 
   const handleResetDatabase = async () => {
@@ -176,6 +184,46 @@ export default function Settings() {
             <div className="pt-2">
               <Button onClick={handleSaveSystemSettings} leftIcon={<Save className="w-4 h-4" />}>
                 Save Connection Settings
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Measurement Augmentation & Scientific Integrity */}
+        <section className="bg-surface-primary border border-border-primary rounded-2xl p-6 md:p-8 space-y-6 lg:col-span-2">
+          <div className="flex items-center space-x-3 border-b border-border-primary pb-4">
+            <div className="p-2 bg-amber-500/10 rounded-xl">
+              <Sparkles className="h-5 w-5 text-amber-500" />
+            </div>
+            <h2 className="text-xl font-bold text-content-primary">Measurement Augmentation &amp; Scientific Integrity</h2>
+          </div>
+
+          <div className="space-y-4">
+            <label className="flex items-start gap-3.5 p-4 rounded-xl bg-surface-secondary/50 border border-border-secondary cursor-pointer hover:border-amber-500/40 transition-colors">
+              <input
+                type="checkbox"
+                checked={formEnableAugmentation}
+                onChange={(e) => setFormEnableAugmentation(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-border-primary text-brand-primary focus:ring-brand-primary/50"
+              />
+              <div className="space-y-1.5 text-xs">
+                <span className="font-bold text-sm text-content-primary block">
+                  Enable Default Automatic Measurement Augmentation (Recommended)
+                </span>
+                <p className="text-content-tertiary leading-relaxed">
+                  When imported datasets lack required signal parameters (e.g., RSSI or Timing Advance), Asterion derives only the missing measurements required by the scientific localization pipeline using propagation models.
+                </p>
+                <ul className="text-[11px] text-content-secondary space-y-1 pt-1.5 font-mono">
+                  <li>• Imported evidence records are <b>never modified</b>.</li>
+                  <li>• Derived measurements remain clearly marked as <b>AUGMENTED</b> or <b>SIMULATED</b> throughout the application.</li>
+                  <li>• If disabled, Asterion analyzes imported evidence only; if insufficient data exists, localization halts gracefully rather than fabricating values.</li>
+                </ul>
+              </div>
+            </label>
+
+            <div className="pt-2">
+              <Button onClick={handleSaveAugmentationSettings} leftIcon={<Save className="w-4 h-4" />}>
+                Save Augmentation Preferences
               </Button>
             </div>
           </div>

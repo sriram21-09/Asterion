@@ -65,19 +65,23 @@ export interface SimulationParameters {
 
 // ── Measurement ─────────────────────────────────────────────────────────
 
+export type MeasurementSource = 'REAL' | 'SIMULATED' | 'AUGMENTED_RSSI' | 'AUGMENTED_TA';
+
 /**
  * A single signal measurement captured from a cell tower.
  * Maps to `scientific.models.measurement.Measurement`.
  */
 export interface Measurement {
   measurement_id: string;
-  tower_id: string;
+  tower_id: string | null;
   timestamp: string;               // ISO 8601
-  rssi_dbm: number;                // -150.0 to 0.0
+  rssi_dbm: number | null;         // -150.0 to 0.0, null for CDR-imported data
   latitude?: number | null;
   longitude?: number | null;
   timing_advance?: number | null;
   uncertainty_m?: number | null;
+  is_simulated?: boolean;
+  source?: MeasurementSource;
 }
 
 // ── Request / Response DTOs ─────────────────────────────────────────────

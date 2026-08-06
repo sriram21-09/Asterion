@@ -1,7 +1,7 @@
 from app.models.case import Case
 from app.repositories.case_repository import CaseRepository
 from app.repositories.scenario_repository import ScenarioRepository
-from app.schemas.case import CaseCreate
+from app.schemas.case import CaseCreate, CaseUpdate
 from app.shared.validation import (
     ValidationError,
     pagination_offset,
@@ -67,6 +67,21 @@ class CaseService:
         if not case:
             raise HTTPException(status_code=404, detail="Case not found")
         return CaseRepository.delete(db, case_id=case_id)
+
+    @staticmethod
+    def update_case(db: Session, case_id: int, update_in: CaseUpdate) -> Case:
+        case = CaseRepository.get(db, case_id=case_id)
+        if not case:
+            raise HTTPException(status_code=404, detail="Case not found")
+        if update_in.scenario_id is not None:
+            case.scenario_id = update_in.scenario_id
+        if update_in.status is not None:
+            case.status = update_in.status
+        if update_in.enable_augmentation is not None:
+            case.enable_augmentation = update_in.enable_augmentation
+        db.commit()
+        db.refresh(case)
+        return case
 
     @staticmethod
     def compare_cases(db: Session, case_id_a: int, case_id_b: int) -> dict:

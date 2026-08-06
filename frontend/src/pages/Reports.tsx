@@ -300,16 +300,35 @@ export default function Reports() {
           ) : previewData ? (
             <div className="space-y-4 flex-1 overflow-y-auto pr-1 animate-fade-in">
               <div className="bg-surface-secondary rounded-xl p-4 border border-border-secondary">
-                <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center">
-                  <FileText className="w-4 h-4 mr-2 text-brand-secondary"/> Metadata
+                <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center justify-between">
+                  <span className="flex items-center"><FileText className="w-4 h-4 mr-2 text-brand-secondary"/> Metadata</span>
+                  {previewData.metadata?.report_id && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                      {previewData.metadata.report_id}
+                    </span>
+                  )}
                 </h4>
                 <div className="text-xs text-content-tertiary grid grid-cols-2 gap-3">
                   <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Case ID:</span> {previewData.metadata?.case_id || 'N/A'}</span>
-                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Type:</span> {previewData.metadata?.report_type || 'N/A'}</span>
-                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Generated:</span> {previewData.metadata?.generated_at ? new Date(previewData.metadata.generated_at).toLocaleString() : 'N/A'}</span>
-                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Status:</span> <span className="text-emerald-500 font-medium">{previewData.metadata?.status || 'Ready'}</span></span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Operator:</span> <span className="font-semibold text-content-primary truncate">{previewData.metadata?.primary_operator || 'N/A'}</span></span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">CRS:</span> {previewData.metadata?.crs || 'WGS84 (EPSG:4326)'}</span>
+                  <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Status:</span> <span className="text-emerald-500 font-medium">{previewData.metadata?.status || 'Ready ✓'}</span></span>
                 </div>
               </div>
+
+              {previewData.data_quality && (
+                <div className="bg-surface-secondary rounded-xl p-4 border border-border-secondary">
+                  <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center">
+                    <ShieldCheck className="w-4 h-4 mr-2 text-amber-500"/> Data Quality Assessment
+                  </h4>
+                  <div className="text-xs text-content-tertiary grid grid-cols-2 gap-3">
+                    <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Dataset:</span> {previewData.data_quality.dataset_completeness}</span>
+                    <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Towers:</span> {previewData.data_quality.tower_coverage}</span>
+                    <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Confidence:</span> {previewData.data_quality.localization_confidence}</span>
+                    <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Integrity:</span> <span className="text-emerald-500 font-medium">{previewData.data_quality.scientific_integrity}</span></span>
+                  </div>
+                </div>
+              )}
               
               <div className="bg-surface-secondary rounded-xl p-4 border border-border-secondary">
                 <h4 className="text-sm font-bold text-content-primary mb-3 flex items-center">
@@ -341,6 +360,11 @@ export default function Reports() {
                   <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Points:</span> {previewData.movement?.points_tracked ?? 'N/A'}</span>
                   <span className="flex flex-col"><span className="font-medium text-content-secondary mb-1">Confidence:</span> {previewData.evidence?.confidence_score ? `${previewData.evidence.confidence_score}%` : 'N/A'}</span>
                 </div>
+                {previewData.evidence?.evidence_hash && (
+                  <div className="mt-3 pt-3 border-t border-border-secondary/50 text-[10px] text-content-tertiary font-mono truncate">
+                    <span className="text-content-secondary font-sans font-medium">SHA-256:</span> {previewData.evidence.evidence_hash}
+                  </div>
+                )}
               </div>
             </div>
           ) : (

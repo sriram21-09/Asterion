@@ -61,9 +61,25 @@ Usage:
     ... )
 """
 
+from enum import Enum
 from datetime import datetime
 
 from pydantic import BaseModel, Field
+
+
+class MeasurementSource(str, Enum):
+    """Enumeration of measurement data provenance.
+
+    - REAL: Raw measurement reading present directly in imported dataset.
+    - SIMULATED: Synthetically generated signal reading from simulation scenario.
+    - AUGMENTED_RSSI: Missing RSSI value augmented using propagation path loss model.
+    - AUGMENTED_TA: Missing Timing Advance value augmented using distance calculation.
+    """
+
+    REAL = "REAL"
+    SIMULATED = "SIMULATED"
+    AUGMENTED_RSSI = "AUGMENTED_RSSI"
+    AUGMENTED_TA = "AUGMENTED_TA"
 
 
 class Measurement(BaseModel):
@@ -78,6 +94,8 @@ class Measurement(BaseModel):
         longitude: Measurement point longitude, if known.
         timing_advance: GSM Timing Advance value for distance estimation.
         uncertainty_m: Measurement uncertainty in meters.
+        is_simulated: Whether this measurement was synthetically generated/augmented.
+        source: Provenance classification enum (REAL, SIMULATED, AUGMENTED_RSSI, AUGMENTED_TA).
     """
 
     measurement_id: str = Field(
@@ -97,11 +115,11 @@ class Measurement(BaseModel):
         description="ISO 8601 timestamp of the measurement",
         examples=["2026-07-07T10:30:00Z"],
     )
-    rssi_dbm: float = Field(
-        ...,
+    rssi_dbm: float | None = Field(
+        default=None,
         ge=-150.0,
         le=0.0,
-        description="Received Signal Strength Indicator in dBm",
+        description="Received Signal Strength Indicator in dBm. None for CDR-imported data.",
         examples=[-72.0],
     )
     latitude: float | None = Field(
@@ -128,6 +146,14 @@ class Measurement(BaseModel):
         ge=0,
         description="Measurement uncertainty in meters",
         examples=[150.0],
+    )
+    is_simulated: bool = Field(
+        default=False,
+        description="Whether this measurement reading was synthetically generated/augmented",
+    )
+    source: MeasurementSource = Field(
+        default=MeasurementSource.REAL,
+        description="Origin of measurement data provenance (REAL, SIMULATED, AUGMENTED_RSSI, AUGMENTED_TA)",
     )
 
     model_config = {

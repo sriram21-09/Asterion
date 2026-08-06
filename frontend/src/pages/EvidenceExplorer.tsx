@@ -65,7 +65,7 @@ export default function EvidenceExplorer() {
                       <h3 className={cn("font-bold text-sm", isSelected ? 'text-brand-primary' : 'text-content-primary')}>
                         {c.referenceNumber || `CASE-${String(c.id).padStart(3, '0')}`}
                       </h3>
-                      <StatusBadge status="Verified" />
+                      <StatusBadge status={c.status === 'closed' ? 'Verified' : 'Pending'} />
                     </div>
                     <div className="text-xs text-content-tertiary font-mono mb-2 flex items-center gap-1.5">
                       <Clock className="w-3 h-3" />

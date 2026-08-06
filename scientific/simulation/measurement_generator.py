@@ -92,10 +92,10 @@ class MeasurementGenerator:
                     tower_id=tower.tower_id,
                     timestamp=timestamp,
                     rssi_dbm=final_rssi,
-                    latitude=self.config.expected_device_lat,
-                    longitude=self.config.expected_device_lon,
-                    # Note: We omit timing_advance and uncertainty_m for this
-                    # basic RF signal generation phase.
+                    latitude=None,
+                    longitude=None,
+                    is_simulated=True,
+                    source="SIMULATED",
                 )
                 measurements.append(measurement)
                 measurement_idx += 1

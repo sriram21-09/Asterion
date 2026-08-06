@@ -1,6 +1,4 @@
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8222/api/v1'
+import { api } from '@/lib/api'
 
 export interface BenchmarkMetric {
   metric_name: string
@@ -16,8 +14,8 @@ export interface BenchmarkResponse {
 
 class BenchmarkService {
   async getBenchmark(caseId: number): Promise<BenchmarkResponse> {
-    const response = await axios.get(`${API_URL}/validation/benchmark/${caseId}`)
-    return response.data.data ?? response.data
+    const response = await api.get(`/validation/benchmark/${caseId}`)
+    return response.data
   }
 }
 

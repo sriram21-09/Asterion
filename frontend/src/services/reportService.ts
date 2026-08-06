@@ -1,14 +1,22 @@
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8222/api/v1'
+import { api } from '@/lib/api'
 
 export interface ReportPreviewData {
   metadata?: {
+    report_id?: string
     case_id: string
     case_title?: string
     generated_at: string
     report_type: string
     status: string
+    crs?: string
+    primary_operator?: string
+  }
+  data_quality?: {
+    dataset_completeness: string
+    measurement_completeness: string
+    tower_coverage: string
+    localization_confidence: string
+    scientific_integrity: string
   }
   validation_summary?: {
     total_measurements: number
@@ -26,7 +34,11 @@ export interface ReportPreviewData {
   evidence?: {
     confidence_score: number
     algorithms_used: string[]
+    evidence_hash?: string
+    augmentation_status?: string
   }
+  recommendations?: string[]
+  evidence_declaration?: string
 }
 
 class ReportService {
@@ -34,10 +46,10 @@ class ReportService {
    * Generates a report and returns preview data for the sections
    */
   async generateReport(caseId: number, reportType: string = 'full'): Promise<ReportPreviewData> {
-    const response = await axios.post(`${API_URL}/reports/${caseId}/generate`, null, {
+    const response = await api.post(`/reports/${caseId}/generate`, null, {
       params: { report_type: reportType }
     })
-    const resData = response.data?.data
+    const resData = response.data
     return resData?.preview || resData || {}
   }
 
@@ -45,18 +57,18 @@ class ReportService {
    * Fetches preview metrics for a case without generating PDF
    */
   async getReportPreview(caseId: number, reportType: string = 'full'): Promise<ReportPreviewData> {
-    const response = await axios.get(`${API_URL}/reports/${caseId}/preview`, {
+    const response = await api.get(`/reports/${caseId}/preview`, {
       params: { report_type: reportType }
     })
-    return response.data?.data || {}
+    return response.data || {}
   }
 
   /**
    * Downloads raw CSV export for a case (or all cases if omitted)
    */
   async exportCsv(caseId?: number): Promise<Blob> {
-    const url = caseId ? `${API_URL}/reports/${caseId}/export-csv` : `${API_URL}/reports/export-csv`
-    const response = await axios.get(url, {
+    const url = caseId ? `/reports/${caseId}/export-csv` : `/reports/export-csv`
+    const response = await api.get(url, {
       responseType: 'blob'
     })
     return response.data
@@ -66,7 +78,7 @@ class ReportService {
    * Downloads the generated PDF report
    */
   async downloadReport(caseId: number): Promise<Blob> {
-    const response = await axios.get(`${API_URL}/reports/${caseId}/download`, {
+    const response = await api.get(`/reports/${caseId}/download`, {
       responseType: 'blob'
     })
     return response.data
@@ -74,4 +86,3 @@ class ReportService {
 }
 
 export const reportService = new ReportService()
-

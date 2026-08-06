@@ -8,6 +8,8 @@ services:
     environment:
       - ENV=development
       - PORT=8222
+    volumes:
+      - ./backend/app/data:/app/data
     restart: always
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8222/api/v1/health')"]

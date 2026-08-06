@@ -63,6 +63,13 @@ Asterion is an open-source investigation support platform that demonstrates how 
 
 Rather than treating localization as a black box, Asterion emphasizes **explainability and scientific integrity**. If a value (like speed, confidence, or coordinates) cannot be proven by the evidence, Asterion explicitly marks it as **Unknown rather than fabricating** a "clean" output. 
 
+## 🔬 Scientific Philosophy
+
+> **"Asterion prefers reporting 'Unknown' over inventing certainty."**  
+> **"Never fabricate evidence. Never allow generated measurements to be mistaken for real evidence."**
+
+Asterion adheres strictly to scientific honesty. In real telecom investigations, datasets imported from mobile operators often omit signal parameters such as RSSI or Timing Advance. Asterion provides explicit, transparent workflows to handle incomplete datasets without compromising evidentiary integrity.
+
 ---
 
 ## ❓ Why Asterion?
@@ -71,7 +78,7 @@ Why build another localization project? Because modern investigations require mo
 
 * **Explainability:** When an investigator places a suspect at a location, they need to know *why* the system chose that coordinate. 
 * **Scientific Honesty:** Commercial tools often silently guess missing data to make a map look cleaner. Asterion rejects this. We prioritize evidence over aesthetics.
-* **Evidence Traceability:** Every localization result is cryptographically hashed and tied directly to the original raw CDR row that generated it, preserving traceability between imported records and derived outputs.
+* **Evidence Traceability:** Every localization result is tied directly to the original raw CDR row that generated it, preserving traceability between imported records and derived outputs.
 
 ---
 
@@ -81,10 +88,87 @@ Why build another localization project? Because modern investigations require mo
 * 🛰 **Kalman Tracking:** 2D constant-velocity state estimation to prevent erratic chronological drift.
 * 📈 **GDOP Confidence:** Geometric Dilution of Precision to quantify the reliability of every point.
 * 🗺 **Heatmaps:** Multi-factor weighted density visualizations based on dwell time, transitions, and confidence.
-* 📄 **Reports:** Evidence-oriented investigation reports with full algorithmic audit trails.
-* 🔍 **Evidence Traceability:** Direct cryptographic linkage between input CDRs and output locations.
+* 🧮 **Measurement Augmentation Transparency:** Explicit derivation tracking, status banners, provenance cards, and audit snapshots.
+* 📄 **Reports:** Evidence-oriented investigation reports with full algorithmic audit trails and provenance callouts.
+* 🔍 **Evidence Traceability:** Direct linkage between input CDRs and output locations.
 * ⚖ **Scientific Integrity:** Strict adherence to evidence boundaries; zero data fabrication.
 * 🐳 **Docker:** 30-second containerized deployment.
+
+---
+
+## 🧮 Measurement Augmentation
+
+### Why is it needed?
+Real telecom datasets often do not contain every measurement required by scientific localization algorithms. Some operators omit signal strength (RSSI) or Timing Advance (TA). To allow scientific localization algorithms to function, Asterion can derive missing measurements using established propagation models.
+
+### How does it work?
+
+#### Workflow 1: Real Data + Measurement Augmentation
+```text
+Imported Telecom Dataset
+           │
+           ▼
+  Validate Measurements
+           │
+           ▼
+  Missing Required Data?
+     ┌─────┴─────┐
+     │           │
+    No          Yes
+     │           │
+     ▼           ▼
+ Continue    Derive Missing Signal Parameters (RSSI/TA)
+     │           │
+     │           ▼
+     │       Tag as AUGMENTED
+     │           │
+     └─────┬─────┘
+           │
+           ▼
+  Localization Pipeline
+           │
+           ▼
+  Reports & Evidence Packet
+```
+
+#### Workflow 2: Scenario Simulation
+```text
+Scenario Simulation Engine
+           │
+           ▼
+ Scenario Configuration
+           │
+           ▼
+ Measurement Generator
+           │
+           ▼
+ Tagged as SIMULATED Measurements
+           │
+           ▼
+  Localization & Heatmaps
+           │
+           ▼
+ Exported Reports
+```
+
+### Feature Comparison
+
+| Feature | Measurement Augmentation | Scenario Simulation |
+| :--- | :--- | :--- |
+| **Purpose** | Complete missing signal parameters (RSSI/TA) | Generate synthetic investigation scenarios |
+| **Uses imported evidence** | ✅ Yes | ❌ No |
+| **Modifies imported data** | ❌ Never | ❌ Never |
+| **Optional** | ✅ Yes (Configurable in Settings & Cases) | ✅ Yes |
+| **Explicitly identified** | ✅ Yes (`AUGMENTED_RSSI`, `AUGMENTED_TA`) | ✅ Yes (`SIMULATED`) |
+
+### Frequently Asked Questions
+
+* **Does it modify imported data?**  
+  **No.** Raw telecom records and imported evidence files remain 100% unchanged.
+* **When is it used?**  
+  Only when required measurements are missing from an imported dataset. If a dataset is complete, zero measurements are derived.
+* **Can it be disabled?**  
+  **Yes.** Measurement Augmentation can be toggled globally in Settings or per investigation. When disabled, Asterion analyzes imported evidence only; if data is insufficient, localization halts gracefully rather than fabricating values.
 
 ---
 

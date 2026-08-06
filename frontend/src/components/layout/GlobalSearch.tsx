@@ -95,7 +95,7 @@ export function GlobalSearch() {
       case 'cdr_record':
         return {
           title: item.target_number || item.imsi || `CDR Record #${item.id}`,
-          subtitle: `${item.operator.toUpperCase()} | IMSI: ${item.imsi || '—'} | IMEI: ${item.imei || '—'}`,
+          subtitle: `${(item.operator || 'Unknown').toUpperCase()} | IMSI: ${item.imsi || '—'} | IMEI: ${item.imei || '—'}`,
         };
       case 'tower':
         return {

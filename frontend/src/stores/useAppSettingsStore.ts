@@ -12,11 +12,14 @@ interface AppSettingsState {
   defaultMapCenter: [number, number]
   /** Default map zoom level */
   defaultMapZoom: number
+  /** Default Measurement Augmentation setting */
+  defaultEnableMeasurementAugmentation: boolean
 
   setApiBaseUrl: (url: string) => void
   setMapTileProvider: (provider: MapTileProvider) => void
   setDefaultMapCenter: (center: [number, number]) => void
   setDefaultMapZoom: (zoom: number) => void
+  setDefaultEnableMeasurementAugmentation: (enabled: boolean) => void
 }
 
 /**
@@ -31,6 +34,7 @@ export const useAppSettingsStore = create<AppSettingsState>()(
       mapTileProvider: 'carto-dark',
       defaultMapCenter: [20.5937, 78.9629], // Center of India
       defaultMapZoom: 5,
+      defaultEnableMeasurementAugmentation: true,
 
       setApiBaseUrl: (url: string) => set({ apiBaseUrl: url }),
       setMapTileProvider: (provider: MapTileProvider) =>
@@ -38,6 +42,8 @@ export const useAppSettingsStore = create<AppSettingsState>()(
       setDefaultMapCenter: (center: [number, number]) =>
         set({ defaultMapCenter: center }),
       setDefaultMapZoom: (zoom: number) => set({ defaultMapZoom: zoom }),
+      setDefaultEnableMeasurementAugmentation: (enabled: boolean) =>
+        set({ defaultEnableMeasurementAugmentation: enabled }),
     }),
     {
       name: 'asterion-app-settings',

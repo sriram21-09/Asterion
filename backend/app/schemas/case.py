@@ -8,6 +8,7 @@ class CaseBase(BaseModel):
     description: str | None = None
     status: str = "open"
     scenario_id: int | None = None
+    enable_augmentation: bool = True
 
 
 class CaseCreate(CaseBase):
@@ -17,6 +18,7 @@ class CaseCreate(CaseBase):
 class CaseUpdate(BaseModel):
     scenario_id: int | None = None
     status: str | None = None
+    enable_augmentation: bool | None = None
 
 
 class CaseResponse(CaseBase):
@@ -25,3 +27,4 @@ class CaseResponse(CaseBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    has_evidence: bool = False

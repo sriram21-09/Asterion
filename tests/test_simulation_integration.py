@@ -266,8 +266,9 @@ class TestSimulationAPI:
         assert first_meas["scenario_code"] == "SCN-001"
         assert "measurement_code" in first_meas
         assert "rssi_dbm" in first_meas
-        assert first_meas["latitude"] is not None
-        assert first_meas["longitude"] is not None
+        assert first_meas["latitude"] is None
+        assert first_meas["longitude"] is None
+        assert first_meas["is_simulated"] is True
 
         # Verify DB records match
         db_meas = db_session.query(Measurement).filter_by(case_id=case.id).all()

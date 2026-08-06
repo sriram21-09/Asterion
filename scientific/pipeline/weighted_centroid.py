@@ -103,7 +103,8 @@ def compute_input_quality_scores(
     tower_meas_coords: dict[str, list[tuple[float | None, float | None]]] = {}
 
     for m in measurements:
-        tower_rssis.setdefault(m.tower_id, []).append(m.rssi_dbm)
+        rssi = m.rssi_dbm if m.rssi_dbm is not None else -80.0
+        tower_rssis.setdefault(m.tower_id, []).append(rssi)
         tower_timestamps.setdefault(m.tower_id, []).append(m.timestamp)
         tower_meas_coords.setdefault(m.tower_id, []).append((m.latitude, m.longitude))
 
@@ -233,7 +234,8 @@ def solve_weighted_centroid(
     # 1. Group measurements by tower_id and compute average RSSI
     tower_rssis: dict[str, list[float]] = {}
     for m in measurements:
-        tower_rssis.setdefault(m.tower_id, []).append(m.rssi_dbm)
+        rssi = m.rssi_dbm if m.rssi_dbm is not None else -80.0
+        tower_rssis.setdefault(m.tower_id, []).append(rssi)
 
     avg_tower_rssi = {
         tid: sum(rssi_list) / len(rssi_list) for tid, rssi_list in tower_rssis.items()

@@ -162,7 +162,7 @@ export function ValidationSummary({ className }: ValidationSummaryProps) {
 
               <div className="max-h-64 overflow-y-auto rounded-xl border border-border-primary divide-y divide-border-primary">
                 {errors.map((err, idx) => {
-                  const cfg = SEVERITY_CONFIG[err.severity];
+                  const cfg = SEVERITY_CONFIG[err.severity as keyof typeof SEVERITY_CONFIG] || SEVERITY_CONFIG.warning;
                   const Icon = cfg.icon;
                   return (
                     <div

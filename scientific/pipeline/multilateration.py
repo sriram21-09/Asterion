@@ -52,10 +52,11 @@ def solve_multilateration(
     """
     start_time = time.perf_counter()
 
-    # 1. Group measurements by tower_id and average RSSI
+    # 1. Group measurements with valid RSSI by tower_id and average RSSI
     tower_rssis: dict[str, list[float]] = {}
     for m in measurements:
-        tower_rssis.setdefault(m.tower_id, []).append(m.rssi_dbm)
+        if m.rssi_dbm is not None:
+            tower_rssis.setdefault(m.tower_id, []).append(m.rssi_dbm)
 
     avg_tower_rssi = {
         tid: sum(rssi_list) / len(rssi_list) for tid, rssi_list in tower_rssis.items()

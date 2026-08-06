@@ -509,7 +509,10 @@ function MeasurementsCard({
 
 // ── RSSI Strength Indicator ─────────────────────────────────────────────
 
-function RssiIndicator({ rssi }: { rssi: number }) {
+function RssiIndicator({ rssi }: { rssi: number | null }) {
+  if (rssi == null) {
+    return <span className="text-content-tertiary font-mono">—</span>
+  }
   let color: string
   let label: string
 

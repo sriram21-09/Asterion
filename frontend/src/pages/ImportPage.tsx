@@ -120,11 +120,11 @@ export default function ImportPage() {
       formData.append('operator', f.operator === 'Generic Format' ? 'auto' : f.operator)
       
       try {
-        const response = await fetch('http://localhost:8222/api/v1/import/upload', {
-          method: 'POST',
-          body: formData,
+        const { api } = await import('@/lib/api')
+        await api.post('/import/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         })
-        if (!response.ok) throw new Error('Upload failed')
+        // if using api instance, it throws on non-2xx so we don't need response.ok check
       } catch (e) {
         toast.error(`Failed to upload ${f.file.name}`)
         hasError = true
@@ -221,7 +221,7 @@ export default function ImportPage() {
                  <div>
                    <p className="text-sm font-medium text-content-tertiary">Records Parsed</p>
                    <p className="text-2xl font-black text-content-primary">
-                     {files.length > 0 ? (files.length * 1250).toLocaleString() : '0'}
+                     {files.length > 0 ? (files.filter(f => f.status === 'ready').length > 0 ? 'Ready' : 'Pending') : '0'}
                    </p>
                  </div>
               </div>

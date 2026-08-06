@@ -17,11 +17,15 @@ from app.models.localization_result import LocalizationResult
 from app.models.measurement import Measurement
 from app.models.tracking_result import TrackingResult
 
+from app.models.base import Base
+from app.database.engine import engine
+
 client = TestClient(app)
 
 
 @pytest.fixture(scope="module")
 def setup_benchmark_case():
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
     # Create Case

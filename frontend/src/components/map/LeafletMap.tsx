@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { HeatmapLayer } from './HeatmapLayer'
-import MarkerClusterGroup from 'react-leaflet-cluster'
+// import MarkerClusterGroup from 'react-leaflet-cluster'
 import { useThemeStore } from '@/stores/useThemeStore'
 
 export type ConfidenceTier = 'Known' | 'Estimated' | 'Unknown'
@@ -158,7 +158,7 @@ export function LeafletMap({
                 Tier: <span className="font-semibold text-slate-800">{tower.confidenceTier}</span>
               </p>
               <p className="text-xs font-mono text-gray-500">
-                {tower.lat.toFixed(4)}, {tower.lng.toFixed(4)}
+                {tower.lat != null ? tower.lat.toFixed(4) : '—'}, {tower.lng != null ? tower.lng.toFixed(4) : '—'}
               </p>
               {tower.radius_m && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -177,18 +177,18 @@ export function LeafletMap({
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
 
-  // Filter path coordinates: ignore micro-jitter (<200m) AND ignore long teleports (>15km / 0.0225 deg)
+  // Filter path coordinates: keep valid trajectory points (ignore exact duplicates and distant telemetry spikes)
   const cleanPath = (pathCoordinates && pathCoordinates.length > 1) 
     ? pathCoordinates.filter((pt, idx) => {
         if (idx === 0) return true
         const prev = pathCoordinates[idx - 1]
         const distSq = Math.pow(pt[0] - prev[0], 2) + Math.pow(pt[1] - prev[1], 2)
-        return distSq > 0.00002 && distSq < 0.0225 // Between ~200m and ~15km
+        return distSq > 0.00000001 && distSq < 0.25 // Keep steps between ~1m and ~50km
       })
     : []
 
   return (
-    <div className="w-full h-full min-h-[450px] rounded-xl overflow-hidden border border-border-primary relative">
+    <div className="w-full h-full min-h-[450px] overflow-hidden relative">
       <MapContainer 
         center={center} 
         zoom={zoom} 
@@ -245,12 +245,9 @@ export function LeafletMap({
 
         {/* Tower Markers Layer - Clustered */}
         {showMarkers && (
-          <MarkerClusterGroup 
-            chunkedLoading
-            maxClusterRadius={50}
-          >
+          <>
             {memoizedMarkers}
-          </MarkerClusterGroup>
+          </>
         )}
       </MapContainer>
     </div>

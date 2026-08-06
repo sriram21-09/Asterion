@@ -193,10 +193,10 @@ export function TrackingPathTable({ className }: TrackingPathTableProps) {
                           </span>
                         </td>
                         <td className="px-5 py-3 font-mono text-xs text-content-secondary">
-                          {step.latitude.toFixed(6)}
+                          {step.latitude != null ? step.latitude.toFixed(6) : '—'}
                         </td>
                         <td className="px-5 py-3 font-mono text-xs text-content-secondary">
-                          {step.longitude.toFixed(6)}
+                          {step.longitude != null ? step.longitude.toFixed(6) : '—'}
                         </td>
                         <td className="px-5 py-3 font-mono text-xs">
                           <VelocityIndicator velocity={step.velocity_kmh} />

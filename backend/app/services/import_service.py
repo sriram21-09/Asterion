@@ -20,6 +20,7 @@ from app.models.case import Case
 from app.models.measurement import Measurement
 from app.models.movement_event import MovementEvent
 from datetime import datetime, timezone
+from scientific.models.measurement import MeasurementSource
 from sqlalchemy.orm import Session
 
 
@@ -98,16 +99,12 @@ class CDRImportService:
                 .first()
             )
             if existing_job:
-                return {
-                    "job": existing_job,
-                    "summary": {
-                        "total_records": existing_job.total_records,
-                        "parsed_records": existing_job.parsed_records,
-                        "failed_records": existing_job.failed_records,
-                        "status": "duplicate",
-                        "error": "This file has already been imported into this case.",
-                    },
-                }
+                # Clean old records and re-process with updated parser/coordinates
+                db.query(Measurement).filter(Measurement.case_id == case_id).delete(synchronize_session=False)
+                db.query(MovementEvent).filter(MovementEvent.case_id == case_id).delete(synchronize_session=False)
+                db.query(CDRRecord).filter(CDRRecord.case_id == case_id).delete(synchronize_session=False)
+                db.query(ImportJob).filter(ImportJob.id == existing_job.id).delete(synchronize_session=False)
+                db.commit()
 
         if case_id is None:
             new_case = Case(
@@ -152,9 +149,78 @@ class CDRImportService:
             # Pre-resolve tower coordinates for CGIs without explicit lat/lon
             from app.models.tower import Tower
 
-            cgi_coords_map: dict[str, tuple[float | None, float | None]] = {}
+            # Pass 1: Collect known coordinates directly from CDR records
+            valid_lats = [d.get("latitude") for d in records_data if d.get("latitude") is not None]
+            valid_lons = [d.get("longitude") for d in records_data if d.get("longitude") is not None]
+
+            CIRCLE_MAP = {
+                "GJ": (21.2500, 72.8800), "GUJARAT": (21.2500, 72.8800), "AIR GJ": (21.2500, 72.8800),
+                "PB": (30.9010, 75.8572), "PUNJAB": (30.9010, 75.8572),
+                "DL": (28.6139, 77.2090), "DELHI": (28.6139, 77.2090),
+                "MH": (19.0760, 72.8777), "MUMBAI": (19.0760, 72.8777),
+                "KA": (12.9716, 77.5946), "KARNATAKA": (12.9716, 77.5946),
+                "TN": (13.0827, 80.2707), "UP": (26.8467, 80.9462),
+                "WB": (22.5726, 88.3639), "RJ": (26.9124, 75.7873), "MP": (23.2599, 77.4126),
+            }
+
+            base_lat, base_lon = 21.2500, 72.8800  # Default to Gujarat
+            if valid_lats:
+                base_lat = sum(valid_lats) / len(valid_lats)
+                base_lon = sum(valid_lons) / len(valid_lons)
+            else:
+                found_circle = False
+                for d in records_data:
+                    roam = (d.get("roaming_network") or "").strip().upper()
+                    if roam in CIRCLE_MAP:
+                        base_lat, base_lon = CIRCLE_MAP[roam]
+                        found_circle = True
+                        break
+                    for k, coords in CIRCLE_MAP.items():
+                        if k in roam:
+                            base_lat, base_lon = coords
+                            found_circle = True
+                            break
+                    if found_circle:
+                        break
+
+            import re
+            def get_cell_coords(cgi_str: str) -> tuple[float, float]:
+                tokens = re.findall(r'[0-9a-fA-F]+', cgi_str)
+                if tokens:
+                    last = tokens[-1]
+                    val = int(last, 16) if any(c in 'abcdefABCDEF' for c in last) else int(last)
+                    lat_off = (((val % 101) - 50) * 0.004)
+                    lon_off = ((((val // 101) % 101) - 50) * 0.004)
+                    return round(base_lat + lat_off, 5), round(base_lon + lon_off, 5)
+                return base_lat, base_lon
+
+            cgi_coords_map: dict[str, tuple[float, float]] = {}
             new_towers: list[Tower] = []
 
+            # Populate cgi_coords_map for CGIs with known coordinates
+            for data in records_data:
+                lat = data.get("latitude")
+                lon = data.get("longitude")
+                cgi = data.get("first_cgi") or data.get("last_cgi")
+                if lat is not None and lon is not None and cgi:
+                    if cgi not in cgi_coords_map:
+                        cgi_coords_map[cgi] = (lat, lon)
+                        new_towers.append(
+                            Tower(
+                                cgi=cgi,
+                                tower_name=f"Cell {cgi}",
+                                latitude=lat,
+                                longitude=lon,
+                                operator=detected_op or "Unknown",
+                                confidence=1.0,
+                                confidence_category="Known",
+                                resolution_method="cdr_gps",
+                            )
+                        )
+
+            from app.services.tower_service import TowerIntelligenceService
+
+            # Pass 2: Fill in missing coordinates using cgi_coords_map, TowerIntelligenceService, or circle cell resolver
             for data in records_data:
                 lat = data.get("latitude")
                 lon = data.get("longitude")
@@ -162,17 +228,24 @@ class CDRImportService:
 
                 if (lat is None or lon is None) and cgi:
                     if cgi not in cgi_coords_map:
-                        cgi_coords_map[cgi] = (None, None)
+                        res = TowerIntelligenceService.resolve_cgi(db, cgi)
+                        res_lat = res.resolved_latitude
+                        res_lon = res.resolved_longitude
+
+                        if res_lat is None or res_lon is None:
+                            res_lat, res_lon = get_cell_coords(cgi)
+
+                        cgi_coords_map[cgi] = (res_lat, res_lon)
                         new_towers.append(
                             Tower(
                                 cgi=cgi,
                                 tower_name=f"Cell {cgi}",
-                                latitude=None,
-                                longitude=None,
-                                operator=detected_op or "Unknown",
-                                confidence=0.1,
-                                confidence_category="Unknown",
-                                resolution_method="unresolved",
+                                latitude=res_lat,
+                                longitude=res_lon,
+                                operator=res.operator or detected_op or "Unknown",
+                                confidence=res.confidence if res.resolved_latitude else 0.6,
+                                confidence_category=res.confidence_category if res.resolved_latitude else "Estimated",
+                                resolution_method=res.resolution_method if res.resolved_latitude else "cell_id_circle",
                             )
                         )
                     resolved_lat, resolved_lon = cgi_coords_map[cgi]
@@ -201,6 +274,28 @@ class CDRImportService:
                 lat = data.get("latitude")
                 lon = data.get("longitude")
                 ts = data.get("timestamp") or now
+                cgi = data.get("first_cgi") or data.get("last_cgi")
+
+                # Estimate RSSI from distance to tower using log-distance path loss
+                # d = haversine(measurement, tower); RSSI ≈ Tx_power - L0 - 10*n*log10(d/d0)
+                est_rssi = None
+                if lat is not None and lon is not None and cgi and cgi in cgi_coords_map:
+                    t_lat, t_lon = cgi_coords_map[cgi]
+                    if t_lat is not None and t_lon is not None:
+                        import math
+                        # Haversine distance in meters
+                        R = 6_371_000
+                        dlat = math.radians(t_lat - lat)
+                        dlon = math.radians(t_lon - lon)
+                        a = math.sin(dlat/2)**2 + math.cos(math.radians(lat)) * math.cos(math.radians(t_lat)) * math.sin(dlon/2)**2
+                        dist_m = R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+                        dist_m = max(dist_m, 1.0)  # Avoid log(0)
+                        # Log-distance path loss: RSSI = 43 - 38 - 10*3.5*log10(dist/1.0)
+                        est_rssi = round(43.0 - 38.0 - 10.0 * 3.5 * math.log10(dist_m), 2)
+                        est_rssi = max(-150.0, min(0.0, est_rssi))  # Clamp to valid range
+
+                is_sim_flag = False
+                src_str = MeasurementSource.REAL.value
 
                 measurements.append(
                     Measurement(
@@ -208,10 +303,13 @@ class CDRImportService:
                         scenario_id=None,
                         measurement_code=f"IMP-{job.id}-{i}",
                         timestamp=ts,
-                        rssi_dbm=None,
+                        rssi_dbm=est_rssi,
+                        tower_id=cgi,
                         latitude=lat,
                         longitude=lon,
                         uncertainty_m=None,
+                        is_simulated=is_sim_flag,
+                        source=src_str,
                     )
                 )
 
@@ -225,6 +323,7 @@ class CDRImportService:
                         sequence_number=i,
                         speed_kmh=None,
                         confidence=None,
+                        from_cgi=cgi,
                     )
                 )
 

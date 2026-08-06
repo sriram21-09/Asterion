@@ -38,3 +38,15 @@ def get_heatmap(
         db, case_id=case_id, w1=w1, w2=w2, w3=w3, w4=w4
     )
     return APIResponse(success=True, data=result)
+
+
+@router.get(
+    "/{case_id}/provenance",
+    response_model=APIResponse[dict[str, Any]],
+    summary="Retrieve case provenance audit snapshot",
+    description="Returns exact count breakdown, status, percentages, and scientific integrity declarations for measurement provenance.",
+)
+def get_dashboard_provenance(case_id: int, db: Session = Depends(get_db)):
+    from app.services.provenance_service import ProvenanceService
+    result = ProvenanceService.get_case_provenance(db, case_id=case_id)
+    return APIResponse(success=True, data=result)
