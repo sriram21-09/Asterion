@@ -250,3 +250,11 @@ GSD-STYLE.md
 model_capabilities.yaml
 *.gsd.log
 
+# Temporary Debug & CI Scripts/Logs
+check_latest.py
+get_log.py
+parse.py
+check_runs*.json
+req.txt
+job_log*.txt
+
