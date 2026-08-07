@@ -24,7 +24,7 @@ jobs:
         pip install pytest httpx
     - name: Run backend tests
       env:
-        PYTHONPATH: ..
+        PYTHONPATH: .
         DATABASE_URL: sqlite:///./asterion.db
       run: |
         cd backend

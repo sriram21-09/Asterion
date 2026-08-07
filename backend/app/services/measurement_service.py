@@ -53,9 +53,16 @@ class MeasurementService:
                 detail=f"Failed to generate measurements: {e!s}",
             )
 
-        # 8. Delete existing measurements for this case (to allow regeneration/overwriting)
-        existing_measurements = MeasurementRepository.get_by_case(db, case_id)
-        for m in existing_measurements:
+        # 8. Delete existing SIMULATED measurements for this case (preserving real CDR imported data)
+        existing_simulated = (
+            db.query(MeasurementORM)
+            .filter(
+                MeasurementORM.case_id == case_id,
+                MeasurementORM.is_simulated,
+            )
+            .all()
+        )
+        for m in existing_simulated:
             db.delete(m)
         db.commit()
 
@@ -68,10 +75,13 @@ class MeasurementService:
                 measurement_code=f"{case_code}-{s_meas.measurement_id}",
                 timestamp=s_meas.timestamp,
                 rssi_dbm=s_meas.rssi_dbm,
+                tower_id=s_meas.tower_id,
                 latitude=s_meas.latitude,
                 longitude=s_meas.longitude,
                 timing_advance=s_meas.timing_advance,
                 uncertainty_m=s_meas.uncertainty_m,
+                is_simulated=True,
+                source="SIMULATED",
             )
             db_measurements.append(db_m)
 

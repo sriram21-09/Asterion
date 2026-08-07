@@ -14,7 +14,7 @@ ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 # Copy package files and install dependencies
 COPY frontend/package*.json ./
 COPY frontend/.npmrc ./
-RUN npm install
+RUN npm ci
 
 # Copy source and build
 COPY frontend/ .

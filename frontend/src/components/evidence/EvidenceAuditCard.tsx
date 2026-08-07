@@ -203,7 +203,7 @@ export function EvidenceAuditCard({ className }: EvidenceAuditCardProps) {
                             </span>
                           </td>
                           <td className="px-5 py-3 font-mono text-xs text-content-secondary">
-                            {tower.latitude.toFixed(6)}, {tower.longitude.toFixed(6)}
+                            {tower.latitude != null ? tower.latitude.toFixed(6) : '—'}, {tower.longitude != null ? tower.longitude.toFixed(6) : '—'}
                           </td>
                           <td className="px-5 py-3 font-mono text-xs text-success font-medium">
                             {tower.accepted_measurements}

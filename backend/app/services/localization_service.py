@@ -57,17 +57,33 @@ class LocalizationService:
                 status_code=400,
             )
 
+        # Scientific Integrity Check: If measurement augmentation is disabled for this case,
+        # ensure no augmented/simulated measurements are forced and dataset contains valid signal values.
+        aug_enabled = getattr(case, "enable_augmentation", True)
+        if not aug_enabled:
+            simulated_or_missing = [
+                m for m in db_measurements if m.is_simulated or m.rssi_dbm is None
+            ]
+            if simulated_or_missing:
+                raise ValidationError(
+                    "measurements",
+                    "Insufficient measurements: Measurement augmentation is disabled for this investigation "
+                    "and the imported dataset lacks required signal parameters (RSSI/TA) for scientific localization. "
+                    "Enable Measurement Augmentation in investigation options or Settings to proceed.",
+                    status_code=400,
+                )
+
         # 4. Convert DB measurements → scientific Measurement models
         scientific_measurements: list[ScientificMeasurement] = []
         for m in db_measurements:
-            # Map measurement back to tower_id using measurement_code pattern
-            # Measurement codes follow: MEAS-SCNXXX-TYYY-ZZZZ
-            parts = m.measurement_code.split("-")
-            tower_id = None
-            for i, part in enumerate(parts):
-                if part.startswith("T") and part[1:].isdigit():
-                    tower_id = part
-                    break
+            # Use stored tower_id first; fall back to parsing measurement_code
+            tower_id = getattr(m, "tower_id", None)
+            if not tower_id:
+                parts = m.measurement_code.split("-")
+                for part in parts:
+                    if part.startswith("T") and part[1:].isdigit():
+                        tower_id = part
+                        break
 
             if tower_id is None:
                 # Fallback: try to assign to towers round-robin based on index
@@ -83,7 +99,7 @@ class LocalizationService:
                     measurement_id=m.measurement_code,
                     tower_id=tower_id,
                     timestamp=m.timestamp,
-                    rssi_dbm=m.rssi_dbm,
+                    rssi_dbm=m.rssi_dbm if m.rssi_dbm is not None else -80.0,
                     latitude=m.latitude,
                     longitude=m.longitude,
                     timing_advance=m.timing_advance,

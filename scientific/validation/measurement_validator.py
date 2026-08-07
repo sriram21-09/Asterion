@@ -65,8 +65,9 @@ class MeasurementValidator:
             result.errors.append(
                 ValidationError(
                     field="rssi_dbm",
-                    message="RSSI value must be provided.",
+                    message="RSSI value is not recorded (CDR-imported data).",
                     code="MEAS_MISSING_RSSI",
+                    severity=Severity.WARNING,
                 )
             )
 

@@ -11,6 +11,11 @@ import type { Case } from '@/types/case'
 
 
 
+import { ScientificTransparencyBanner } from '@/components/common/ScientificTransparencyBanner'
+import { InvestigationInfoCard } from '@/components/dashboard/InvestigationInfoCard'
+import { DataProvenanceCard, type ProvenanceData } from '@/components/dashboard/DataProvenanceCard'
+import { HeatmapTransparencyBadge } from '@/components/map/HeatmapTransparencyBadge'
+
 export default function InvestigationDashboard() {
   const [cases, setCases] = useState<Case[]>([])
   const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null)
@@ -24,6 +29,7 @@ export default function InvestigationDashboard() {
   const [towers, setTowers] = useState<MapTower[]>([])
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [heatmapPoints, setHeatmapPoints] = useState<[number, number, number][]>([])
+  const [provenance, setProvenance] = useState<ProvenanceData | null>(null)
   
   const [isLoadingCases, setIsLoadingCases] = useState(true)
   const [isLoadingData, setIsLoadingData] = useState(false)
@@ -64,6 +70,20 @@ export default function InvestigationDashboard() {
       setIsLoadingData(true)
       const caseCode = `CASE-${String(caseId).padStart(3, '0')}`
 
+      // 0. Fetch Provenance Snapshot
+      try {
+        const summaryRes = await api.get(`/dashboard/${caseId}/summary`)
+        const provData = summaryRes.data?.provenance || summaryRes.data?.data?.provenance
+        if (provData && provData.counts) {
+          setProvenance(provData)
+        } else {
+          const provRes = await api.get(`/cases/${caseId}/provenance`)
+          setProvenance(provRes.data?.data || provRes.data)
+        }
+      } catch (err) {
+        setProvenance(null)
+      }
+
       // 1. Fetch case towers via measurements
       let fetchedTowers: MapTower[] = []
       const towersMap = new Map<string, MapTower>()
@@ -73,9 +93,10 @@ export default function InvestigationDashboard() {
         
         measurements.forEach((m: any) => {
           if (m.latitude != null && m.longitude != null) {
-            const rssi = m.rssi_dbm ?? -80
             const confidenceTier: ConfidenceTier = 
-              rssi >= -70 ? 'Known' : rssi >= -90 ? 'Estimated' : 'Unknown'
+              m.rssi_dbm != null 
+                ? (m.rssi_dbm >= -70 ? 'Known' : m.rssi_dbm >= -90 ? 'Estimated' : 'Unknown')
+                : 'Unknown'
             
             // Cluster nearby pings (~10m grid) into distinct cell sites
             const syntheticId = `TWR-${m.latitude.toFixed(4)}-${m.longitude.toFixed(4)}`
@@ -159,12 +180,13 @@ export default function InvestigationDashboard() {
             timestamp: evt.timestamp 
               ? new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
               : '—',
-            title: evt.event_type.replace(/_/g, ' ').toUpperCase(),
+            title: (evt.event_type || 'Unknown').replace(/_/g, ' ').toUpperCase(),
             description: evt.event_type === 'handover' 
               ? `Handover from ${evt.from_cgi || '—'} to ${evt.to_cgi || '—'}`
               : `Location update. Speed: ${evt.speed_kmh != null ? evt.speed_kmh.toFixed(1) + ' km/h' : 'Unknown'}, Confidence: ${evt.confidence != null ? (evt.confidence * 100).toFixed(0) + '%' : 'Unknown'}`,
             type: evt.event_type === 'handover' ? 'connection' : 'movement',
             category,
+            source: evt.source || (evt.is_simulated ? 'SIMULATED' : 'REAL'),
             coordinates: (evt.latitude != null && evt.longitude != null) 
               ? [evt.latitude, evt.longitude] as [number, number] 
               : undefined
@@ -256,6 +278,15 @@ export default function InvestigationDashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-12 min-h-[calc(100vh-80px)] flex flex-col">
+      {/* Scientific Transparency Notification Banner */}
+      <ScientificTransparencyBanner
+        provenance={provenance}
+        onViewDetails={() => {
+          const el = document.getElementById('provenance-section')
+          el?.scrollIntoView({ behavior: 'smooth' })
+        }}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border-primary pb-5 shrink-0">
         <div>
@@ -288,8 +319,13 @@ export default function InvestigationDashboard() {
               {cases.length === 0 && <option value="">No Cases Seeded</option>}
             </select>
           )}
-
         </div>
+      </div>
+
+      {/* Audit & Provenance Summary Grid */}
+      <div id="provenance-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
+        <InvestigationInfoCard provenance={provenance} />
+        <DataProvenanceCard provenance={provenance} />
       </div>
 
       {isLoadingData ? (
@@ -383,11 +419,11 @@ export default function InvestigationDashboard() {
                         <div className="grid grid-cols-2 gap-2 text-xs text-content-secondary mt-3 bg-surface-primary p-2 rounded-lg border border-border-primary">
                           <div>
                             <span className="text-content-tertiary block mb-0.5">Lat</span>
-                            <span className="font-mono">{tower.lat.toFixed(4)}</span>
+                            <span className="font-mono">{tower.lat != null ? tower.lat.toFixed(4) : '—'}</span>
                           </div>
                           <div>
                             <span className="text-content-tertiary block mb-0.5">Lng</span>
-                            <span className="font-mono">{tower.lng.toFixed(4)}</span>
+                            <span className="font-mono">{tower.lng != null ? tower.lng.toFixed(4) : '—'}</span>
                           </div>
                         </div>
                       </div>
@@ -402,66 +438,75 @@ export default function InvestigationDashboard() {
             </div>
 
             {/* Right Column: Map */}
-            <div className="lg:col-span-2 bg-surface-primary border border-border-primary rounded-2xl flex flex-col overflow-hidden relative min-h-[400px]">
-              <div className="p-4 border-b border-border-primary bg-surface-secondary/50 flex flex-wrap justify-between items-center absolute top-0 left-0 right-0 z-10 backdrop-blur-md bg-surface-primary/80 gap-2">
-                <h2 className="text-lg font-bold text-content-primary flex items-center gap-2">
+            <div className="lg:col-span-2 bg-surface-primary border border-border-primary rounded-2xl flex flex-col overflow-hidden min-h-[500px]">
+              <div className="p-3.5 px-4 border-b border-border-primary bg-surface-primary flex flex-wrap justify-between items-center shrink-0 z-10 gap-2">
+                <h2 className="text-base font-bold text-content-primary flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-brand-primary" />
                   Geospatial View
                 </h2>
                 
-                {/* Interactive Layer Toggles */}
-                <div className="flex items-center gap-1.5 bg-surface-secondary/80 p-1 rounded-xl border border-border-secondary">
-                  <button
-                    onClick={() => setShowHeatmap(!showHeatmap)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
-                      showHeatmap 
-                        ? "bg-rose-500/20 text-rose-500 border border-rose-500/40 shadow-sm" 
-                        : "text-content-tertiary hover:text-content-primary opacity-60"
-                    )}
-                  >
-                    🔥 Heatmap
-                  </button>
+                <div className="flex items-center gap-2">
+                  <HeatmapTransparencyBadge
+                    hasGeneratedData={provenance?.has_generated_data}
+                    onViewDetails={() => {
+                      const el = document.getElementById('provenance-section')
+                      el?.scrollIntoView({ behavior: 'smooth' })
+                    }}
+                  />
+                  {/* Interactive Layer Toggles */}
+                  <div className="flex items-center gap-1.5 bg-surface-secondary/80 p-1 rounded-xl border border-border-secondary">
+                    <button
+                      onClick={() => setShowHeatmap(!showHeatmap)}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
+                        showHeatmap 
+                          ? "bg-rose-500/20 text-rose-500 border border-rose-500/40 shadow-sm" 
+                          : "text-content-tertiary hover:text-content-primary opacity-60"
+                      )}
+                    >
+                      🔥 Heatmap
+                    </button>
 
-                  <button
-                    onClick={() => setShowPath(!showPath)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
-                      showPath 
-                        ? "bg-indigo-500/20 text-indigo-500 border border-indigo-500/40 shadow-sm" 
-                        : "text-content-tertiary hover:text-content-primary opacity-60"
-                    )}
-                  >
-                    🔵 Path
-                  </button>
+                    <button
+                      onClick={() => setShowPath(!showPath)}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
+                        showPath 
+                          ? "bg-indigo-500/20 text-indigo-500 border border-indigo-500/40 shadow-sm" 
+                          : "text-content-tertiary hover:text-content-primary opacity-60"
+                      )}
+                    >
+                      🔵 Path
+                    </button>
 
-                  <button
-                    onClick={() => setShowCircles(!showCircles)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
-                      showCircles 
-                        ? "bg-amber-500/20 text-amber-500 border border-amber-500/40 shadow-sm" 
-                        : "text-content-tertiary hover:text-content-primary opacity-60"
-                    )}
-                  >
-                    ⭕ Circles
-                  </button>
+                    <button
+                      onClick={() => setShowCircles(!showCircles)}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
+                        showCircles 
+                          ? "bg-amber-500/20 text-amber-500 border border-amber-500/40 shadow-sm" 
+                          : "text-content-tertiary hover:text-content-primary opacity-60"
+                      )}
+                    >
+                      ⭕ Circles
+                    </button>
 
-                  <button
-                    onClick={() => setShowMarkers(!showMarkers)}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
-                      showMarkers 
-                        ? "bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 shadow-sm" 
-                        : "text-content-tertiary hover:text-content-primary opacity-60"
-                    )}
-                  >
-                    📍 Towers
-                  </button>
+                    <button
+                      onClick={() => setShowMarkers(!showMarkers)}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer",
+                        showMarkers 
+                          ? "bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 shadow-sm" 
+                          : "text-content-tertiary hover:text-content-primary opacity-60"
+                      )}
+                    >
+                      📍 Towers
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex-1 w-full h-full pt-16">
+              <div className="flex-1 w-full h-full min-h-[450px] relative">
                 <LeafletMap 
                   towers={filteredTowers}
                   selectedTowerId={selectedTowerId}

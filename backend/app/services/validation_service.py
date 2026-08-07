@@ -59,19 +59,28 @@ def _validate_single(
             )
         )
 
-    # 2. tower_id non-empty
+    # 2. tower_id (warning if empty/null instead of error)
     if not m.tower_id or not m.tower_id.strip():
         issues.append(
             ValidationErrorItem(
                 field="tower_id",
-                message="Tower ID must not be empty.",
-                severity=Severity.ERROR,
+                message="Tower ID is missing or unresolved.",
+                severity=Severity.WARNING,
                 measurement_index=index,
             )
         )
 
-    # 3. RSSI range [-150, 0] dBm
-    if not (RSSI_MIN <= m.rssi_dbm <= RSSI_MAX):
+    # 3. RSSI range [-150, 0] dBm (warning if missing/null)
+    if m.rssi_dbm is None:
+        issues.append(
+            ValidationErrorItem(
+                field="rssi_dbm",
+                message="RSSI value is not recorded for this measurement.",
+                severity=Severity.WARNING,
+                measurement_index=index,
+            )
+        )
+    elif not (RSSI_MIN <= m.rssi_dbm <= RSSI_MAX):
         issues.append(
             ValidationErrorItem(
                 field="rssi_dbm",
@@ -161,9 +170,11 @@ def _validate_single(
         try:
             sci_m = SciMeasurement(
                 measurement_id=m.measurement_id,
-                tower_id=m.tower_id,
+                tower_id=m.tower_id
+                if (m.tower_id and m.tower_id.strip())
+                else "UNRESOLVED",
                 timestamp=dt,
-                rssi_dbm=m.rssi_dbm,
+                rssi_dbm=m.rssi_dbm if m.rssi_dbm is not None else -80.0,
                 latitude=m.latitude,
                 longitude=m.longitude,
                 timing_advance=m.timing_advance,

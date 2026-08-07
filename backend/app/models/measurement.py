@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from app.models.base import BaseModel
-from sqlalchemy import DateTime, Float, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -24,10 +24,17 @@ class Measurement(BaseModel):
     )
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     rssi_dbm: Mapped[float | None] = mapped_column(Float, nullable=True)
+    tower_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     timing_advance: Mapped[float | None] = mapped_column(Float, nullable=True)
     uncertainty_m: Mapped[float | None] = mapped_column(Float, nullable=True)
+    is_simulated: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False, server_default="0"
+    )
+    source: Mapped[str] = mapped_column(
+        String(50), default="REAL", nullable=False, server_default="REAL"
+    )
 
     case: Mapped["Case"] = relationship("Case", back_populates="measurements")
     scenario: Mapped[Optional["Scenario"]] = relationship(

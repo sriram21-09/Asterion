@@ -15,7 +15,7 @@ def test_default_settings():
         assert settings.app_name == "Asterion"
         assert settings.app_version == "1.0.0"
         assert settings.api_prefix == "/api/v1"
-        assert settings.database_url == "sqlite:///./asterion.db"
+        assert settings.database_url == "sqlite:///./data/asterion.db"
         assert settings.log_level == "INFO"
         assert settings.debug is False
         assert settings.cors_origins == ["*"]

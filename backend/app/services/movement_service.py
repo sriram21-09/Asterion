@@ -98,39 +98,81 @@ class MovementReconstructionService:
         )
 
         if not cdr_records and not tracking_results:
-            raise ValidationError(
-                "data",
-                "No CDR records or tracking results found for this case. "
-                "Import CDR data or run tracking first.",
-                status_code=400,
-            )
+            from app.models.measurement import Measurement
 
-        # 3. Build raw event list from CDR records
-        raw_events: list[dict[str, Any]] = []
-        for cdr in cdr_records:
-            event_type = MovementReconstructionService._classify_event_type(cdr)
-            raw_events.append(
-                {
-                    "cdr_record_id": cdr.id,
-                    "tracking_result_id": None,
-                    "event_type": event_type,
-                    "timestamp": cdr.timestamp,
-                    "latitude": cdr.latitude,
-                    "longitude": cdr.longitude,
-                    "cgi": cdr.first_cgi,
-                    "last_cgi": cdr.last_cgi,
-                    "metadata": {
-                        "operator": cdr.operator,
-                        "target_number": cdr.target_number,
-                        "b_party_number": cdr.b_party_number,
-                        "call_type": cdr.call_type,
-                        "service_type": cdr.service_type,
-                        "duration": cdr.duration,
-                        "imei": cdr.imei,
-                        "imsi": cdr.imsi,
-                    },
-                }
+            meas_records = (
+                db.query(Measurement)
+                .filter(Measurement.case_id == case_id)
+                .order_by(Measurement.timestamp.asc())
+                .all()
             )
+            if not meas_records:
+                raise ValidationError(
+                    "data",
+                    "No CDR records, measurements, or tracking results found for this case. "
+                    "Import CDR data or run tracking first.",
+                    status_code=400,
+                )
+
+        # 3. Build raw event list from CDR records or Measurement records
+        raw_events: list[dict[str, Any]] = []
+        if cdr_records:
+            for cdr in cdr_records:
+                event_type = MovementReconstructionService._classify_event_type(cdr)
+                raw_events.append(
+                    {
+                        "cdr_record_id": cdr.id,
+                        "tracking_result_id": None,
+                        "event_type": event_type,
+                        "timestamp": cdr.timestamp,
+                        "latitude": cdr.latitude,
+                        "longitude": cdr.longitude,
+                        "cgi": cdr.first_cgi,
+                        "last_cgi": cdr.last_cgi,
+                        "metadata": {
+                            "operator": cdr.operator,
+                            "target_number": cdr.target_number,
+                            "b_party_number": cdr.b_party_number,
+                            "call_type": cdr.call_type,
+                            "service_type": cdr.service_type,
+                            "duration": cdr.duration,
+                            "imei": cdr.imei,
+                            "imsi": cdr.imsi,
+                        },
+                    }
+                )
+        else:
+            from app.models.measurement import Measurement
+
+            meas_records = (
+                db.query(Measurement)
+                .filter(Measurement.case_id == case_id)
+                .order_by(Measurement.timestamp.asc())
+                .all()
+            )
+            for i, m in enumerate(meas_records):
+                raw_events.append(
+                    {
+                        "cdr_record_id": None,
+                        "tracking_result_id": None,
+                        "event_type": "location_update",
+                        "timestamp": m.timestamp,
+                        "latitude": m.latitude,
+                        "longitude": m.longitude,
+                        "cgi": m.tower_id or f"CGI-{i}",
+                        "last_cgi": None,
+                        "metadata": {
+                            "operator": m.source or "REAL",
+                            "target_number": None,
+                            "b_party_number": None,
+                            "call_type": "location_update",
+                            "service_type": "location",
+                            "duration": 0,
+                            "imei": None,
+                            "imsi": None,
+                        },
+                    }
+                )
 
         # 4. Sort chronologically by timestamp safely normalizing naive and aware datetimes
         def _ts_sort_key(ts: datetime | None) -> datetime:

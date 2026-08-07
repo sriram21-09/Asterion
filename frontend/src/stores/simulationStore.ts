@@ -97,21 +97,23 @@ export const useSimulationStore = create<SimulationState>()(
           const rawList = Array.isArray(response) ? response : (response as any).data || (response as any).measurements || [];
           const measurementsList = rawList.map((m: any, idx: number) => {
             // Map measurement_code to measurement_id
-            // Extract tower_id if present (e.g. MEAS-SCNXXX-TYYY-ZZZZ), otherwise fallback to round-robin
-            const parts = (m.measurement_code || '').split('-');
-            let towerId = null;
-            for (const part of parts) {
-              if (part.startsWith('T') && /^\d+$/.test(part.slice(1))) {
-                towerId = part;
-                break;
+            let towerId = m.tower_id;
+            if (!towerId && m.measurement_code) {
+              const parts = m.measurement_code.split('-');
+              for (const part of parts) {
+                if (part.startsWith('T') && /^\d+$/.test(part.slice(1))) {
+                  towerId = part.length === 2 ? `T${part.slice(1).padStart(3, '0')}` : part;
+                  break;
+                }
+              }
+              if (!towerId) {
+                const match = m.measurement_code.match(/\d+/);
+                const num = match ? parseInt(match[0], 10) : (idx + 1);
+                const towerIndex = ((num - 1) % 3) + 1;
+                towerId = `T${String(towerIndex).padStart(3, '0')}`;
               }
             }
-            if (!towerId) {
-              const match = (m.measurement_code || '').match(/\d+/);
-              const num = match ? parseInt(match[0], 10) : (idx + 1);
-              const towerIndex = ((num - 1) % 3) + 1;
-              towerId = `T${String(towerIndex).padStart(3, '0')}`;
-            }
+            towerId = towerId || null;
 
             return {
               measurement_id: m.measurement_code,
@@ -157,19 +159,21 @@ export const useSimulationStore = create<SimulationState>()(
           
           const rawList = Array.isArray(response) ? response : (response as any).data || (response as any).measurements || [];
           const measurementsList = rawList.map((m: any, idx: number) => {
-            const parts = (m.measurement_code || '').split('-');
-            let towerId = null;
-            for (const part of parts) {
-              if (part.startsWith('T') && /^\d+$/.test(part.slice(1))) {
-                towerId = part;
-                break;
+            let towerId = m.tower_id || null;
+            if (!towerId && m.measurement_code) {
+              const parts = (m.measurement_code || '').split('-');
+              for (const part of parts) {
+                if (part.startsWith('T') && /^\d+$/.test(part.slice(1))) {
+                  towerId = part;
+                  break;
+                }
               }
-            }
-            if (!towerId) {
-              const match = (m.measurement_code || '').match(/\d+/);
-              const num = match ? parseInt(match[0], 10) : (idx + 1);
-              const towerIndex = ((num - 1) % 3) + 1;
-              towerId = `T${String(towerIndex).padStart(3, '0')}`;
+              if (!towerId) {
+                const match = (m.measurement_code || '').match(/\d+/);
+                const num = match ? parseInt(match[0], 10) : (idx + 1);
+                const towerIndex = ((num - 1) % 3) + 1;
+                towerId = `T${String(towerIndex).padStart(3, '0')}`;
+              }
             }
 
             return {

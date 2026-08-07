@@ -58,6 +58,9 @@ def generate_simulation(
                 longitude=m.longitude,
                 timing_advance=m.timing_advance,
                 uncertainty_m=m.uncertainty_m,
+                is_simulated=m.is_simulated,
+                source=m.source,
+                tower_id=m.tower_id,
             )
         )
 
@@ -111,6 +114,9 @@ def get_measurements(
                 longitude=m.longitude,
                 timing_advance=m.timing_advance,
                 uncertainty_m=m.uncertainty_m,
+                is_simulated=m.is_simulated,
+                source=m.source,
+                tower_id=m.tower_id,
             )
         )
 

@@ -21,7 +21,8 @@ from app.schemas.evidence import (
 )
 from app.schemas.response import APIResponse
 from app.services.evidence_service import EvidenceGenerationService
-from fastapi import APIRouter, Depends, Path, status
+from app.shared.validation import ValidationError
+from fastapi import APIRouter, Depends, Path, status, HTTPException
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/evidence", tags=["evidence"])
@@ -72,7 +73,12 @@ def get_evidence(
     ),
     db: Session = Depends(get_db),
 ):
-    result = EvidenceGenerationService.get_evidence(db=db, case_id=case_id)
+    try:
+        result = EvidenceGenerationService.get_evidence(db=db, case_id=case_id)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=getattr(e, "status_code", 400), detail=e.message
+        )
 
     summary = EvidenceSummary(**result["summary"])
     towers = [EvidenceTower(**t) for t in result["towers"]]
@@ -126,7 +132,12 @@ def get_evidence_audit(
     ),
     db: Session = Depends(get_db),
 ):
-    result = EvidenceGenerationService.get_audit(db=db, case_id=case_id)
+    try:
+        result = EvidenceGenerationService.get_audit(db=db, case_id=case_id)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=getattr(e, "status_code", 400), detail=e.message
+        )
 
     summary = EvidenceSummary(**result["summary"])
     towers = [EvidenceTower(**t) for t in result["towers"]]

@@ -5,7 +5,6 @@ from app.schemas.response import APIResponse
 from app.services.case_service import CaseService
 from app.services.comparison_service import ComparisonService
 from fastapi import APIRouter, Depends, Query, status, HTTPException
-from app.models.case import Case
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/cases", tags=["cases"])
@@ -60,6 +59,19 @@ def compare_cases(
 
 
 @router.get(
+    "/{id}/provenance",
+    response_model=APIResponse[dict],
+    summary="Retrieve case measurement provenance audit snapshot",
+    description="Returns exact count breakdown, status, percentages, and scientific integrity declarations for measurement provenance.",
+)
+def get_case_provenance_in_cases(id: int, db: Session = Depends(get_db)):
+    from app.services.provenance_service import ProvenanceService
+
+    result = ProvenanceService.get_case_provenance(db, case_id=id)
+    return APIResponse(success=True, data=result)
+
+
+@router.get(
     "/{id}",
     response_model=APIResponse[CaseResponse],
     summary="Retrieve a case by ID",
@@ -73,20 +85,18 @@ def get_case(id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/{id}",
     response_model=APIResponse[CaseResponse],
-    summary="Update case status or scenario",
-    description="Updates the status or scenario assigned to an existing case.",
+    summary="Update case status or attributes",
+    description="Update status, scenario_id, or augmentation settings for a case.",
 )
-def update_case(id: int, update: CaseUpdate, db: Session = Depends(get_db)):
-    case = db.query(Case).filter(Case.id == id).first()
-    if not case:
-        raise HTTPException(status_code=404, detail="Case not found")
-    if update.status is not None:
-        case.status = update.status
-    if update.scenario_id is not None:
-        case.scenario_id = update.scenario_id
-    db.commit()
-    db.refresh(case)
-    return APIResponse(success=True, data=CaseResponse.model_validate(case))
+@router.put(
+    "/{id}",
+    response_model=APIResponse[CaseResponse],
+    summary="Update case status or attributes",
+    description="Update status, scenario_id, or augmentation settings for a case.",
+)
+def update_case_endpoint(id: int, update: CaseUpdate, db: Session = Depends(get_db)):
+    result = CaseService.update_case(db, case_id=id, update_in=update)
+    return APIResponse(success=True, data=CaseResponse.model_validate(result))
 
 
 @router.put(
@@ -96,16 +106,8 @@ def update_case(id: int, update: CaseUpdate, db: Session = Depends(get_db)):
     description="Assigns a scenario to an existing case.",
 )
 def update_case_scenario(id: int, update: CaseUpdate, db: Session = Depends(get_db)):
-    case = db.query(Case).filter(Case.id == id).first()
-    if not case:
-        raise HTTPException(status_code=404, detail="Case not found")
-    if update.scenario_id is not None:
-        case.scenario_id = update.scenario_id
-    if update.status is not None:
-        case.status = update.status
-    db.commit()
-    db.refresh(case)
-    return APIResponse(success=True, data=CaseResponse.model_validate(case))
+    result = CaseService.update_case(db, case_id=id, update_in=update)
+    return APIResponse(success=True, data=CaseResponse.model_validate(result))
 
 
 @router.delete(

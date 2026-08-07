@@ -8,7 +8,7 @@ Measurement objects for a given scenario.
 
 from datetime import UTC, datetime, timedelta
 
-from scientific.models.measurement import Measurement
+from scientific.models.measurement import Measurement, MeasurementSource
 from scientific.models.scenario_config import ScenarioConfig
 from scientific.simulation.noise_model import AWGNModel
 from scientific.simulation.rssi_generator import RSSIGenerator
@@ -92,10 +92,10 @@ class MeasurementGenerator:
                     tower_id=tower.tower_id,
                     timestamp=timestamp,
                     rssi_dbm=final_rssi,
-                    latitude=self.config.expected_device_lat,
-                    longitude=self.config.expected_device_lon,
-                    # Note: We omit timing_advance and uncertainty_m for this
-                    # basic RF signal generation phase.
+                    latitude=None,
+                    longitude=None,
+                    is_simulated=True,
+                    source=MeasurementSource.SIMULATED,
                 )
                 measurements.append(measurement)
                 measurement_idx += 1

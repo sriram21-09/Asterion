@@ -5,25 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-08-02
+## [1.0.0] - Stable (2026-08-06)
 
 ### Added
-- **Complete End-to-End Scientific Pipeline**: Fully automated data flow from CDR upload to movement reconstruction, localization, evidence synthesis, and report generation.
-- **Unified CDR Importer**: Robust parsing logic for multiple telecom operators (Airtel, BSNL, Jio, Vi) with automatic vendor detection.
-- **Validation Engine Enhancements**: Comprehensive sanity, format, and physical validation constraints applied directly to raw CDR records.
-- **Tower Resolution Module**: Automatic tower lookup and centroid fallback resolution to handle missing or sparse tower datasets.
-- **Movement Reconstruction**: Generation of movement events, segment categorization (stationary, moving), and spatial path smoothing.
-- **Summary & Report Generation**: Aggregated dashboard statistics and downloadable HTML/PDF report formatter exposing localization evidence.
-- **E-Rakshak Test Datasets**: Standardized operator test suites integrated into the benchmark script (`verify_pipeline.py`) for automated CI accuracy checks.
+- Scientific localization engine
+- Measurement augmentation
+- Provenance tracking
+- Investigation reports
+- Docker deployment
 
-### Changed
-- **Backend Optimization**: Extensive query profiling, lazy loading, database indexing improvements, and API endpoint cleanup (removed unused mocks).
-- **Docker Compose Production Build**: Finalized multi-stage container build process ensuring fully functional out-of-the-box deployment.
+### Improved
+- Scientific transparency
+- PDF reporting
+- Database migrations
+- Environment parity
 
 ### Fixed
-- Stabilized Kalman filter initialization against short measurement bursts.
-- Resolved timestamp timezone inconsistencies during SQLite loading.
-- Optimized multilateration bounds avoiding unconstrained search explosions.
+- Alembic migration issues
+- Empty case handling
+- Operator detection
+- Distance calculations
 
 ## [0.2.0] - 2026-07-19
 
