@@ -212,11 +212,11 @@ def seed():
             db.add(me)
 
         # ---------------------------------------------------------
-        # Case 4: PhantomNet Data Ingestion (Review)
+        # Case 4: Asterion Demo Data Ingestion (Review)
         # ---------------------------------------------------------
         c4 = Case(
-            title="PhantomNet Data Ingestion",
-            description="Newly imported data from phantomnet_analytics CSV file.",
+            title="Asterion Demo Data Ingestion",
+            description="Newly imported data from asterion_demo_analytics CSV file.",
             scenario_id=None,
             status="review",
         )
