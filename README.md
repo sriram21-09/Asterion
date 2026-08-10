@@ -1,17 +1,17 @@
 <h1 align="center">🛰️ Asterion</h1>
 
 <p align="center">
-  <strong>Explainable telecom investigation platform that reconstructs probable device locations from cellular network measurements while preserving scientific integrity and evidence traceability.</strong>
+  <strong>Asterion is an evidence-first telecom investigation platform that combines cellular tower measurements through explainable scientific localization, tracking, uncertainty estimation, and evidence traceability.</strong>
 </p>
 <p align="center">
-  Built for <strong>E-Rakshak 2026</strong>
+  Built for <strong>E-Rakshak Hackathon 2026 · Problem ERH26_PS_09</strong>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square" alt="Version 1.0.0" />
-  <img src="https://img.shields.io/badge/Status-Stable%20Release-blue?style=flat-square" alt="Status Stable" />
+  <img src="https://img.shields.io/badge/Status-Hackathon%20MVP%20Release-blue?style=flat-square" alt="Status Hackathon MVP" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License MIT" /></a>
-  <img src="https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square" alt="Tests Passing" />
+  <img src="https://img.shields.io/badge/Tests-933%2F933%20Passed-brightgreen?style=flat-square" alt="Tests 933 Passed" />
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11+" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
   <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
@@ -196,14 +196,10 @@ Telecommunication records (CDRs) provide investigators with signal measurements 
 
 **Current challenges in telecom-based localization:**
 
-| Challenge | Description |
-|-----------|-------------|
-| **Large search areas** | Single tower coverage areas span hundreds of meters to several kilometers. |
-| **Fabricated Evidence** | Commercial tools often silently guess missing data (like coordinates) to make the map look better. |
-| **Measurement noise** | Signal strength varies due to fading, multipath, and environmental factors. |
-| **Confidence opacity** | Investigators lack visibility into how reliable an estimated location actually is. |
-
-Asterion addresses these challenges by processing telecom measurements through a rigorous scientific pipeline while maintaining a transparent audit trail.
+- **Large search areas**: Single tower coverage areas span hundreds of meters to several kilometers.
+- **Measurement noise**: Signal strength varies due to fading, multipath, and environmental factors.
+- **Confidence opacity**: Investigators lack visibility into how reliable an estimated location actually is.
+- **Fabricated Evidence**: Asterion explicitly distinguishes observed, derived, simulated, and unresolved values instead of presenting inferred values as measured evidence.
 
 ---
 
@@ -281,22 +277,30 @@ graph TD
 
 ## 🧰 Technology Stack
 
-| Layer | Technology | Why Chosen |
-|-------|------------|------------|
-| **Frontend** | React 19, TypeScript, Vite | Fast compilation, strict typing, and massive ecosystem for geospatial mapping. |
-| **Styling** | Tailwind CSS 4 | Zero-runtime CSS extraction for high-performance dashboard UI. |
-| **State Management** | Zustand | Boilerplate-free, scalable client-side state without Redux overhead. |
-| **Mapping** | Leaflet + React-Leaflet | Open-source, highly customizable geospatial visualization. |
-| **Backend** | FastAPI, Uvicorn | High-performance async REST execution for heavy compute endpoints. |
-| **ORM** | SQLAlchemy 2, Alembic | Type-safe database interactions and seamless schema migrations. |
-| **Scientific** | NumPy, SciPy | Industry-standard vectorized numerical computation and NLLS optimization. |
-| **Database** | SQLite | Zero-cost deployment MVP for Hackathon environments. |
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS 4, Zustand, Leaflet |
+| **Backend** | FastAPI, Uvicorn — Typed REST API layer for application and scientific workflows. |
+| **Scientific** | Python 3.11, NumPy, SciPy |
+| **Database** | SQLite — Lightweight embedded database suitable for the MVP deployment model. SQLAlchemy 2, Alembic — ORM-based database access and versioned schema migrations. |
+
+## Technical Documentation
+
+- [Architecture](docs/architecture/ARCHITECTURE.md)
+- [API Reference](docs/api/API_REFERENCE.md)
+- [Database Schema](docs/database/DATABASE_SCHEMA.md)
+- [Scientific Engine](docs/scientific/SCIENTIFIC_ENGINE.md)
+- [Local Setup](docs/development/LOCAL_SETUP.md)
+- [Deployment](docs/deployment/DEPLOYMENT.md)
+- [Testing](docs/testing/TESTING.md)
+- [Demo Workflow](docs/DEMO_WORKFLOW.md)
+- [Third-Party Components](docs/THIRD_PARTY_COMPONENTS.md)
 
 ---
 
 ## 🚀 Getting Started
 
-### Quick Start (30-Second Path)
+### Quick Start (Containerized)
 
 The fastest way to get Asterion running is via Docker Compose:
 
@@ -452,30 +456,27 @@ Asterion v1.0.0 successfully completed a rigorous **Red Team Engineering Audit**
 
 ---
 
+## Limitations
+
+- Uses SQLite, which may encounter concurrency locks under high multi-tenant investigation load.
+- Currently supports 4 Indian operators natively (Airtel, BSNL, Jio, Vi).
+
+## Future Scope
+
+- Migration to PostgreSQL for concurrent performance.
+- SHA-256 content hashing for import deduplication/idempotency.
+- Celery Task Queue integration.
+
+---
+
 ## 🧑‍💻 Who Is This For?
 
 | Audience | Value |
 |----------|-------|
-| **Law Enforcement** | Transparent, evidence-backed location estimation for digital investigations |
+| **Law Enforcement / Investigation Teams** | Prototype support for transparent, evidence-backed location analysis. |
 | **Researchers** | Modular scientific engine for studying multilateration and Kalman smoothing |
 | **Students** | Educational platform demonstrating RF signal processing and geospatial analysis |
 | **Developers** | Clean, well-documented codebase following modern software engineering practices |
-
----
-
-## 🗺️ Development Roadmap
-
-### Version 1.0 (Current)
-- ✅ Core Localization Engine
-- ✅ CDR Import & Validation
-- ✅ Kalman Tracking & GDOP Confidence
-- ✅ Interactive Dashboard & Report Generation
-- ✅ Red Team Scientific Integrity Audit
-
-### Version 1.1 (Future)
-- 🔲 **PostgreSQL Migration:** Move from SQLite to PostgreSQL to support heavy concurrent investigations.
-- 🔲 **SHA-256 Idempotency:** Upgrade import duplicate detection from filename matching to SHA-256 content hashing.
-- 🔲 **Celery Task Queue:** Make long-running imports and report generations fully atomic and asynchronous.
 
 ---
 
@@ -493,11 +494,9 @@ Contributions are welcome! Please ensure any PRs affecting the `scientific/` eng
 
 ## 👥 Team
 
-| Name | Role | GitHub |
-|------|------|--------|
-| **Sriram Kasukurthi** | Project Lead / Backend Lead | [@sriram21-09](https://github.com/sriram21-09) |
-| **Chaitanya** | Scientific Engineer | [@Chaitanya0806](https://github.com/Chaitanya0806) |
-| **Dinesh** | Frontend Lead | [@kdineshveera](https://github.com/kdineshveera) |
+- **Sriram Kasukurthi** (Project Lead / Backend Lead)
+- **Chaitanya** (Scientific Engineer)
+- **Dinesh** (Frontend Lead)
 
 ---
 

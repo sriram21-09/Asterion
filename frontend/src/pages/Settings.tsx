@@ -356,7 +356,7 @@ export default function Settings() {
                   <span>Seed Demonstration Data</span>
                 </div>
                 <p className="text-xs text-content-secondary leading-relaxed">
-                  Populates 2 default scenarios and 4 rich demonstration cases (`MG Road Search`, `Koramangala Tracking`, `VIP Escort`, `PhantomNet`) with full measurements, localization, and timeline tracks.
+                  Populates 2 default scenarios and 4 rich demonstration cases (`MG Road Search`, `Koramangala Tracking`, `VIP Escort`, `Asterion Demo`) with full measurements, localization, and timeline tracks.
                 </p>
                 <p className="text-[11px] text-content-tertiary mt-2 font-mono">
                   * Perfect for demonstrating all Asterion features to stakeholders.

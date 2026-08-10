@@ -49,7 +49,7 @@ export default function ImportPage() {
       if (name.includes('vodafone') || name.includes('vi')) return resolve('Vodafone')
       if (name.includes('o2') || name.includes('telefonica')) return resolve('O2')
       if (name.includes('telekom') || name.includes('t-mobile')) return resolve('Telekom')
-      if (name.includes('phantomnet')) return resolve('PhantomNet')
+      if (name.includes('asterion_demo')) return resolve('Asterion Demo')
       if (name.includes('bsnl')) return resolve('BSNL')
       if (name.includes('airtel')) return resolve('Airtel')
       if (name.includes('jio')) return resolve('Jio')
@@ -64,8 +64,8 @@ export default function ImportPage() {
           resolve('Telekom')
         } else if (firstLine.includes('o2') || firstLine.includes('telefonica')) {
           resolve('O2')
-        } else if (firstLine.includes('phantomnet')) {
-          resolve('PhantomNet')
+        } else if (firstLine.includes('asterion_demo')) {
+          resolve('Asterion Demo')
         } else if (firstLine.includes('bsnl')) {
           resolve('BSNL')
         } else if (firstLine.includes('airtel')) {
