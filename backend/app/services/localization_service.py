@@ -85,7 +85,7 @@ class LocalizationService:
                         tower_id = part
                         break
 
-            if tower_id is None:
+            if not tower_id:
                 # Fallback: try to assign to towers round-robin based on index
                 tower_placements = config.tower_placements
                 if tower_placements:
