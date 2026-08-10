@@ -229,7 +229,7 @@ class ConfidenceService:
                         tower_id = part
                         break
 
-            if tower_id is None:
+            if not tower_id:
                 tower_placements = config.tower_placements
                 if tower_placements:
                     idx = db_measurements.index(m) % len(tower_placements)
