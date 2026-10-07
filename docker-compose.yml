@@ -28,6 +28,7 @@ services:
         # Server-side / Proxy API URL (container-to-container via Docker network)
         - VITE_API_BASE_URL=http://backend:8222/api/v1
         - VITE_BACKEND_URL=http://backend:8222
+        - VITE_CARTO_API_KEY=cb1_4d6q_1_dde29f3a2e68daf5d6d80cb1
     ports:
       - "3000:3000"
     depends_on:
@@ -35,7 +36,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
       interval: 10s
       timeout: 5s
       retries: 5

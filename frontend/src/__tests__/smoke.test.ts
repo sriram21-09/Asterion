@@ -22,6 +22,7 @@ describe('Frontend Infrastructure & Store Smoke Tests', () => {
     const state = useAppSettingsStore.getState();
     expect(state.apiBaseUrl).toBeDefined();
     expect(state.mapTileProvider).toBe('carto-dark');
+    expect(state.cartoApiKey).toBeDefined();
     expect(state.defaultMapCenter).toEqual([20.5937, 78.9629]);
     expect(state.defaultMapZoom).toBe(5);
   });
@@ -30,6 +31,7 @@ describe('Frontend Infrastructure & Store Smoke Tests', () => {
     const state = useAppSettingsStore.getState();
     expect(typeof state.setApiBaseUrl).toBe('function');
     expect(typeof state.setMapTileProvider).toBe('function');
+    expect(typeof state.setCartoApiKey).toBe('function');
     expect(typeof state.setDefaultMapCenter).toBe('function');
     expect(typeof state.setDefaultMapZoom).toBe('function');
   });

@@ -258,3 +258,7 @@ check_runs*.json
 req.txt
 job_log*.txt
 
+# Local Team & Contributor Profiles
+docs/team/
+
+

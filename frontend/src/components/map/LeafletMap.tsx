@@ -5,8 +5,8 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { HeatmapLayer } from './HeatmapLayer'
-// import MarkerClusterGroup from 'react-leaflet-cluster'
 import { useThemeStore } from '@/stores/useThemeStore'
+import { useAppSettingsStore } from '@/stores/useAppSettingsStore'
 
 export type ConfidenceTier = 'Known' | 'Estimated' | 'Unknown'
 
@@ -172,10 +172,36 @@ export function LeafletMap({
     })
   }, [towers, showMarkers, selectedTowerId, onSelectTower])
 
-  // Dynamic Tile URL based on active theme
-  const tileUrl = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+  const { mapTileProvider, cartoApiKey } = useAppSettingsStore()
+
+  // Dynamic Tile URL & attribution configuration
+  // CARTO basemaps require an API key as of late 2026 and render watermark tiles without one.
+  const activeCartoKey = (cartoApiKey && cartoApiKey.trim().length > 0)
+    ? cartoApiKey.trim()
+    : ((import.meta.env.VITE_CARTO_API_KEY as string)?.trim() || 'cb1_4d6q_1_dde29f3a2e68daf5d6d80cb1')
+
+  const hasCartoKey = Boolean(activeCartoKey && activeCartoKey.length > 0)
+  const isCarto = (mapTileProvider === 'carto-dark' || mapTileProvider === 'carto-light') && hasCartoKey
+
+  let tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+  let attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  let tileClassName: string | undefined = undefined
+
+  if (isCarto) {
+    const keyParam = `?key=${encodeURIComponent(activeCartoKey)}`
+    if (mapTileProvider === 'carto-dark') {
+      tileUrl = `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${keyParam}`
+    } else {
+      tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${keyParam}`
+    }
+    attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  } else {
+    // OpenStreetMap standard (either chosen or fallback)
+    // When dark theme is active, apply CSS filter for sleek dark mode basemap
+    if (isDark) {
+      tileClassName = 'map-tiles-dark'
+    }
+  }
 
   // Filter path coordinates: keep valid trajectory points (ignore exact duplicates and distant telemetry spikes)
   const cleanPath = (pathCoordinates && pathCoordinates.length > 1) 
@@ -208,8 +234,12 @@ export function LeafletMap({
         />
         
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          key={`${tileUrl}-${tileClassName ?? 'default'}`}
+          attribution={attribution}
           url={tileUrl}
+          className={tileClassName}
+          maxZoom={19}
+          {...(isCarto ? { subdomains: 'abcd' } : {})}
         />
 
         {/* Heatmap Layer (Mounts/Unmounts cleanly based on showHeatmap state) */}

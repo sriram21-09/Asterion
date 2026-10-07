@@ -11,11 +11,13 @@ export default function Settings() {
   const {
     apiBaseUrl,
     mapTileProvider,
+    cartoApiKey,
     defaultMapCenter,
     defaultMapZoom,
     defaultEnableMeasurementAugmentation,
     setApiBaseUrl,
     setMapTileProvider,
+    setCartoApiKey,
     setDefaultMapCenter,
     setDefaultMapZoom,
     setDefaultEnableMeasurementAugmentation,
@@ -29,6 +31,7 @@ export default function Settings() {
   const [formLng, setFormLng] = useState(defaultMapCenter[1].toString())
   const [formZoom, setFormZoom] = useState(defaultMapZoom.toString())
   const [formTileProvider, setFormTileProvider] = useState(mapTileProvider)
+  const [formCartoApiKey, setFormCartoApiKey] = useState(cartoApiKey)
   const [formEnableAugmentation, setFormEnableAugmentation] = useState(defaultEnableMeasurementAugmentation)
 
   // Database Management states
@@ -57,6 +60,7 @@ export default function Settings() {
     setDefaultMapCenter([lat, lng])
     setDefaultMapZoom(zoom)
     setMapTileProvider(formTileProvider as any)
+    setCartoApiKey(formCartoApiKey.trim())
     toast.success('Map settings saved.')
   }
 
@@ -248,9 +252,9 @@ export default function Settings() {
                 onChange={(e) => setFormTileProvider(e.target.value as any)}
                 className="w-full bg-surface-secondary border border-border-primary rounded-xl px-4 py-2.5 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-shadow"
               >
-                <option value="carto-dark">CARTO Dark Matter (Best for Dark Mode)</option>
-                <option value="carto-light">CARTO Positron (Best for Light Mode)</option>
-                <option value="osm">OpenStreetMap Standard</option>
+                <option value="osm">OpenStreetMap Standard (Free, No Key Required)</option>
+                <option value="carto-dark">CARTO Dark Matter (Requires CARTO API Key)</option>
+                <option value="carto-light">CARTO Positron (Requires CARTO API Key)</option>
               </select>
             </div>
             
@@ -292,6 +296,41 @@ export default function Settings() {
                 onChange={(e) => setFormLng(e.target.value)}
                 className="w-full bg-surface-secondary border border-border-primary rounded-xl px-4 py-2.5 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-shadow"
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-content-secondary">
+                  CARTO Basemap API Key <span className="text-xs text-content-tertiary font-normal">(Optional)</span>
+                </label>
+                <a
+                  href="https://carto.com/basemaps/apikey"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="text-xs text-brand-primary hover:underline flex items-center gap-1"
+                >
+                  Get free key &rarr;
+                </a>
+              </div>
+              <input
+                type="password"
+                placeholder="Enter CARTO API Key from carto.com/basemaps/apikey"
+                value={formCartoApiKey}
+                onChange={(e) => setFormCartoApiKey(e.target.value)}
+                className="w-full bg-surface-secondary border border-border-primary rounded-xl px-4 py-2.5 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-shadow font-mono"
+              />
+              <div className="mt-2 text-xs">
+                {formTileProvider !== 'osm' && !formCartoApiKey.trim() ? (
+                  <p className="text-amber-500 flex items-center gap-1.5 font-medium">
+                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                    CARTO requires an API key as of Sep 2026. Without a key, Asterion will automatically use dark OpenStreetMap tiles to prevent watermark errors.
+                  </p>
+                ) : (
+                  <p className="text-content-tertiary">
+                    Used when CARTO Dark Matter or Positron is selected. If left blank, Asterion automatically uses OpenStreetMap for watermark-free basemaps.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
           

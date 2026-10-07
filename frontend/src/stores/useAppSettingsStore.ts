@@ -8,6 +8,8 @@ interface AppSettingsState {
   apiBaseUrl: string
   /** Leaflet map tile provider */
   mapTileProvider: MapTileProvider
+  /** Optional CARTO API key for basemaps.cartocdn.com */
+  cartoApiKey: string
   /** Default map center coordinates [lat, lng] */
   defaultMapCenter: [number, number]
   /** Default map zoom level */
@@ -17,6 +19,7 @@ interface AppSettingsState {
 
   setApiBaseUrl: (url: string) => void
   setMapTileProvider: (provider: MapTileProvider) => void
+  setCartoApiKey: (key: string) => void
   setDefaultMapCenter: (center: [number, number]) => void
   setDefaultMapZoom: (zoom: number) => void
   setDefaultEnableMeasurementAugmentation: (enabled: boolean) => void
@@ -32,6 +35,7 @@ export const useAppSettingsStore = create<AppSettingsState>()(
     (set) => ({
       apiBaseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:8222',
       mapTileProvider: 'carto-dark',
+      cartoApiKey: import.meta.env.VITE_CARTO_API_KEY ?? 'cb1_4d6q_1_dde29f3a2e68daf5d6d80cb1',
       defaultMapCenter: [20.5937, 78.9629], // Center of India
       defaultMapZoom: 5,
       defaultEnableMeasurementAugmentation: true,
@@ -39,6 +43,7 @@ export const useAppSettingsStore = create<AppSettingsState>()(
       setApiBaseUrl: (url: string) => set({ apiBaseUrl: url }),
       setMapTileProvider: (provider: MapTileProvider) =>
         set({ mapTileProvider: provider }),
+      setCartoApiKey: (key: string) => set({ cartoApiKey: key }),
       setDefaultMapCenter: (center: [number, number]) =>
         set({ defaultMapCenter: center }),
       setDefaultMapZoom: (zoom: number) => set({ defaultMapZoom: zoom }),

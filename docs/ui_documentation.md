@@ -217,13 +217,13 @@ Placeholder page for upcoming sprint. Report compilation, export formats, and ma
 **Route:** `/settings`  
 **Title:** `Settings — Asterion`
 
-Placeholder page. The `useAppSettingsStore` (Zustand, persisted) already scaffolds:
+The `useAppSettingsStore` (Zustand, persisted) configures:
 - `apiBaseUrl` — backend endpoint override
-- `mapTileProvider` — `osm` | `carto-dark` | `carto-light`
+- `mapTileProvider` — `osm` (default) | `carto-dark` | `carto-light`
+- `cartoApiKey` — optional CARTO API key (free from carto.com/basemaps/apikey; falls back to OSM if absent)
 - `defaultMapCenter` — `[lat, lng]` (default: center of India)
 - `defaultMapZoom` — integer zoom level
-
-The Settings UI to edit these will be wired in a future sprint.
+- `defaultEnableMeasurementAugmentation` — boolean toggle
 
 ---
 
